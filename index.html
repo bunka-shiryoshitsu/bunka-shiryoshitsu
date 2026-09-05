@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>文化資料登録室</title>
+
+<meta name="description"
+content="文化資料登録室。文化、芸術、文学、出版、映像、漫画、アニメーション、映画、音楽、舞台、工芸その他の文化資料について、情報を整理・記録する独立した資料登録制度です。">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+    color: #222;
+    background: #f7f7f5;
+    line-height: 1.9;
+}
+
+header {
+    background: #202020;
+    color: #fff;
+    padding: 22px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: .9rem;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.hero {
+    background: #fff;
+    padding: 100px 20px 90px;
+    border-bottom: 1px solid #ddd;
+}
+
+.hero-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    margin: 0 0 20px;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    letter-spacing: .08em;
+}
+
+.hero p {
+    max-width: 760px;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+.notice {
+    margin-top: 35px;
+    padding: 18px 22px;
+    background: #f1f1ee;
+    border-left: 4px solid #555;
+}
+
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 70px 20px;
+}
+
+section {
+    margin-bottom: 90px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #bbb;
+}
+
+h3 {
+    margin-top: 35px;
+    font-size: 1.2rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 28px;
+    border: 1px solid #ddd;
+}
+
+.card h3 {
+    margin-top: 0;
+}
+
+.category-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 30px;
+}
+
+.category-list div {
+    padding: 12px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.registration-level {
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    padding: 25px;
+}
+
+.registration-level strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.warning {
+    margin-top: 30px;
+    padding: 22px;
+    background: #f1f1ee;
+    border: 1px solid #d5d5d0;
+    font-weight: 600;
+}
+
+.lookup {
+    background: #fff;
+    padding: 35px;
+    border: 1px solid #ddd;
+}
+
+.lookup input {
+    width: 100%;
+    max-width: 600px;
+    padding: 14px;
+    font-size: 1rem;
+    border: 1px solid #aaa;
+}
+
+.lookup button {
+    margin-top: 12px;
+    padding: 13px 28px;
+    background: #222;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.lookup button:hover {
+    background: #444;
+}
+
+#lookup-result {
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+.application {
+    background: #fff;
+    padding: 35px;
+    border: 1px solid #ddd;
+}
+
+.status {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #eee;
+    border: 1px solid #ccc;
+    font-weight: 700;
+}
+
+footer {
+    background: #202020;
+    color: #ccc;
+    padding: 45px 20px;
+}
+
+.footer-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+footer a {
+    color: #fff;
+}
+
+.small {
+    font-size: .85rem;
+    color: #777;
+}
+
+@media (max-width: 700px) {
+
+    .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav {
+        gap: 10px 15px;
+    }
+
+    .card-grid,
+    .category-list {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding: 70px 20px;
+    }
+
+    main {
+        padding-top: 50px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">文化資料登録室</div>
+
+        <nav>
+            <a href="#about">概要</a>
+            <a href="#materials">対象資料</a>
+            <a href="#registration">登録制度</a>
+            <a href="#lookup">登録番号照会</a>
+            <a href="#rules">規約</a>
+            <a href="#application">登録申請</a>
+        </nav>
+    </div>
+</header>
+
+
+<section class="hero">
+    <div class="hero-inner">
+
+        <h1>文化資料登録室</h1>
+
+        <p>
+            文化、芸術、文学、出版、映像、漫画、アニメーション、
+            映画、音楽、舞台、工芸その他の文化資料について、
+            その資料に関する情報を整理・記録し、後世に残すための
+            独立した資料登録制度です。
+        </p>
+
+        <div class="notice">
+            <strong>登録申請について</strong><br>
+            現在、登録申請の受付を休止しています。
+        </div>
+
+    </div>
+</section>
+
+
+<main>
+
+<section id="about">
+
+    <h2>文化資料登録室について</h2>
+
+    <p>
+        文化資料登録室は、さまざまな文化資料について、
+        資料そのもの及び資料に関連する情報を整理・記録し、
+        将来にわたって参照できる形で残すことを目的とする
+        独立した資料登録制度です。
+    </p>
+
+    <p>
+        当資料室は、国、地方公共団体、出版社、制作会社、
+        権利者団体その他の公的機関又は公式機関とは別個に運営されます。
+    </p>
+
+    <p>
+        一般的な商品・役務の販売又は提供を目的とするものではなく、
+        文化資料に関する記録及び整理を目的としています。
+    </p>
+
+</section>
+
+
+<section id="materials">
+
+    <h2>対象資料</h2>
+
+    <div class="category-list">
+
+        <div>文学作品・作家に関する資料</div>
+        <div>直筆原稿・草稿・創作ノート</div>
+        <div>書籍・初版本・限定本・サイン本・献呈本</div>
+        <div>雑誌・新聞・掲載資料</div>
+        <div>映画・映像作品</div>
+        <div>アニメーション作品</div>
+        <div>台本・脚本・絵コンテ・設定資料</div>
+        <div>漫画・漫画原稿・関連資料</div>
+        <div>音楽・レコード・CD・楽譜</div>
+        <div>舞台・演劇・公演関連資料</div>
+        <div>ポスター・チラシ・パンフレット・広告</div>
+        <div>写真・印刷物・広報資料</div>
+        <div>美術作品及び関連資料</div>
+        <div>陶磁器・工芸品</div>
+        <div>手紙・記録・文化活動関連資料</div>
+        <div>その他、文化資料として適当と認められる資料</div>
+
+    </div>
+
+</section>
+
+
+<section id="registration">
+
+    <h2>登録制度</h2>
+
+    <div class="registration-level">
+        <strong>第1種登録（基本登録）</strong>
+        資料を識別・管理するために必要となる基本的な情報を確認し、登録します。
+    </div>
+
+    <div class="registration-level">
+        <strong>第2種登録</strong>
+        第1種登録の情報に加え、記載事項、寸法、形状、付属品、
+        箱、関連資料、入手経緯その他の事項について確認・整理します。
+    </div>
+
+    <div class="registration-level">
+        <strong>第3種登録</strong>
+        第2種登録の確認に加え、資料の特徴、記載事項、関連資料
+        その他の情報について比較・検討を行い、より詳細な資料記録を作成します。
+    </div>
+
+    <div class="registration-level">
+        <strong>特別登録</strong>
+        第3種登録の基準を踏まえ、文化資料として特に記録する意義があると
+        当資料室が判断した資料について行う登録です。
+    </div>
+
+    <div class="warning">
+        登録区分は、真贋、真正性、作者の確実性、制作年代、来歴、
+        所有権、財産的価値その他の優劣又は信頼度を示すものではありません。
+    </div>
+
+</section>
+
+
+<section id="lookup">
+
+    <h2>登録番号照会</h2>
+
+    <div class="lookup">
+
+        <p>
+            登録番号を入力すると、登録の有無を照会できます。
+        </p>
+
+        <input
+            type="text"
+            id="registration-number"
+            placeholder="例：AR-7K4M92Q8"
+        >
+
+        <br>
+
+        <button onclick="checkRegistration()">
+            登録番号を照会
+        </button>
+
+        <div id="lookup-result"></div>
+
+        <p class="small">
+            ※現在は照会システム準備中です。
+        </p>
+
+        <p class="small">
+            当資料室では、登録番号の有無のみを照会しております。
+            個別の現物・画像との同一性についての判定は行っておりません。
+        </p>
+
+    </div>
+
+</section>
+
+
+<section id="rules">
+
+    <h2>規約</h2>
+
+    <p>
+        文化資料登録室は、独自の登録基準に基づき、
+        文化資料に関する情報を登録・管理します。
+    </p>
+
+    <p>
+        登録は、公的な鑑定、認定、証明その他の公的判断を
+        代替するものではありません。
+    </p>
+
+    <h3>登録について</h3>
+
+    <p>
+        当資料室による登録は、資料の真贋、真正性、作者、
+        制作年代、来歴、所有権、権利関係、財産的価値その他の事項を
+        保証又は認定するものではありません。
+    </p>
+
+    <p>
+        登録カードは、当資料室による資料登録を示す管理上の記録であり、
+        鑑定書、保証書、真正証明書、所有権証明書その他これらに類するものではありません。
+    </p>
+
+    <p>
+        詳細な規定については、文化資料登録室規約をご確認ください。
+    </p>
+
+</section>
+
+
+<section id="application">
+
+    <h2>登録申請</h2>
+
+    <div class="application">
+
+        <span class="status">現在、登録申請の受付を休止しています。</span>
+
+        <p>
+            登録申請の再開時には、所定の方法により申請を受け付けます。
+        </p>
+
+        <p>
+            登録の可否及び登録区分は、提出された資料及び
+            資料関連情報について、当資料室独自の基準に基づき判断します。
+        </p>
+
+    </div>
+
+</section>
+
+
+<section>
+
+    <h2>画像の取扱い</h2>
+
+    <p>
+        登録申請に際して提出された画像は、登録可否の確認、
+        登録情報の整理その他必要な登録手続のために使用します。
+    </p>
+
+    <p>
+        提出画像は、原則として継続的に保存しません。
+        確認終了後、当資料室が保有する提出画像は、
+        原則として速やかに削除します。
+    </p>
+
+    <p>
+        また、提出された画像を原則としてWebサイトその他の方法により
+        公開することはありません。
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>独立した資料登録制度</h2>
+
+    <p>
+        文化資料登録室は、国、地方公共団体、出版社、制作会社、
+        権利者団体その他の公的機関又は公式機関が運営する
+        登録・認定制度ではありません。
+    </p>
+
+    <p>
+        当資料室の登録番号は、公的な登録番号、公式認定番号又は
+        権利者による保証番号ではありません。
+    </p>
+
+</section>
+
+</main>
+
+
+<footer>
+
+    <div class="footer-inner">
+
+        <strong>文化資料登録室</strong>
+
+        <p>
+            独立した文化資料登録制度
+        </p>
+
+        <p class="small">
+            © 2026 文化資料登録室
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script>
+
+function checkRegistration() {
+
+    const number =
+        document.getElementById("registration-number").value.trim();
+
+    const result =
+        document.getElementById("lookup-result");
+
+    if (!number) {
+
+        result.textContent =
+            "登録番号を入力してください。";
+
+        return;
+    }
+
+    result.textContent =
+        "現在、登録番号照会システムは準備中です。";
+
+}
+
+</script>
+
+</body>
+</html>
