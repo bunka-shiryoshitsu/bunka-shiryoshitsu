@@ -10,6 +10,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
     font-family:
@@ -17,198 +21,533 @@ body {
         BlinkMacSystemFont,
         "Noto Sans JP",
         "Yu Gothic",
+        "Hiragino Kaku Gothic ProN",
         sans-serif;
-    color: #333;
-    background: #f7f7f5;
-    line-height: 1.8;
+    color: #292929;
+    background: #f3f1ec;
+    line-height: 1.85;
 }
 
+/* =========================
+   Header
+========================= */
+
 header {
-    background: #222;
+    background: rgba(25, 25, 24, 0.97);
     color: white;
-    padding: 18px 20px;
+    padding: 16px 20px;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid #555;
+    backdrop-filter: blur(8px);
 }
 
 .header-inner {
-    max-width: 1100px;
+    max-width: 1180px;
     margin: auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    gap: 25px;
 }
 
 .logo {
-    font-size: 21px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 3px;
     white-space: nowrap;
+}
+
+.logo::before {
+    content: "◆";
+    font-size: 10px;
+    margin-right: 10px;
+    color: #c9b98b;
 }
 
 nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 18px;
     justify-content: flex-end;
 }
 
 nav a {
-    color: white;
+    color: #eee;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    transition: 0.2s;
 }
 
 nav a:hover {
-    text-decoration: underline;
+    color: #d4c28d;
 }
 
+/* =========================
+   Hero
+========================= */
+
 .hero {
-    background: white;
+    position: relative;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    color: white;
     padding: 90px 20px;
-    border-bottom: 1px solid #ddd;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            rgba(25, 25, 23, 0.82),
+            rgba(25, 25, 23, 0.88)
+        ),
+        radial-gradient(
+            circle at center,
+            #6b665b 0%,
+            #302f2b 45%,
+            #171716 100%
+        );
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    border: 1px solid rgba(205, 190, 145, 0.25);
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    width: 390px;
+    height: 390px;
+    border: 1px solid rgba(205, 190, 145, 0.18);
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 820px;
+}
+
+.hero-mark {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: #cdbd8c;
+    margin-bottom: 20px;
 }
 
 .hero h1 {
-    font-size: 38px;
-    margin: 0 0 20px;
-    letter-spacing: 2px;
+    font-size: clamp(38px, 6vw, 64px);
+    margin: 0 0 25px;
+    letter-spacing: 8px;
+    font-weight: 500;
+}
+
+.hero-line {
+    width: 70px;
+    height: 1px;
+    background: #cdbd8c;
+    margin: 0 auto 25px;
 }
 
 .hero p {
-    max-width: 760px;
+    max-width: 700px;
     margin: auto;
-    color: #666;
+    color: #ddd;
+    font-size: 15px;
+    letter-spacing: 1px;
 }
 
+/* =========================
+   Common Sections
+========================= */
+
 section {
-    max-width: 1000px;
+    max-width: 1080px;
     margin: auto;
-    padding: 70px 20px;
+    padding: 90px 25px;
+}
+
+section:nth-of-type(even) {
+    background: transparent;
+}
+
+.section-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #9a8755;
+    margin-bottom: 8px;
 }
 
 section h2 {
-    font-size: 28px;
-    margin-bottom: 30px;
-    border-left: 5px solid #333;
-    padding-left: 15px;
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0 0 38px;
+    letter-spacing: 2px;
+    color: #252525;
+    position: relative;
 }
 
-section h3 {
-    font-size: 20px;
-    margin-top: 30px;
+section h2::after {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 2px;
+    background: #a28d5c;
+    margin-top: 14px;
 }
+
+section p {
+    margin-top: 0;
+}
+
+/* =========================
+   About
+========================= */
+
+.about-box {
+    background: #fff;
+    border: 1px solid #dedbd2;
+    padding: 42px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+}
+
+.notice {
+    background: #ebe8df;
+    border-left: 4px solid #9d8a5a;
+    padding: 20px 24px;
+    margin: 28px 0;
+}
+
+/* =========================
+   Philosophy
+========================= */
+
+.philosophy {
+    background: #292824;
+    color: #eee;
+    max-width: none;
+    padding-left: calc((100% - 1030px) / 2);
+    padding-right: calc((100% - 1030px) / 2);
+}
+
+.philosophy h2 {
+    color: #fff;
+}
+
+.philosophy .section-label {
+    color: #c9b98b;
+}
+
+.philosophy h2::after {
+    background: #c9b98b;
+}
+
+.philosophy-text {
+    max-width: 850px;
+    margin: auto;
+}
+
+.philosophy-text p {
+    color: #ddd;
+}
+
+.philosophy-opening {
+    font-size: 23px;
+    line-height: 1.9;
+    color: #fff !important;
+    border-left: 2px solid #c9b98b;
+    padding-left: 25px;
+    margin-bottom: 35px;
+}
+
+/* =========================
+   Materials
+========================= */
 
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
 }
 
 .card {
-    background: white;
-    padding: 25px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    background: #fff;
+    padding: 30px 26px;
+    border: 1px solid #dedbd2;
+    min-height: 210px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+}
+
+.card::before {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 2px;
+    background: #aa965f;
+    margin-bottom: 20px;
 }
 
 .card h3 {
-    margin-top: 0;
+    margin: 0 0 13px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* =========================
+   Registration
+========================= */
+
+.registration-intro {
+    margin-bottom: 30px;
+}
+
+.registration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
 }
 
 .registration {
     background: white;
-    border: 1px solid #ddd;
-    padding: 25px;
-    margin-bottom: 20px;
-    border-radius: 6px;
+    border: 1px solid #dedbd2;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.registration-number {
+    position: absolute;
+    right: 20px;
+    top: 8px;
+    font-size: 62px;
+    font-weight: 700;
+    color: #eeeae1;
+    line-height: 1;
 }
 
 .registration h3 {
-    margin-top: 0;
+    margin: 0 0 15px;
+    position: relative;
+    z-index: 2;
+    font-size: 19px;
+}
+
+.registration p {
+    position: relative;
+    z-index: 2;
+    font-size: 14px;
+    color: #555;
+}
+
+.registration-special {
+    border-top: 3px solid #9d8751;
+}
+
+/* =========================
+   Lookup
+========================= */
+
+.lookup-section {
+    max-width: none;
+    background:
+        linear-gradient(
+            135deg,
+            #292824 0%,
+            #1e1e1c 100%
+        );
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.lookup-section h2 {
+    color: white;
+}
+
+.lookup-section .section-label {
+    color: #c9b98b;
+}
+
+.lookup-section h2::after {
+    margin-left: auto;
+    margin-right: auto;
+    background: #c9b98b;
 }
 
 .lookup {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 35px;
+    max-width: 760px;
+    margin: 40px auto 0;
+    background: #f7f6f2;
+    color: #333;
+    border: 1px solid #aaa;
+    padding: 45px;
     text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+}
+
+.lookup-title {
+    font-size: 17px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
 }
 
 .lookup input {
     width: min(500px, 100%);
-    padding: 13px;
-    border: 1px solid #bbb;
-    border-radius: 5px;
+    padding: 15px 16px;
+    border: 1px solid #aaa;
+    background: white;
     font-size: 16px;
-    margin: 15px 0;
+    margin: 18px 0;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.lookup input:focus {
+    border-color: #8e7b4d;
 }
 
 .lookup button {
-    background: #222;
+    background: #292824;
     color: white;
     border: none;
-    padding: 13px 28px;
-    border-radius: 5px;
-    font-size: 15px;
+    padding: 14px 34px;
+    font-size: 14px;
+    letter-spacing: 1px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 .lookup button:hover {
-    background: #444;
+    background: #756443;
 }
 
 #lookup-result {
-    margin-top: 25px;
-    font-size: 20px;
+    margin-top: 28px;
+    font-size: 21px;
     font-weight: bold;
-    min-height: 30px;
+    min-height: 34px;
 }
 
 .small {
-    font-size: 13px;
+    font-size: 12px;
     color: #777;
+    line-height: 1.8;
 }
 
-.notice {
-    background: #f0f0ed;
-    border-left: 4px solid #777;
-    padding: 20px;
-    margin: 20px 0;
-}
+/* =========================
+   Rules
+========================= */
 
 .rules {
     background: white;
-    border: 1px solid #ddd;
-    padding: 30px;
-    border-radius: 6px;
+    border: 1px solid #dedbd2;
+    padding: 45px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.03);
 }
 
 .rules article {
-    margin-bottom: 35px;
+    margin-bottom: 38px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e8e5dd;
 }
 
 .rules article:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .rules h3 {
     font-size: 18px;
-    margin: 0 0 10px;
+    margin: 0 0 13px;
+    color: #333;
 }
+
+.rules p,
+.rules li {
+    font-size: 14px;
+}
+
+.rules ol {
+    padding-left: 25px;
+}
+
+/* =========================
+   Application
+========================= */
+
+.application-box {
+    background: #fff;
+    border: 1px solid #dedbd2;
+    padding: 40px;
+}
+
+.application-box .notice {
+    margin-top: 0;
+}
+
+/* =========================
+   Footer
+========================= */
 
 footer {
-    background: #222;
-    color: #ddd;
+    background: #1e1e1c;
+    color: #bbb;
     text-align: center;
-    padding: 35px 20px;
-    font-size: 13px;
+    padding: 45px 20px;
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
-@media (max-width: 700px) {
+.footer-title {
+    color: #eee;
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+}
+
+.footer-mark {
+    color: #bca86e;
+    font-size: 12px;
+    margin-bottom: 18px;
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media (max-width: 800px) {
+
+    header {
+        position: relative;
+    }
+
     .header-inner {
         flex-direction: column;
         align-items: flex-start;
@@ -216,14 +555,61 @@ footer {
 
     nav {
         justify-content: flex-start;
+        gap: 10px 15px;
+    }
+
+    nav a {
+        font-size: 12px;
+    }
+
+    .hero {
+        min-height: 430px;
+        padding: 70px 20px;
     }
 
     .hero h1 {
-        font-size: 30px;
+        letter-spacing: 5px;
+    }
+
+    .hero::before {
+        width: 360px;
+        height: 360px;
+    }
+
+    .hero::after {
+        width: 270px;
+        height: 270px;
+    }
+
+    section {
+        padding: 65px 20px;
     }
 
     .card-grid {
         grid-template-columns: 1fr;
+    }
+
+    .registration-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-box,
+    .rules,
+    .application-box {
+        padding: 28px 22px;
+    }
+
+    .lookup {
+        padding: 30px 20px;
+    }
+
+    .philosophy {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .philosophy-opening {
+        font-size: 19px;
     }
 }
 </style>
@@ -233,6 +619,7 @@ footer {
 
 <header>
     <div class="header-inner">
+
         <div class="logo">文化資料登録室</div>
 
         <nav>
@@ -244,148 +631,206 @@ footer {
             <a href="#rules">規約</a>
             <a href="#application">登録申請</a>
         </nav>
+
     </div>
 </header>
 
+
+<!-- =========================
+     HERO
+========================= -->
+
 <div class="hero">
-    <h1>文化資料登録室</h1>
-    <p>
-        アニメーション、漫画、映像、出版物、美術、工芸その他の
-        文化資料を記録・整理する独立した資料登録制度です。
-    </p>
-</div>
 
-<section id="about">
-    <h2>概要</h2>
+    <div class="hero-content">
 
-    <p>
-        文化資料登録室は、さまざまな文化資料について、その資料に関する情報を
-        整理・記録し、独自の登録番号を付与することにより、資料の記録、管理及び
-        照会に資することを目的とする独立した資料登録制度です。
-    </p>
+        <div class="hero-mark">
+            CULTURAL MATERIALS ARCHIVE
+        </div>
 
-    <div class="notice">
-        当資料室は、公的機関、出版社、制作会社、メーカー、作者、著作権者
-        その他の権利者とは別個の独立した制度として運営しています。
+        <h1>文化資料登録室</h1>
+
+        <div class="hero-line"></div>
+
+        <p>
+            アニメーション、漫画、映像、出版物、美術、工芸その他の
+            文化資料を記録・整理する独立した資料登録制度です。
+        </p>
+
     </div>
 
-    <p>
-        登録は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他の
-        事項を保証、認定又は証明するものではありません。
-    </p>
+</div>
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section id="about">
+
+    <div class="section-label">01 / ABOUT</div>
+
+    <h2>概要</h2>
+
+    <div class="about-box">
+
+        <p>
+            文化資料登録室は、さまざまな文化資料について、その資料に関する情報を
+            整理・記録し、独自の登録番号を付与することにより、資料の記録、管理及び
+            照会に資することを目的とする独立した資料登録制度です。
+        </p>
+
+        <div class="notice">
+            当資料室は、公的機関、出版社、制作会社、メーカー、作者、著作権者
+            その他の権利者とは別個の独立した制度として運営しています。
+        </div>
+
+        <p>
+            登録は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他の
+            事項を保証、認定又は証明するものではありません。
+        </p>
+
+    </div>
+
 </section>
 
-<section id="philosophy">
-    <h2>はじめに</h2>
 
-    <p>
-        文化資料は、長い年月の中で、さまざまな評価を受けながら残されてきました。
-    </p>
+<!-- =========================
+     PHILOSOPHY
+========================= -->
 
-    <p>
-        その中でも、とりわけ強く語られてきたのが、
-        「真作であるか、偽物であるか」という判断です。
-    </p>
+<section id="philosophy" class="philosophy">
 
-    <p>
-        しかし、資料の価値は、本当にその二つだけで決まるものなのでしょうか。
-    </p>
+    <div class="philosophy-text">
 
-    <p>
-        真贋については、時代や資料の状態、判断する者の知識や立場などによって、
-        見解が分かれることがあります。
-    </p>
+        <div class="section-label">02 / PHILOSOPHY</div>
 
-    <p>
-        また、真贋について異なる判断が存在する場合、その判断だけによって
-        資料そのものの価値まで決めてしまうことには、慎重である必要があります。
-    </p>
+        <h2>はじめに</h2>
 
-    <p>
-        資料が持つ価値は、それだけではありません。
-    </p>
+        <p class="philosophy-opening">
+            文化資料の価値を、「真作か偽物か」という二択だけでは
+            捉えきれないものとして見つめ、未来に残すための記録をつくる。
+        </p>
 
-    <p>
-        そこに宿る美しさ、表現、技術、時代性、希少性、資料としての意味、
-        歴史的・文化的な意義などは、必ずしも作者が誰であるかだけによって
-        決まるものではありません。
-    </p>
+        <p>
+            文化資料は、長い年月の中で、さまざまな評価を受けながら残されてきました。
+        </p>
 
-    <p>
-        誰が作ったものであっても、美しいものは美しく、優れた表現は
-        優れた表現として見ることができます。
-    </p>
+        <p>
+            その中でも、とりわけ強く語られてきたのが、
+            「真作であるか、偽物であるか」という判断です。
+        </p>
 
-    <p>
-        また、作者本人による作品であっても、すべての作品が同じ評価を
-        受けるとは限りません。
-    </p>
+        <p>
+            しかし、資料の価値は、本当にその二つだけで決まるものなのでしょうか。
+        </p>
 
-    <p>
-        作者が本人であるという一点だけによって作品の価値が決まり、
-        作品そのものが持つ表現や意味が見過ごされるのであれば、
-        そこにも別の偏りが生じます。
-    </p>
+        <p>
+            真贋については、時代や資料の状態、判断する者の知識や立場などによって、
+            見解が分かれることがあります。
+        </p>
 
-    <p>
-        本来、後世に残す意味を持つ資料が、作者を確定できないという理由だけで
-        顧みられなくなる。
-    </p>
+        <p>
+            また、真贋について異なる判断が存在する場合、その判断だけによって
+            資料そのものの価値まで決めてしまうことには、慎重である必要があります。
+        </p>
 
-    <p>
-        反対に、作者が本人であるという理由だけで、作品そのものが持つ価値以上に
-        評価される。
-    </p>
+        <p>
+            資料が持つ価値は、それだけではありません。
+        </p>
 
-    <p>
-        そのような二択だけでは、文化資料が本来持っている多様な価値を
-        十分に残すことはできません。
-    </p>
+        <p>
+            そこに宿る美しさ、表現、技術、時代性、希少性、資料としての意味、
+            歴史的・文化的な意義などは、必ずしも作者が誰であるかだけによって
+            決まるものではありません。
+        </p>
 
-    <p>
-        文化資料登録室は、こうした「真作か偽物か」という二択だけでは
-        捉えきれない資料にも目を向けるために設けられました。
-    </p>
+        <p>
+            誰が作ったものであっても、美しいものは美しく、優れた表現は
+            優れた表現として見ることができます。
+        </p>
 
-    <p>
-        当資料室は、真贋を最終的に決定することを目的とするものではありません。
-    </p>
+        <p>
+            また、作者本人による作品であっても、すべての作品が同じ評価を
+            受けるとは限りません。
+        </p>
 
-    <p>
-        また、一般的な市場価値や既存の評価だけに従って資料を
-        選別するものでもありません。
-    </p>
+        <p>
+            作者が本人であるという一点だけによって作品の価値が決まり、
+            作品そのものが持つ表現や意味が見過ごされるのであれば、
+            そこにも別の偏りが生じます。
+        </p>
 
-    <p>
-        当資料室独自の視点から資料を見つめ、その資料が持つ文化的な意義、
-        表現としての価値、希少性、資料性その他、後世に記録する意味を
-        見出した資料について、その存在と関連する情報を記録していきます。
-    </p>
+        <p>
+            本来、後世に残す意味を持つ資料が、作者を確定できないという理由だけで
+            顧みられなくなる。
+        </p>
 
-    <p>
-        真作か偽物か。
-    </p>
+        <p>
+            反対に、作者が本人であるという理由だけで、作品そのものが持つ価値以上に
+            評価される。
+        </p>
 
-    <p>
-        価値があるかないか。
-    </p>
+        <p>
+            そのような二択だけでは、文化資料が本来持っている多様な価値を
+            十分に残すことはできません。
+        </p>
 
-    <p>
-        その二つだけでは捉えきれないものが、この世界には数多く存在します。
-    </p>
+        <p>
+            文化資料登録室は、こうした「真作か偽物か」という二択だけでは
+            捉えきれない資料にも目を向けるために設けられました。
+        </p>
 
-    <p>
-        文化資料登録室は、その「二択の外側」にあるものにも目を向け、
-        文化として残すべきものを記録していくことを目指します。
-    </p>
+        <p>
+            当資料室は、真贋を最終的に決定することを目的とするものではありません。
+        </p>
 
-    <p>
-        それは、現在の評価を決めるためではなく、未来の誰かがその資料と
-        向き合うための記録を残すことです。
-    </p>
+        <p>
+            また、一般的な市場価値や既存の評価だけに従って資料を
+            選別するものでもありません。
+        </p>
+
+        <p>
+            当資料室独自の視点から資料を見つめ、その資料が持つ文化的な意義、
+            表現としての価値、希少性、資料性その他、後世に記録する意味を
+            見出した資料について、その存在と関連する情報を記録していきます。
+        </p>
+
+        <p>
+            真作か偽物か。
+        </p>
+
+        <p>
+            価値があるかないか。
+        </p>
+
+        <p>
+            その二つだけでは捉えきれないものが、この世界には数多く存在します。
+        </p>
+
+        <p>
+            文化資料登録室は、その「二択の外側」にあるものにも目を向け、
+            文化として残すべきものを記録していくことを目指します。
+        </p>
+
+        <p>
+            それは、現在の評価を決めるためではなく、未来の誰かがその資料と
+            向き合うための記録を残すことです。
+        </p>
+
+    </div>
+
 </section>
+
+
+<!-- =========================
+     MATERIALS
+========================= -->
 
 <section id="materials">
+
+    <div class="section-label">03 / MATERIALS</div>
+
     <h2>対象資料</h2>
 
     <div class="card-grid">
@@ -439,74 +884,133 @@ footer {
         </div>
 
     </div>
+
 </section>
+
+
+<!-- =========================
+     REGISTRATION
+========================= -->
 
 <section id="registration">
+
+    <div class="section-label">04 / REGISTRATION</div>
+
     <h2>登録制度</h2>
 
-    <div class="registration">
-        <h3>第1種登録（基本登録）</h3>
-        <p>
-            資料を識別・管理するために必要となる基本的な情報を確認し、
-            登録します。
-        </p>
-    </div>
-
-    <div class="registration">
-        <h3>第2種登録</h3>
-        <p>
-            第1種登録の情報に加え、資料上の記載、寸法、形状、付属品、
-            入手経緯その他、資料に関連する事項について、
-            確認できる情報を整理し、登録します。
-        </p>
-    </div>
-
-    <div class="registration">
-        <h3>第3種登録</h3>
-        <p>
-            第2種登録の確認に加え、資料の特徴、記載事項、関連資料
-            その他の情報について、確認できる範囲で比較・検討を行い、
-            より詳細な資料記録を作成します。
-        </p>
-    </div>
-
-    <div class="registration">
-        <h3>特別登録</h3>
-        <p>
-            第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を
-            総合的に考慮し、文化資料として特に記録する意義があると
-            当資料室が判断した資料について行う登録です。
-        </p>
-    </div>
-
-    <p>
-        特別登録は、資料の真正性、希少性、財産的価値その他の
-        優劣を意味するものではありません。
+    <p class="registration-intro">
+        当資料室では、提出された資料及び関連情報について独自の基準により確認・整理を行い、
+        内容に応じて登録区分を決定します。
     </p>
 
-    <p>
-        なお、各登録区分において記録・確認する事項及びその範囲は、
-        資料の内容、状態、提出された情報その他の事情に応じて異なります。
-    </p>
+    <div class="registration-grid">
 
-    <p>
-        各区分に記載された事項のすべてについて、確認又は記録することを
-        保証するものではありません。
-    </p>
+        <div class="registration">
 
-    <p>
-        また、登録区分は、真贋、真正性、作者、価値その他の
-        信頼度を示すものではありません。
-    </p>
+            <div class="registration-number">01</div>
+
+            <h3>第1種登録（基本登録）</h3>
+
+            <p>
+                資料を識別・管理するために必要となる基本的な情報を確認し、
+                登録します。
+            </p>
+
+        </div>
+
+        <div class="registration">
+
+            <div class="registration-number">02</div>
+
+            <h3>第2種登録</h3>
+
+            <p>
+                第1種登録の情報に加え、資料上の記載、寸法、形状、付属品、
+                入手経緯その他、資料に関連する事項について、
+                確認できる情報を整理し、登録します。
+            </p>
+
+        </div>
+
+        <div class="registration">
+
+            <div class="registration-number">03</div>
+
+            <h3>第3種登録</h3>
+
+            <p>
+                第2種登録の確認に加え、資料の特徴、記載事項、関連資料
+                その他の情報について、確認できる範囲で比較・検討を行い、
+                より詳細な資料記録を作成します。
+            </p>
+
+        </div>
+
+        <div class="registration registration-special">
+
+            <div class="registration-number">04</div>
+
+            <h3>特別登録</h3>
+
+            <p>
+                第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を
+                総合的に考慮し、文化資料として特に記録する意義があると
+                当資料室が判断した資料について行う登録です。
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="notice">
+
+        <p>
+            特別登録は、資料の真正性、希少性、財産的価値その他の
+            優劣を意味するものではありません。
+        </p>
+
+        <p>
+            なお、各登録区分において記録・確認する事項及びその範囲は、
+            資料の内容、状態、提出された情報その他の事情に応じて異なります。
+        </p>
+
+        <p>
+            各区分に記載された事項のすべてについて、確認又は記録することを
+            保証するものではありません。
+        </p>
+
+        <p>
+            また、登録区分は、真贋、真正性、作者、価値その他の
+            信頼度を示すものではありません。
+        </p>
+
+    </div>
+
 </section>
 
-<section id="lookup">
+
+<!-- =========================
+     LOOKUP
+========================= -->
+
+<section id="lookup" class="lookup-section">
+
+    <div class="section-label">05 / REGISTRATION NUMBER</div>
+
     <h2>登録番号照会</h2>
+
+    <p>
+        登録番号を入力すると、登録の有無を照会できます。
+    </p>
 
     <div class="lookup">
 
+        <div class="lookup-title">
+            REGISTRATION NUMBER
+        </div>
+
         <p>
-            登録番号を入力すると、登録の有無を照会できます。
+            登録番号を入力してください。
         </p>
 
         <input
@@ -535,9 +1039,18 @@ footer {
         </p>
 
     </div>
+
 </section>
 
+
+<!-- =========================
+     RULES
+========================= -->
+
 <section id="rules">
+
+    <div class="section-label">06 / RULES</div>
+
     <h2>規約</h2>
 
     <div class="rules">
@@ -640,33 +1153,27 @@ footer {
             <p><strong>1．第1種登録（基本登録）</strong><br>
                 資料を識別・管理するために必要となる基本的な情報を確認し、登録する。
             </p>
-
             <p><strong>2．第2種登録</strong><br>
                 第1種登録の情報に加え、記載事項、寸法、形状、付属品、箱、
                 関連資料、入手経緯その他、資料に関連する事項について、
                 確認できる情報を整理し、登録する。
             </p>
-
             <p><strong>3．第3種登録</strong><br>
                 第2種登録の確認に加え、資料の特徴、記載事項、関連資料その他の情報について、
                 確認できる範囲で比較・検討を行い、より詳細な資料記録を作成する。
             </p>
-
             <p><strong>4．特別登録</strong><br>
                 第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を総合的に考慮し、
                 文化資料として特に記録する意義があると当資料室が判断した資料について行う登録とする。
             </p>
-
             <p>
                 特別登録は、資料の真正性、希少性、財産的価値その他の優劣を意味するものではない。
             </p>
-
             <p>
                 各登録区分において記録・確認する事項及びその範囲は、資料の内容、状態、
                 提出された情報その他の事情に応じて異なるものとし、各区分に記載された事項の
                 すべてについて確認又は記録することを保証するものではない。
             </p>
-
             <p>
                 登録区分は、申請者が自由に決定するものではなく、当資料室が提出資料及び確認結果に基づき決定する。
             </p>
@@ -880,24 +1387,58 @@ footer {
         </article>
 
     </div>
+
 </section>
 
+
+<!-- =========================
+     APPLICATION
+========================= -->
+
 <section id="application">
+
+    <div class="section-label">07 / APPLICATION</div>
+
     <h2>登録申請</h2>
 
-    <div class="notice">
-        現在、新規登録申請は休止しております。
+    <div class="application-box">
+
+        <div class="notice">
+            現在、新規登録申請は休止しております。
+        </div>
+
+        <p>
+            登録申請の受付を再開する場合は、本ページにてご案内します。
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div class="footer-mark">◆</div>
+
+    <div class="footer-title">
+        文化資料登録室
     </div>
 
     <p>
-        登録申請の受付を再開する場合は、本ページにてご案内します。
+        独立した民間資料登録・管理制度
     </p>
-</section>
 
-<footer>
-    <p>文化資料登録室</p>
-    <p>独立した民間資料登録・管理制度</p>
 </footer>
+
+
+<!-- =========================
+     REGISTRATION CHECK
+     ※照会機能は変更していません
+========================= -->
 
 <script>
 async function checkRegistration() {
