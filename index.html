@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 
 <html lang="ja">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="google-site-verification" content="05ROUvfQ15XwY7dBXa80SaXTya1teOZy4FbfEebijZs">
+
 <meta name="msvalidate.01" content="2A7C51A1A85F88E308EA07440A7A5A88">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>文化資料登録室</title>
 
+
 <style>
+
+/* =====================================================
+   基本設定
+   ===================================================== */
 
 * {
     box-sizing: border-box;
@@ -28,57 +38,83 @@ body {
         "Yu Gothic",
         "Hiragino Kaku Gothic ProN",
         sans-serif;
+
     color: #292929;
     background: #f3f1ec;
     line-height: 1.85;
 }
 
+
+/* =====================================================
+   ヘッダー
+   ===================================================== */
+
 header {
     background: rgba(25, 25, 24, 0.97);
     color: white;
+
     padding: 16px 20px;
+
     position: sticky;
     top: 0;
+
     z-index: 100;
+
     border-bottom: 1px solid #555;
+
     backdrop-filter: blur(8px);
 }
 
 .header-inner {
     max-width: 1180px;
     margin: auto;
+
     display: flex;
+
     justify-content: space-between;
     align-items: center;
+
     gap: 25px;
 }
 
 .logo {
     font-size: 20px;
     font-weight: 600;
+
     letter-spacing: 3px;
+
     white-space: nowrap;
 }
 
 .logo::before {
     content: "◆";
+
     font-size: 10px;
+
     margin-right: 10px;
+
     color: #c9b98b;
 }
 
 nav {
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 18px;
+
     justify-content: flex-end;
 }
 
 nav a {
     color: #eee;
+
     text-decoration: none;
+
     font-size: 13px;
+
     letter-spacing: 0.5px;
+
     transition: 0.2s;
 }
 
@@ -86,15 +122,27 @@ nav a:hover {
     color: #d4c28d;
 }
 
+
+/* =====================================================
+   ヒーロー
+   ===================================================== */
+
 .hero {
     position: relative;
+
     min-height: 500px;
+
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     text-align: center;
+
     color: white;
+
     padding: 90px 20px;
+
     overflow: hidden;
 
     background:
@@ -112,84 +160,126 @@ nav a:hover {
 
 .hero::before {
     content: "";
+
     position: absolute;
+
     width: 520px;
     height: 520px;
+
     border: 1px solid rgba(205, 190, 145, 0.25);
+
     border-radius: 50%;
+
     left: 50%;
     top: 50%;
+
     transform: translate(-50%, -50%);
 }
 
 .hero::after {
     content: "";
+
     position: absolute;
+
     width: 390px;
     height: 390px;
+
     border: 1px solid rgba(205, 190, 145, 0.18);
+
     border-radius: 50%;
+
     left: 50%;
     top: 50%;
+
     transform: translate(-50%, -50%);
 }
 
 .hero-content {
     position: relative;
+
     z-index: 2;
+
     max-width: 820px;
 }
 
 .hero-mark {
     font-size: 13px;
+
     letter-spacing: 6px;
+
     color: #cdbd8c;
+
     margin-bottom: 20px;
 }
 
 .hero h1 {
     font-size: clamp(38px, 6vw, 64px);
+
     margin: 0 0 25px;
+
     letter-spacing: 8px;
+
     font-weight: 500;
 }
 
 .hero-line {
     width: 70px;
     height: 1px;
+
     background: #cdbd8c;
+
     margin: 0 auto 25px;
 }
 
 .hero p {
     max-width: 700px;
+
     margin: auto;
+
     color: #ddd;
+
     font-size: 15px;
+
     letter-spacing: 1px;
 }
 
+
+/* =====================================================
+   共通セクション
+   ===================================================== */
+
 section {
     max-width: 1080px;
+
     margin: auto;
+
     padding: 90px 25px;
 }
 
 section h2 {
     font-size: 30px;
+
     font-weight: 500;
+
     margin: 0 0 38px;
+
     letter-spacing: 2px;
+
     color: #252525;
+
     position: relative;
 }
 
 section h2::after {
     content: "";
+
     display: block;
+
     width: 45px;
     height: 2px;
+
     background: #a28d5c;
+
     margin-top: 14px;
 }
 
@@ -199,122 +289,248 @@ section p {
 
 .section-label {
     font-size: 11px;
+
     letter-spacing: 4px;
+
     color: #9a8755;
+
     margin-bottom: 8px;
 }
 
+
+/* =====================================================
+   概要
+   ===================================================== */
+
 .about-box {
     background: #fff;
+
     border: 1px solid #dedbd2;
+
     padding: 42px;
+
     box-shadow: 0 8px 25px rgba(0,0,0,0.04);
 }
 
 .notice {
     background: #ebe8df;
+
     border-left: 4px solid #9d8a5a;
+
     padding: 20px 24px;
+
     margin: 28px 0;
 }
 
+
+/* =====================================================
+   基本理念
+   ===================================================== */
+
 .philosophy {
     background: #ffffff;
+
     color: #292929;
+
     max-width: none;
+
     padding-left: calc((100% - 1030px) / 2);
     padding-right: calc((100% - 1030px) / 2);
 }
 
 .philosophy-text {
     max-width: 850px;
+
     margin: auto;
 }
 
 .philosophy-opening {
     font-size: 23px;
+
     line-height: 1.9;
+
     color: #292929;
+
     border-left: 2px solid #a28d5c;
+
     padding-left: 25px;
+
     margin-bottom: 35px;
 }
 
+.philosophy h3 {
+    font-size: 22px;
+
+    font-weight: 500;
+
+    margin: 55px 0 25px;
+
+    letter-spacing: 1px;
+
+    color: #292929;
+}
+
+.philosophy-principle {
+    margin: 45px 0;
+
+    padding: 35px 30px;
+
+    background: #f6f4ef;
+
+    border-top: 1px solid #d8d2c4;
+
+    border-bottom: 1px solid #d8d2c4;
+}
+
+.philosophy-principle p:last-child {
+    margin-bottom: 0;
+}
+
+.philosophy-quote {
+    font-size: 21px;
+
+    line-height: 1.9;
+
+    text-align: center;
+
+    margin: 50px auto;
+
+    padding: 10px 20px;
+
+    color: #4b4436;
+}
+
+.philosophy-en {
+    font-size: 11px;
+
+    line-height: 1.8;
+
+    color: #999;
+
+    margin-top: 8px;
+
+    letter-spacing: 0.2px;
+}
+
+
+/* =====================================================
+   カード
+   ===================================================== */
+
 .card-grid {
     display: grid;
+
     grid-template-columns: repeat(3, 1fr);
+
     gap: 18px;
 }
 
 .card {
     background: #fff;
+
     padding: 30px 26px;
+
     border: 1px solid #dedbd2;
+
     min-height: 210px;
-    transition: transform 0.2s, box-shadow 0.2s;
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+
     position: relative;
 }
 
 .card:hover {
     transform: translateY(-4px);
+
     box-shadow: 0 10px 25px rgba(0,0,0,0.07);
 }
 
 .card::before {
     content: "";
+
     display: block;
+
     width: 28px;
     height: 2px;
+
     background: #aa965f;
+
     margin-bottom: 20px;
 }
 
 .card h3 {
     margin: 0 0 13px;
+
     font-size: 18px;
+
     font-weight: 600;
 }
 
 .card p {
     font-size: 14px;
+
     color: #666;
 }
 
+
+/* =====================================================
+   登録制度
+   ===================================================== */
+
 .registration-grid {
     display: grid;
+
     grid-template-columns: repeat(2, 1fr);
+
     gap: 18px;
 }
 
 .registration {
     background: white;
+
     border: 1px solid #dedbd2;
+
     padding: 30px;
+
     position: relative;
+
     overflow: hidden;
 }
 
 .registration-number {
     position: absolute;
+
     right: 20px;
     top: 8px;
+
     font-size: 62px;
+
     font-weight: 700;
+
     color: #eeeae1;
+
     line-height: 1;
 }
 
 .registration h3 {
     margin: 0 0 15px;
+
     position: relative;
+
     z-index: 2;
+
     font-size: 19px;
 }
 
 .registration p {
     position: relative;
+
     z-index: 2;
+
     font-size: 14px;
+
     color: #555;
 }
 
@@ -322,16 +538,25 @@ section p {
     border-top: 3px solid #9d8751;
 }
 
+
+/* =====================================================
+   登録番号照会
+   ===================================================== */
+
 .lookup-section {
     max-width: none;
+
     background:
         linear-gradient(
             135deg,
             #292824 0%,
             #1e1e1c 100%
         );
+
     color: white;
+
     text-align: center;
+
     padding: 100px 20px;
 }
 
@@ -346,34 +571,51 @@ section p {
 .lookup-section h2::after {
     margin-left: auto;
     margin-right: auto;
+
     background: #c9b98b;
 }
 
 .lookup {
     max-width: 760px;
+
     margin: 40px auto 0;
+
     background: #f7f6f2;
+
     color: #333;
+
     border: 1px solid #aaa;
+
     padding: 45px;
+
     text-align: center;
+
     box-shadow: 0 15px 40px rgba(0,0,0,0.25);
 }
 
 .lookup-title {
     font-size: 17px;
+
     letter-spacing: 2px;
+
     margin-bottom: 10px;
 }
 
 .lookup input {
     width: min(500px, 100%);
+
     padding: 15px 16px;
+
     border: 1px solid #aaa;
+
     background: white;
+
     font-size: 16px;
+
     margin: 18px 0;
+
     outline: none;
+
     transition: border 0.2s;
 }
 
@@ -383,12 +625,19 @@ section p {
 
 .lookup button {
     background: #292824;
+
     color: white;
+
     border: none;
+
     padding: 14px 34px;
+
     font-size: 14px;
+
     letter-spacing: 1px;
+
     cursor: pointer;
+
     transition: 0.2s;
 }
 
@@ -398,39 +647,58 @@ section p {
 
 #lookup-result {
     margin-top: 28px;
+
     font-size: 21px;
+
     font-weight: bold;
+
     min-height: 34px;
 }
 
 .small {
     font-size: 12px;
+
     color: #777;
+
     line-height: 1.8;
 }
 
+
+/* =====================================================
+   規約
+   ===================================================== */
+
 .rules {
     background: white;
+
     border: 1px solid #dedbd2;
+
     padding: 45px;
+
     box-shadow: 0 8px 25px rgba(0,0,0,0.03);
 }
 
 .rules article {
     margin-bottom: 38px;
+
     padding-bottom: 30px;
+
     border-bottom: 1px solid #e8e5dd;
 }
 
 .rules article:last-child {
     margin-bottom: 0;
+
     padding-bottom: 0;
+
     border-bottom: none;
 }
 
 .rules h3 {
     font-size: 18px;
+
     margin: 0 0 13px;
+
     color: #333;
 }
 
@@ -443,9 +711,16 @@ section p {
     padding-left: 25px;
 }
 
+
+/* =====================================================
+   申請
+   ===================================================== */
+
 .application-box {
     background: #fff;
+
     border: 1px solid #dedbd2;
+
     padding: 40px;
 }
 
@@ -453,27 +728,47 @@ section p {
     margin-top: 0;
 }
 
+
+/* =====================================================
+   フッター
+   ===================================================== */
+
 footer {
     background: #1e1e1c;
+
     color: #bbb;
+
     text-align: center;
+
     padding: 45px 20px;
+
     font-size: 12px;
+
     letter-spacing: 1px;
 }
 
 .footer-title {
     color: #eee;
+
     font-size: 17px;
+
     letter-spacing: 3px;
+
     margin-bottom: 8px;
 }
 
 .footer-mark {
     color: #bca86e;
+
     font-size: 12px;
+
     margin-bottom: 18px;
 }
+
+
+/* =====================================================
+   スマートフォン
+   ===================================================== */
 
 @media (max-width: 800px) {
 
@@ -483,11 +778,13 @@ footer {
 
     .header-inner {
         flex-direction: column;
+
         align-items: flex-start;
     }
 
     nav {
         justify-content: flex-start;
+
         gap: 10px 15px;
     }
 
@@ -497,6 +794,7 @@ footer {
 
     .hero {
         min-height: 430px;
+
         padding: 70px 20px;
     }
 
@@ -544,13 +842,24 @@ footer {
     .philosophy-opening {
         font-size: 19px;
     }
+
+    .philosophy-quote {
+        font-size: 18px;
+    }
+
 }
 
 </style>
 
 </head>
 
+
 <body>
+
+
+<!-- =====================================================
+     ヘッダー
+     ===================================================== -->
 
 <header>
 
@@ -561,19 +870,32 @@ footer {
 </div>
 
 <nav>
-    <a href="#about">概要</a>
-    <a href="#philosophy">はじめに</a>
-    <a href="#materials">対象資料</a>
-    <a href="#registration">登録制度</a>
-    <a href="#lookup">登録番号照会</a>
-    <a href="#rules">規約</a>
-    <a href="#application">登録申請</a>
+
+<a href="#about">概要</a>
+
+<a href="#philosophy">理念</a>
+
+<a href="#materials">対象資料</a>
+
+<a href="#registration">登録制度</a>
+
+<a href="#lookup">登録番号照会</a>
+
+<a href="#rules">規約</a>
+
+<a href="#application">登録申請</a>
+
 </nav>
 
 </div>
 
 </header>
 
+
+
+<!-- =====================================================
+     ヒーロー
+     ===================================================== -->
 
 <div class="hero">
 
@@ -583,7 +905,9 @@ footer {
     CULTURAL MATERIALS ARCHIVE
 </div>
 
-<h1>文化資料登録室</h1>
+<h1>
+    文化資料登録室
+</h1>
 
 <div class="hero-line"></div>
 
@@ -596,6 +920,11 @@ footer {
 
 </div>
 
+
+
+<!-- =====================================================
+     01 概要
+     ===================================================== -->
 
 <section id="about">
 
@@ -615,9 +944,17 @@ footer {
     照会に資することを目的とする独立した資料登録制度です。
 </p>
 
+<p class="philosophy-en">
+    The Cultural Materials Archive is an independent registration system
+    established to organize and preserve information about cultural materials,
+    assigning unique registration numbers for record-keeping, management and reference.
+</p>
+
 <div class="notice">
-    当資料室は、公的機関、出版社、制作会社、メーカー、作者、著作権者
-    その他の権利者とは別個の独立した制度として運営しています。
+
+当資料室は、公的機関、出版社、制作会社、メーカー、作者、著作権者
+その他の権利者とは別個の独立した制度として運営しています。
+
 </div>
 
 <p>
@@ -630,6 +967,11 @@ footer {
 </section>
 
 
+
+<!-- =====================================================
+     02 基本理念
+     ===================================================== -->
+
 <section id="philosophy" class="philosophy">
 
 <div class="philosophy-text">
@@ -639,128 +981,348 @@ footer {
 </div>
 
 <h2>
-    はじめに
+    文化資料登録室の基本理念
 </h2>
 
+
 <p class="philosophy-opening">
-    文化資料の価値を、「真作か偽物か」という二択だけでは
-    捉えきれないものとして見つめ、未来に残すための記録をつくる。
+
+文化資料を、「真作か偽物か」という二択だけで終わらせない。
+<br>
+権威によって価値を決めるのではなく、
+<br>
+未来に残すための記録をつくる。
+
+</p>
+
+<p class="philosophy-en">
+
+Cultural materials should not be reduced to a simple choice between
+“authentic” and “fake.”
+We seek to preserve records for the future, rather than allowing authority alone
+to determine their value.
+
+</p>
+
+
+<p>
+    文化資料には、長い年月の中で、さまざまな評価が与えられてきました。
 </p>
 
 <p>
-    文化資料は、長い年月の中で、さまざまな評価を受けながら残されてきました。
-</p>
-
-<p>
-    その中でも、とりわけ強く語られてきたのが、
+    その中でも、とりわけ強い力を持っているのが、
     「真作であるか、偽物であるか」という判断です。
 </p>
 
 <p>
-    しかし、資料の価値は、本当にその二つだけで決まるものなのでしょうか。
+    もちろん、真贋を確認することには意味があります。
 </p>
 
 <p>
-    真贋については、時代や資料の状態、判断する者の知識や立場などによって、
-    見解が分かれることがあります。
+    しかし私たちは、そこで一度立ち止まって考えます。
 </p>
 
 <p>
-    また、真贋について異なる判断が存在する場合、その判断だけによって
-    資料そのものの価値まで決めてしまうことには、慎重である必要があります。
+    人間が、何十年、何百年も前の出来事について、
+    「これは絶対にこうだった」と完全に証明することは、
+    本当に可能なのでしょうか。
+</p>
+
+
+<div class="philosophy-principle">
+
+<p>
+    一年前に、自分が何を食べたのか。
 </p>
 
 <p>
-    資料が持つ価値は、それだけではありません。
+    誰もが、それを正確に覚えているわけではありません。
 </p>
 
 <p>
-    そこに宿る美しさ、表現、技術、時代性、希少性、資料としての意味、
-    歴史的・文化的な意義などは、必ずしも作者が誰であるかだけによって
-    決まるものではありません。
+    仮に覚えていたとしても、
+    何の食材を使い、どの調味料をどれだけ入れ、
+    何分間調理し、どのような火加減で料理したのかまで、
+    完全に再現して説明できる人は、どれほどいるでしょうか。
 </p>
 
 <p>
-    誰が作ったものであっても、美しいものは美しく、優れた表現は
-    優れた表現として見ることができます。
+    さらに、その食事を口に入れた瞬間の温度や、
+    そのときの味、匂い、食感まで、
+    一年後に完全に証明することができるでしょうか。
 </p>
 
 <p>
-    また、作者本人による作品であっても、すべての作品が同じ評価を
-    受けるとは限りません。
+    人間の記憶とは、それほど完全なものではありません。
 </p>
 
 <p>
-    作者が本人であるという一点だけによって作品の価値が決まり、
-    作品そのものが持つ表現や意味が見過ごされるのであれば、
-    そこにも別の偏りが生じます。
+    それは作品についても同じです。
 </p>
 
 <p>
-    本来、後世に残す意味を持つ資料が、作者を確定できないという理由だけで
-    顧みられなくなる。
+    作者本人でさえ、何十年も前に制作した作品について、
+    どの材料を使い、どの道具を使い、どのような手順で制作し、
+    何時に制作を始め、どの部分を何日かけて仕上げたのかまで、
+    すべてを完全に記憶しているとは限りません。
 </p>
 
 <p>
-    反対に、作者が本人であるという理由だけで、作品そのものが持つ価値以上に
-    評価される。
+    人間が作り、人間が記憶し、人間が判断する以上、
+    そこには必ず限界があります。
+</p>
+
+</div>
+
+
+<p>
+    だからといって、何も分からないということではありません。
 </p>
 
 <p>
-    そのような二択だけでは、文化資料が本来持っている多様な価値を
-    十分に残すことはできません。
+    資料を見て、比較し、調べ、記録し、考えることには大きな意味があります。
 </p>
 
 <p>
-    文化資料登録室は、こうした「真作か偽物か」という二択だけでは
-    捉えきれない資料にも目を向けるために設けられました。
+    しかし、「人間が判断した」という事実と、
+    「絶対的な真実が証明された」ということは、同じではありません。
 </p>
 
 <p>
-    当資料室は、真贋を最終的に決定することを目的とするものではありません。
+    鑑定人も人間です。
+    研究者も人間です。
+    団体も、人間によって構成されています。
 </p>
 
 <p>
-    また、一般的な市場価値や既存の評価だけに従って資料を
-    選別するものでもありません。
+    どれほど著名な人物であっても、どれほど歴史のある団体であっても、
+    その判断が人間による判断であるという事実から逃れることはできません。
 </p>
 
 <p>
-    当資料室独自の視点から資料を見つめ、その資料が持つ文化的な意義、
-    表現としての価値、希少性、資料性その他、後世に記録する意味を
-    見出した資料について、その存在と関連する情報を記録していきます。
+    そして、第三者が「この人の判断は絶対に正しい」と
+    永遠に証明することもまた、人間の世界では簡単なことではありません。
+</p>
+
+
+<h3>
+    鑑定という「権威」について
+</h3>
+
+<p>
+    世の中には、鑑定や認定、登録という言葉があります。
 </p>
 
 <p>
-    真作か偽物か。
+    そして、その言葉にはしばしば「権威」が伴います。
 </p>
 
 <p>
-    価値があるかないか。
+    その権威によって安心する人もいます。
 </p>
 
 <p>
-    その二つだけでは捉えきれないものが、この世界には数多く存在します。
+    しかし私たちは、権威そのものを絶対視することには慎重でありたいと考えています。
 </p>
 
 <p>
-    文化資料登録室は、その「二択の外側」にあるものにも目を向け、
-    文化として残すべきものを記録していくことを目指します。
+    なぜなら、どれほど立派な肩書きや歴史を持っていても、
+    最終的に判断しているのは人間だからです。
 </p>
 
 <p>
-    それは、現在の評価を決めるためではなく、未来の誰かがその資料と
-    向き合うための記録を残すことです。
+    ましてや、その判断を受けるためだけに、
+    一般の人には大きな負担となるような費用を支払わなければならないのであれば、
+    私たちは「それは本当に文化を残すために必要なことなのだろうか」と考えます。
 </p>
 
-<h3 style="
-    font-size:22px;
-    font-weight:500;
-    margin:55px 0 25px;
-    letter-spacing:1px;
-    color:#292929;
-">
-    100年、1000年先へ残す記録
+<p>
+    文化を残したいと思う人がいて、
+    その人が大切にしている資料がある。
+</p>
+
+<p>
+    その資料について記録を残すだけのために、
+    高額な費用を払わなければならない。
+</p>
+
+<p>
+    私たちは、その構造そのものに疑問を持っています。
+</p>
+
+
+<div class="philosophy-quote">
+
+「何様なのか」という問いを、
+<br>
+一度くらい持ってもいい。
+
+<p class="philosophy-en">
+It is worth asking, at least once:
+“Who gave anyone the right to stand above the record itself?”
+</p>
+
+</div>
+
+
+<p>
+    鑑定する人が偉いのではありません。
+</p>
+
+<p>
+    登録する団体が偉いのでもありません。
+</p>
+
+<p>
+    資料を所有する人が偉いのでもありません。
+</p>
+
+<p>
+    そして、その誰かの判断に従って安心することだけが、
+    文化を守る方法でもありません。
+</p>
+
+
+<h3>
+    権威に群がる世界から、記録を残す世界へ
+</h3>
+
+<p>
+    たとえば、宗教において絶対的な存在が語られるとき、
+    本当に重要なのは、その存在そのものなのか、
+    それとも、その存在を語ることで権威を得ようとする人々なのか。
+</p>
+
+<p>
+    これは、文化資料の世界にも通じるところがあると私たちは考えます。
+</p>
+
+<p>
+    何か絶対的なものがあると、
+    そこに人が集まり、権威が生まれ、
+    その権威を信じることで安心する人も現れます。
+</p>
+
+<p>
+    しかし、私たちは「権威があるから正しい」のではなく、
+    「何が確認され、何が確認できなかったのか」を
+    記録することのほうが大切なのではないかと考えます。
+</p>
+
+<p>
+    誰かを神格化する必要はありません。
+</p>
+
+<p>
+    誰かの判断を絶対的なものとして崇める必要もありません。
+</p>
+
+<p>
+    人間は間違える。
+    記憶も失われる。
+    時代も変わる。
+    判断も変わる。
+</p>
+
+<p>
+    だからこそ、今この時点で確認できたことを、
+    できる限り誠実に記録しておく。
+</p>
+
+
+<h3>
+    だから、登録を無料にする
+</h3>
+
+<p>
+    文化資料登録室が登録に関する費用を徴収しないのは、
+    単なるサービスとして無料にしているからではありません。
+</p>
+
+<p>
+    「文化を記録することは、特別な人だけに許された行為ではない」
+    という考え方が、その根底にあります。
+</p>
+
+<p>
+    お金を払える人だけが記録を残せる。
+</p>
+
+<p>
+    権威のある人に認められた人だけが記録される。
+</p>
+
+<p>
+    そのような世界だけが文化資料の未来であってよいとは、
+    私たちは考えていません。
+</p>
+
+<p>
+    記録したいと思う人がいる。
+</p>
+
+<p>
+    残したいと思う資料がある。
+</p>
+
+<p>
+    ならば、その記録を残す機会は、
+    できるだけ広く開かれていてよい。
+</p>
+
+
+<div class="philosophy-quote">
+
+記録は、権威を買うためのものではない。
+<br>
+未来へ渡すためのものです。
+
+<p class="philosophy-en">
+A record is not something to purchase in order to obtain authority.
+It is something preserved for the future.
+</p>
+
+</div>
+
+
+<h3>
+    無料だから、何でも登録するわけではない
+</h3>
+
+<p>
+    ただし、無料であることと、無条件に登録することは同じではありません。
+</p>
+
+<p>
+    文化資料登録室は、提出された資料や関連情報を確認し、
+    当資料室独自の基準と視点によって登録の可否及び登録区分を判断します。
+</p>
+
+<p>
+    確認できないことを、確認できたことにはしません。
+</p>
+
+<p>
+    分からないことを、分かったことにはしません。
+</p>
+
+<p>
+    そして、登録されたからといって、
+    真贋や作者、価値が保証されたことにもなりません。
+</p>
+
+<p>
+    私たちが残すのは、「絶対的な真実」ではありません。
+</p>
+
+<p>
+    その時点で確認することができた資料と情報について、
+    文化資料として記録を残したという事実です。
+</p>
+
+
+<h3>
+    100年、1000年先へ
 </h3>
 
 <p>
@@ -770,26 +1332,17 @@ footer {
 
 <p>
     登録された時点の資料の状態は、年月とともに変化していきます。
-    色、質感、傷み、汚れ、欠損など、その姿は長い時間の中で
-    少しずつ変わっていくものです。
 </p>
 
 <p>
-    そのため、登録書に資料の画像を固定して残すのではなく、
-    登録書そのものを資料とともに残すという方法を選びました。
+    色、質感、傷み、汚れ、欠損など、
+    その姿は長い時間の中で少しずつ変わっていきます。
 </p>
 
 <p>
-    画像は、その時点の姿を示すことはできます。
-    しかし、100年、1000年という長い時間を考えたとき、
-    その画像がいつ撮影されたものなのか、どのような状態を
-    写していたものなのかという問題も生じます。
-</p>
-
-<p>
-    資料そのものは年月とともに変化します。
-    だからこそ、特定の時点の姿を絶対的なものとして固定するのではなく、
-    「その資料が登録された」という事実を記録として残すことに意味があると考えています。
+    だからこそ、特定の時点の姿だけを絶対的なものとして固定するのではなく、
+    「その資料が、その時点で登録された」という事実を記録として残すことに
+    意味があると考えています。
 </p>
 
 <p>
@@ -797,9 +1350,10 @@ footer {
 </p>
 
 <p>
-    登録書が資料とともに残っていれば、遠い未来の誰かがその記録を見たとき、
-    その資料が少なくともその時点で存在し、文化資料として登録されていたことを
-    知るための手掛かりになります。
+    遠い未来の誰かがその登録書を見たとき、
+    その資料が少なくともその時点で存在し、
+    文化資料として登録されていたことを知るための
+    手掛かりになるかもしれません。
 </p>
 
 <p>
@@ -807,35 +1361,93 @@ footer {
 </p>
 
 <p>
-    真贋、改変、偽装、価値など、世の中には疑おうと思えば
-    いくらでも疑うことのできるものがあります。
+    真贋、改変、偽装、価値。
+    世の中には、疑おうと思えばいくらでも疑うことのできるものがあります。
 </p>
 
 <p>
     もちろん、確認することは大切です。
+</p>
+
+<p>
     しかし、すべてを疑うことだけで一生を終えるのではなく、
-    せめて自分たちが大切にしている趣味や文化の世界くらいは、
+    せめて自分たちが大切にしている文化の世界くらいは、
     互いの信頼によって成り立つものであってほしい。
 </p>
 
 <p>
     文化資料登録室は、すべてを証明するための制度ではありません。
-    人と人との間に残された資料と、その資料に添えられた記録を、
+</p>
+
+<p>
+    人と人との間に残された資料と、
+    その資料に添えられた記録を、
     次の世代へ渡していくための制度です。
 </p>
 
+
+<div class="philosophy-quote">
+
+一枚の登録書が、
+<br>
+資料の過去と未来をつなぐ。
+
+<p class="philosophy-en">
+A single registration document can connect
+the past of a cultural material with its future.
+</p>
+
+</div>
+
+
 <p>
-    一枚の登録書が、資料の過去と未来をつなぐ。
+    文化資料登録室は、
+    「誰が正しいのか」を競うためではなく、
+    「何を残すのか」を考えるために存在します。
 </p>
 
 <p>
-    文化資料登録室は、そんな記録を100年先、1000年先へ残していきたいと考えています。
+    真作か偽物か。
+    価値があるかないか。
+    有名か無名か。
+    権威が認めたか、認めていないか。
 </p>
+
+<p>
+    その二択だけでは捉えきれないものが、
+    この世界には数多く存在します。
+</p>
+
+<p>
+    私たちは、その「二択の外側」にあるものにも目を向け、
+    今ある文化資料を、未来へ残していきたいと考えています。
+</p>
+
+
+<div class="philosophy-quote">
+
+<strong>
+登録とは、真実を所有することではありません。
+<br>
+その時点における記録を残すことです。
+</strong>
+
+<p class="philosophy-en">
+Registration does not mean owning the truth.
+It means preserving a record of what was determined at that point in time.
+</p>
+
+</div>
 
 </div>
 
 </section>
 
+
+
+<!-- =====================================================
+     03 対象資料
+     ===================================================== -->
 
 <section id="materials">
 
@@ -848,6 +1460,7 @@ footer {
 </h2>
 
 <div class="card-grid">
+
 
 <div class="card">
 
@@ -932,10 +1545,16 @@ footer {
 
 </div>
 
+
 </div>
 
 </section>
 
+
+
+<!-- =====================================================
+     04 登録制度
+     ===================================================== -->
 
 <section id="registration">
 
@@ -951,6 +1570,7 @@ footer {
     当資料室では、提出された資料及び関連情報について独自の基準により確認・整理を行い、
     内容に応じて登録区分を決定します。
 </p>
+
 
 <div class="registration-grid">
 
@@ -1029,6 +1649,7 @@ footer {
 
 </div>
 
+
 </div>
 
 
@@ -1058,6 +1679,11 @@ footer {
 
 </section>
 
+
+
+<!-- =====================================================
+     05 登録番号照会
+     ===================================================== -->
 
 <section id="lookup" class="lookup-section">
 
@@ -1113,6 +1739,11 @@ footer {
 </section>
 
 
+
+<!-- =====================================================
+     06 規約
+     ===================================================== -->
+
 <section id="rules">
 
 <div class="section-label">
@@ -1125,345 +1756,507 @@ footer {
 
 <div class="rules">
 
+
 <article>
+
 <h3>第1条（名称）</h3>
+
 <p>
     本制度は、「文化資料登録室」（以下「当資料室」という。）と称する。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第2条（目的）</h3>
+
 <p>
     当資料室は、アニメーション、映像、映画、漫画、文学、出版、音楽、
     舞台、美術、工芸その他の文化に関連する資料について、
     その資料に関する情報を整理・記録し、後世に残すことを目的とする。
 </p>
+
 <p>
     当資料室は、一般的な商品・役務の販売又は提供を目的とするものではなく、
     文化資料に関する記録及び整理を目的とする独立した資料登録制度として運営する。
 </p>
+
 <p>
     当資料室は、資料の真贋、真正性、作者、制作年代、来歴、所有権又は
     財産的価値を公的に認定する制度ではなく、一般的な評価や既存の基準のみに
     とらわれず、当資料室独自の視点から文化的な意義や記録する価値を見出した
     資料について、その資料に関する情報を登録・管理するものである。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第3条（対象資料）</h3>
+
 <p>
     当資料室が対象とする資料は、文化、芸術、文学、出版、映像、漫画、
     アニメーション、映画、音楽、舞台、工芸その他これらに関連する資料とする。
 </p>
+
 <p>
     具体的には、次のような資料を対象とする。
 </p>
+
 <ol>
+
 <li>文学作品、作家に関する資料</li>
+
 <li>肉筆原稿、草稿、創作ノート等</li>
+
 <li>書籍、初版本、限定本、サイン本、献呈本等</li>
+
 <li>雑誌、新聞、掲載資料等</li>
+
 <li>映画、映像作品、アニメーション作品に関する資料</li>
+
 <li>台本、脚本、絵コンテ、設定資料等</li>
+
 <li>漫画、漫画原稿、関連資料等</li>
+
 <li>音楽、レコード、CD、楽譜その他の関連資料</li>
+
 <li>舞台、演劇その他の公演関連資料</li>
+
 <li>ポスター、チラシ、パンフレット、広告資料等</li>
+
 <li>写真、印刷物、広報資料等</li>
+
 <li>美術作品及びその関連資料</li>
+
 <li>陶磁器、工芸品その他の文化資料</li>
+
 <li>作家、作者、作品又は文化活動に関連する手紙、記録、資料等</li>
+
 <li>その他、当資料室が文化資料として登録することが適当と認めた資料</li>
+
 </ol>
+
 </article>
 
+
 <article>
+
 <h3>第4条（独自の登録基準）</h3>
+
 <p>
     当資料室は、提出された資料及び資料関連情報について、
     当資料室独自の基準及び視点により、登録の可否及び登録区分を判断する。
 </p>
+
 <p>
     当資料室の登録は、公的な鑑定、認定、証明その他の公的判断を
     代替するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第5条（登録申請）</h3>
+
 <p>
     資料の登録を希望する者は、当資料室所定の方法により登録申請を行うものとする。
 </p>
+
 <p>
     当資料室は、申請内容を確認した上で、必要に応じて追加資料の提出を求めることができる。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第6条（資料関連情報）</h3>
+
 <p>
     登録に際しては、作品名、資料区分、寸法、形状、付属品、入手経緯、
     記載事項その他、当該資料に関連する情報について、
     当資料室が必要と判断する事項を記録することができる。
 </p>
+
 <p>
     記録する事項及びその範囲は、資料の内容、提出された情報その他の事情に応じて、
     当資料室が個別に判断するものとする。
 </p>
+
 <p>
     これらの情報は、当資料室が確認できた範囲で記録するものであり、
     その内容について真実性、真正性、作者、所有者その他の権利関係を保証するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第7条（登録区分）</h3>
+
 <p>
 <strong>1．第1種登録（基本登録）</strong><br>
     資料を識別・管理するために必要となる基本的な情報を確認し、登録する。
 </p>
+
 <p>
 <strong>2．第2種登録</strong><br>
     第1種登録の情報に加え、記載事項、寸法、形状、付属品、箱、
     関連資料、入手経緯その他、資料に関連する事項について、
     確認できる情報を整理し、登録する。
 </p>
+
 <p>
 <strong>3．第3種登録</strong><br>
     第2種登録の確認に加え、資料の特徴、記載事項、関連資料その他の情報について、
     確認できる範囲で比較・検討を行い、より詳細な資料記録を作成する。
 </p>
+
 <p>
 <strong>4．特別登録</strong><br>
     第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を総合的に考慮し、
     文化資料として特に記録する意義があると当資料室が判断した資料について行う登録とする。
 </p>
+
 <p>
     特別登録は、資料の真正性、希少性、財産的価値その他の優劣を意味するものではない。
 </p>
+
 <p>
     各登録区分において記録・確認する事項及びその範囲は、資料の内容、状態、
     提出された情報その他の事情に応じて異なるものとし、各区分に記載された事項の
     すべてについて確認又は記録することを保証するものではない。
 </p>
+
 <p>
     登録区分は、申請者が自由に決定するものではなく、当資料室が提出資料及び確認結果に基づき決定する。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第8条（真贋等の非保証）</h3>
+
 <p>
     当資料室による登録は、資料の真贋、真正性、作者、制作年代、来歴、
     所有権、権利関係、財産的価値その他の事項を保証又は認定するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第9条（確認できない事項）</h3>
+
 <p>
     当資料室は、資料について確認できない事項について、
     確認済みであるかのような表示を行わない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第10条（登録番号）</h3>
+
 <p>
     登録が決定した資料には、当資料室が独自に発行する登録番号を付与する。
 </p>
+
 <p>
     登録番号は、連番その他の単純な方式ではなく、当資料室所定の方法により発行することができる。
 </p>
+
 <p>
     登録番号そのものは、資料の真贋、価値その他を示すものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第11条（登録書）</h3>
+
 <p>
     登録された資料について、登録書を作成することができる。
 </p>
+
 <p>
     登録書には、登録番号、作品・資料名、資料区分、資料関連情報、
     登録区分、登録年月日等、必要な事項を記載する。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第12条（登録書の性質）</h3>
+
 <p>
     登録書は、当資料室による資料登録を示す管理上の記録であり、
     鑑定書、保証書、所有権証明書、真正証明書その他これらに類するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第13条（登録情報の照会）</h3>
+
 <p>
     当資料室は、登録番号による登録の有無を自動的に照会できる仕組みを設けることができる。
 </p>
+
 <p>
     登録番号を入力した場合の照会結果は、原則として「登録あり」又は「登録なし」のいずれかとする。
 </p>
+
 <p>
     当資料室は、登録番号による照会において、登録対象資料の品名、作品名、作者名、
     所有者、登録区分、登録年月日、画像その他の登録情報について、
     原則として回答又は表示を行わない。
 </p>
+
 <p>
     また、登録番号の照会をもって、個別の現物・画像との同一性、真贋、真正性、
     作者、制作年代、来歴、所有権その他の事項を判定又は回答するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第14条（登録情報の変更・訂正）</h3>
+
 <p>
     登録情報について誤りその他の訂正すべき事情が判明した場合、
     当資料室は必要に応じて登録情報を変更又は訂正することができる。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第15条（登録の取消し）</h3>
+
 <p>
     虚偽の情報による申請、登録制度の目的に反する利用その他の事情がある場合、
     当資料室は登録を取り消すことができる。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第16条（所有権）</h3>
+
 <p>
     資料の登録によって、資料の所有権その他の権利が当資料室に移転することはない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第17条（著作権・商標権等）</h3>
+
 <p>
     登録対象資料に関する著作権、著作者人格権、商標権その他の権利は、
     それぞれの権利者に帰属する。
 </p>
+
 <p>
     当資料室への登録によって、これらの権利が当資料室に移転又は許諾されたものとはならない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第18条（権利者等との関係）</h3>
+
 <p>
     当資料室は、資料に関する権利者、作者、著作者、出版社、制作会社、
     放送事業者その他の関係者とは、別個の独立した資料登録制度として運営する。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第19条（公的登録制度との区別）</h3>
+
 <p>
     当資料室は、国、地方公共団体、出版社、制作会社、権利者団体その他の
     公的機関又は公式機関が運営する登録・認定制度ではない。
 </p>
+
 <p>
     当資料室の登録番号は、公的な登録番号、公式認定番号又は権利者による保証番号ではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第20条（提出画像の取扱い）</h3>
+
 <p>
     登録申請に際して提出された画像は、登録可否の確認、登録情報の整理その他、
     登録に必要な範囲で使用する。
 </p>
+
 <p>
     提出画像は、原則として継続的に保存しない。
 </p>
+
 <p>
     確認終了後、当資料室が保有する提出画像は、原則として速やかに削除する。
 </p>
+
 <p>
     当資料室が保有していない画像については、後日、第三者から提出、開示その他の
     提供を求められた場合であっても、当資料室から提供することはできない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第21条（画像の公開）</h3>
+
 <p>
     当資料室は、提出された画像を原則としてWebサイトその他の方法により公開しない。
 </p>
+
 <p>
     また、登録番号による照会において、登録対象資料の画像を表示しない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第22条（登録情報の公開）</h3>
+
 <p>
     当資料室は、登録された資料について、そのすべての情報を一般公開するものではない。
 </p>
+
 <p>
     公開する情報は、登録制度の目的及び運営上必要な範囲に限定する。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第23条（誤認を招く利用の禁止）</h3>
+
 <p>
     登録番号、登録書、当資料室の名称その他の登録情報を、
     当資料室が資料の真正性、作者、所有権、価値その他を保証又は認定したかのように
     表示又は利用してはならない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第24条（個人情報）</h3>
+
 <p>
     当資料室は、登録申請に伴って取得した個人情報について、
     資料の登録及び確認その他、当資料室の運営に必要な範囲において適切に取り扱う。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第25条（情報の正確性）</h3>
+
 <p>
     申請者は、登録申請に際して、知り得る範囲で正確な情報を提供するものとする。
 </p>
+
 <p>
     当資料室は、提供された情報について、確認できない事項を独自に事実として確定するものではない。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第26条（公開停止等）</h3>
+
 <p>
     当資料室は、システム上の障害、運営上の都合その他必要な事情により、
     登録情報の照会その他の機能を一時的に停止することができる。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第27条（規約の変更）</h3>
+
 <p>
     当資料室は、必要に応じて本規約を変更することができる。
 </p>
+
 </article>
 
+
 <article>
+
 <h3>第28条（準拠法）</h3>
+
 <p>
     本規約は、日本法を準拠法とする。
 </p>
+
 </article>
+
 
 </div>
 
 </section>
 
+
+
+<!-- =====================================================
+     07 登録申請
+     ===================================================== -->
 
 <section id="application">
 
@@ -1492,6 +2285,11 @@ footer {
 </section>
 
 
+
+<!-- =====================================================
+     フッター
+     ===================================================== -->
+
 <footer>
 
 <div class="footer-mark">
@@ -1509,6 +2307,7 @@ footer {
 </footer>
 
 
+
 <script>
 
 /* =====================================================
@@ -1516,9 +2315,11 @@ footer {
    429ホラー演出 共通システム
    ===================================================== */
 
+
 /*
  * Worker
  */
+
 const WORKER_URL =
     "https://bunka-shiryoshitsu-checksoft-mountain-b5a9.08084947685jddhdj.workers.dev";
 
@@ -1527,7 +2328,9 @@ const WORKER_URL =
  * ホラー演出が一度始まったら
  * 二重実行しない
  */
+
 let horrorRunning = false;
+
 
 
 /* =====================================================
@@ -1562,6 +2365,7 @@ async function checkRegistration() {
     /*
      * 照会中
      */
+
     result.textContent =
         "照会中…";
 
@@ -1591,6 +2395,7 @@ async function checkRegistration() {
          * 429なら即ホラー
          * ============================================
          */
+
         if (response.status === 429) {
 
             await startHorror();
@@ -1602,6 +2407,7 @@ async function checkRegistration() {
         /*
          * 通常の照会結果
          */
+
         const text =
             await response.text();
 
@@ -1616,12 +2422,14 @@ async function checkRegistration() {
          * 通信そのものの失敗は
          * ホラーにしない
          */
+
         result.textContent =
             "照会できませんでした。";
 
     }
 
 }
+
 
 
 /* =====================================================
@@ -1644,6 +2452,7 @@ async function checkRegistration() {
         /*
          * 429だけがホラー条件
          */
+
         if (response.status === 429) {
 
             await startHorror();
@@ -1662,6 +2471,7 @@ async function checkRegistration() {
 })();
 
 
+
 /* =====================================================
    429ホラー演出
    ===================================================== */
@@ -1671,6 +2481,7 @@ async function startHorror() {
     /*
      * 二重実行防止
      */
+
     if (horrorRunning) {
         return;
     }
@@ -1681,6 +2492,7 @@ async function startHorror() {
     /*
      * ページを黒画面へ
      */
+
     document.body.innerHTML = "";
 
     document.body.style.margin =
@@ -1777,6 +2589,7 @@ async function startHorror() {
 
 
     overlay.appendChild(image);
+
     overlay.appendChild(flash);
 
     document.body.appendChild(
@@ -1829,7 +2642,6 @@ async function startHorror() {
     /*
      * ================================================
      * 0秒
-     * 静かな音
      * ================================================
      */
 
@@ -1839,17 +2651,12 @@ async function startHorror() {
 
     } catch (error) {
 
-        /*
-         * ブラウザの自動再生制限
-         */
-
     }
 
 
     /*
      * ================================================
      * 2秒
-     * 怖い音
      * ================================================
      */
 
@@ -1865,10 +2672,6 @@ async function startHorror() {
     }
 
 
-    /*
-     * 徐々に音量アップ
-     */
-
     fadeVolume(
         scary,
         0.12,
@@ -1880,7 +2683,6 @@ async function startHorror() {
     /*
      * ================================================
      * 4.5秒
-     * 幽霊画像出現
      * ================================================
      */
 
@@ -1894,7 +2696,6 @@ async function startHorror() {
     /*
      * ================================================
      * 5.5秒
-     * 骨の音
      * ================================================
      */
 
@@ -1919,7 +2720,6 @@ async function startHorror() {
     /*
      * ================================================
      * 6.5秒
-     * 画像をさらに表示
      * ================================================
      */
 
@@ -1948,7 +2748,6 @@ async function startHorror() {
     /*
      * ================================================
      * 7秒
-     * 完全表示＋フラッシュ1回
      * ================================================
      */
 
@@ -1984,7 +2783,6 @@ async function startHorror() {
     /*
      * ================================================
      * 8.5秒
-     * 音を消す
      * ================================================
      */
 
@@ -2010,7 +2808,6 @@ async function startHorror() {
     /*
      * ================================================
      * 9秒
-     * 画像を消す
      * ================================================
      */
 
@@ -2024,7 +2821,6 @@ async function startHorror() {
     /*
      * ================================================
      * 10秒
-     * 最終画面
      * ================================================
      */
 
@@ -2032,7 +2828,9 @@ async function startHorror() {
 
 
     ghost.pause();
+
     scary.pause();
+
     crack.pause();
 
 
@@ -2108,6 +2906,7 @@ async function startHorror() {
 }
 
 
+
 /* =====================================================
    待機
    ===================================================== */
@@ -2126,6 +2925,7 @@ function wait(ms) {
     );
 
 }
+
 
 
 /* =====================================================
