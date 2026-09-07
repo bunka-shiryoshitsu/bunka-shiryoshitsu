@@ -1415,6 +1415,56 @@ async function checkRegistration() {
     }
 }
 </script>
+<script>
+/* HPアクセス監視 */
+(async function monitorSiteAccess() {
 
+    try {
+
+        const response = await fetch(
+            "https://bunka-shiryoshitsu-checksoft-mountain-b5a9.08084947685jddhdj.workers.dev/site-monitor",
+            {
+                method: "POST"
+            }
+        );
+
+        if (response.status === 429) {
+
+            document.body.innerHTML = `
+                <div style="
+                    min-height:100vh;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    text-align:center;
+                    padding:30px;
+                    background:#f3f1ec;
+                    color:#292929;
+                    font-family:sans-serif;
+                ">
+                    <div>
+                        <h2>一時的にご利用を制限しています。</h2>
+                        <p>
+                            短時間に多数のアクセスが確認されたため、
+                            安全対策として一時的に制限しています。
+                        </p>
+                        <p>
+                            しばらく時間をおいてから、もう一度お試しください。
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            return;
+        }
+
+    } catch (error) {
+
+        /* 監視機能に問題があっても通常表示を妨げない */
+
+    }
+
+})();
+</script>
 </body>
 </html>
