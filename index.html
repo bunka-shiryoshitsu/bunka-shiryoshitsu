@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 
 <head>
@@ -665,6 +664,91 @@ section p {
 
 
 /* =====================================================
+   抽選結果照会
+   ===================================================== */
+
+.application-lookup {
+    margin-top: 50px;
+
+    padding: 35px 30px;
+
+    background: #f6f4ef;
+
+    border: 1px solid #ddd7ca;
+
+    text-align: center;
+}
+
+.application-lookup-title {
+    font-size: 18px;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 8px;
+}
+
+.application-lookup input {
+    width: min(500px, 100%);
+
+    padding: 15px 16px;
+
+    border: 1px solid #aaa;
+
+    background: white;
+
+    font-size: 16px;
+
+    margin: 18px 0;
+
+    outline: none;
+}
+
+.application-lookup input:focus {
+    border-color: #8e7b4d;
+}
+
+.application-lookup button {
+    background: #292824;
+
+    color: white;
+
+    border: none;
+
+    padding: 14px 34px;
+
+    font-size: 14px;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.application-lookup button:hover {
+    background: #756443;
+}
+
+#application-result {
+    margin-top: 25px;
+
+    min-height: 40px;
+
+    font-size: 18px;
+
+    font-weight: 600;
+}
+
+.application-slots {
+    margin-top: 8px;
+
+    font-size: 17px;
+
+    font-weight: 600;
+}
+
+
+/* =====================================================
    規約
    ===================================================== */
 
@@ -783,6 +867,72 @@ section p {
 
 .application-check strong {
     font-weight: 600;
+}
+
+.application-agree-label {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    line-height: 1.8;
+}
+
+.application-agree-label input {
+    width: 18px;
+
+    height: 18px;
+
+    margin-top: 4px;
+
+    flex-shrink: 0;
+
+    cursor: pointer;
+}
+
+.application-next {
+    margin-top: 20px;
+
+    padding: 14px 30px;
+
+    border: none;
+
+    background: #292824;
+
+    color: white;
+
+    font-size: 14px;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.application-next:hover:not(:disabled) {
+    background: #756443;
+}
+
+.application-next:disabled {
+    background: #bbb7ae;
+
+    color: #eee;
+
+    cursor: not-allowed;
+}
+
+.application-next-message {
+    margin-top: 15px;
+
+    font-size: 13px;
+
+    color: #777;
 }
 
 
@@ -1867,33 +2017,19 @@ It means preserving a record of what was determined at that point in time.
 <ol>
 
 <li>文学作品、作家に関する資料</li>
-
 <li>肉筆原稿、草稿、創作ノート等</li>
-
 <li>書籍、初版本、限定本、サイン本、献呈本等</li>
-
 <li>雑誌、新聞、掲載資料等</li>
-
 <li>映画、映像作品、アニメーション作品に関する資料</li>
-
 <li>台本、脚本、絵コンテ、設定資料等</li>
-
 <li>漫画、漫画原稿、関連資料等</li>
-
 <li>音楽、レコード、CD、楽譜その他の関連資料</li>
-
 <li>舞台、演劇その他の公演関連資料</li>
-
 <li>ポスター、チラシ、パンフレット、広告資料等</li>
-
 <li>写真、印刷物、広報資料等</li>
-
 <li>美術作品及びその関連資料</li>
-
 <li>陶磁器、工芸品その他の文化資料</li>
-
 <li>作家、作者、作品又は文化活動に関連する手紙、記録、資料等</li>
-
 <li>その他、当資料室が文化資料として登録することが適当と認めた資料</li>
 
 </ol>
@@ -1954,7 +2090,7 @@ It means preserving a record of what was determined at that point in time.
 </li>
 
 <li>
-    複数のメールアドレスその他の方法を使用して、1日1件の制限を回避したものと
+    複数の方法を使用して、1日1件の制限を回避したものと
     当資料室が判断した場合、申込又は当選を無効とすることがある。
 </li>
 
@@ -1974,35 +2110,29 @@ It means preserving a record of what was determined at that point in time.
 
 </ul>
 
+
 <h4>抽選結果について</h4>
 
 <ul>
 
 <li>
-    抽選結果は、当選者にのみメールで通知する。
+    抽選結果は、当選者が当資料室のWebサイト上で確認するものとする。
 </li>
 
 <li>
-    落選者には、個別の落選通知を行わない。
+    抽選結果の確認には、抽選申込時に発行された確認番号（AP番号）を使用する。
 </li>
 
 <li>
-    当選通知には、登録申請を行うための期限その他必要な事項を記載することがある。
+    落選者に対して、個別の落選通知は行わない。
 </li>
 
 <li>
-    メールアドレスの入力間違い、受信拒否、迷惑メール設定、メールボックスの容量超過、
-    通信障害、システム障害その他の事情により、当選通知が到達しない場合がある。
+    当資料室から、抽選結果をメールで通知することはない。
 </li>
 
 <li>
-    当資料室は、メールの送信状況を確認できる場合であっても、
-    当選者が実際にメールを受信又は開封したことまで確認できるものではない。
-</li>
-
-<li>
-    当選通知が到達しなかったことによる機会損失について、
-    当資料室は責任を負わない。
+    AP番号を紛失した場合、当資料室から個別に結果を通知することはない。
 </li>
 
 </ul>
@@ -2509,11 +2639,15 @@ It means preserving a record of what was determined at that point in time.
 </li>
 
 <li>
-    抽選に当選した方にのみ、登録申請に必要な案内をメールで通知します。
+    発行された確認番号（AP番号）を保管してください。
 </li>
 
 <li>
-    当選者は、案内された方法により登録申請を行います。
+    抽選結果は、当資料室のWebサイト上でAP番号を入力して確認します。
+</li>
+
+<li>
+    当選した方は、案内された期間内に専用の登録申請を行います。
 </li>
 
 <li>
@@ -2539,6 +2673,53 @@ It means preserving a record of what was determined at that point in time.
 </ol>
 
 
+
+<!-- =====================================================
+     抽選結果確認
+     ===================================================== -->
+
+<div class="application-lookup">
+
+<div class="application-lookup-title">
+    抽選結果の確認
+</div>
+
+<p>
+    抽選申込時に発行された確認番号（AP番号）を入力してください。
+</p>
+
+<input
+    type="text"
+    id="application-number"
+    placeholder="例：AP-K7M4P2Q8"
+    autocomplete="off"
+>
+
+<br>
+
+<button onclick="checkApplication()">
+    抽選結果を確認
+</button>
+
+<div id="application-result"></div>
+
+<p class="small">
+    AP：Application（申込み）の略
+</p>
+
+<p class="small">
+    ※英字の大文字・小文字、全角・半角は区別しません。
+</p>
+
+<p class="small">
+    ※抽選結果は、当選者に対するメール通知ではなく、
+    本ページでAP番号を入力して確認する方式です。
+</p>
+
+</div>
+
+
+
 <h3>
     抽選への申し込みについて
 </h3>
@@ -2559,7 +2740,7 @@ It means preserving a record of what was determined at that point in time.
 </li>
 
 <li>
-    複数のメールアドレス等を使用して申込制限を回避したものと認められる場合、
+    複数の方法を使用して申込制限を回避したものと認められる場合、
     申込又は当選を無効とする場合があります。
 </li>
 
@@ -2579,6 +2760,7 @@ It means preserving a record of what was determined at that point in time.
 </ul>
 
 
+
 <h3>
     抽選結果について
 </h3>
@@ -2586,34 +2768,28 @@ It means preserving a record of what was determined at that point in time.
 <ul>
 
 <li>
-    抽選結果は、当選者にのみメールで通知します。
+    抽選結果は、本ページで確認番号（AP番号）を入力して確認してください。
 </li>
 
 <li>
-    落選者には個別の落選通知を行いません。
+    当選した場合は、画面上に当選及び登録申請枠数が表示されます。
 </li>
 
 <li>
-    当選メールに登録申請の期限が記載されている場合は、その期限内に申請してください。
+    当選していない場合、又は登録対象となっていない確認番号を入力した場合は、
+    同一の結果を表示します。
 </li>
 
 <li>
-    メールアドレスの入力間違い、受信拒否、迷惑メール設定、
-    メールボックスの容量超過、通信障害、システム障害その他の事情により、
-    当選メールが届かない場合があります。
+    当資料室から、抽選結果をメールで通知することはありません。
 </li>
 
 <li>
-    当資料室では、メールの送信状況を確認できる場合がありますが、
-    実際の受信又は開封まで確認できるものではありません。
-</li>
-
-<li>
-    当選メールが届かなかったことによる機会損失について、
-    当資料室は責任を負いません。
+    AP番号を紛失した場合、当資料室から個別に抽選結果を通知することはありません。
 </li>
 
 </ul>
+
 
 
 <h3>
@@ -2639,6 +2815,7 @@ It means preserving a record of what was determined at that point in time.
     又は当資料室が登録することが適当でないと判断した場合には、
     登録しないことがあります。
 </p>
+
 
 
 <h3>
@@ -2677,6 +2854,7 @@ It means preserving a record of what was determined at that point in time.
 </p>
 
 
+
 <h3>
     登録の判断について
 </h3>
@@ -2707,6 +2885,7 @@ It means preserving a record of what was determined at that point in time.
 </p>
 
 
+
 <h3>
     登録に関する費用
 </h3>
@@ -2721,6 +2900,7 @@ It means preserving a record of what was determined at that point in time.
     無料であることは、無条件に登録することを意味するものではありません。
     提出された資料及び情報を確認した上で、登録の可否を判断します。
 </p>
+
 
 
 <h3>
@@ -2773,15 +2953,29 @@ It means preserving a record of what was determined at that point in time.
 </p>
 
 
+
+<!-- =====================================================
+     申請前の確認
+     ===================================================== -->
+
 <div class="application-check">
 
 <p>
     <strong>申請前の確認</strong>
 </p>
 
-<p>
-    □ 上記の「申請時の注意事項」を読み、内容を確認し、これに同意しました。
-</p>
+<label class="application-agree-label">
+
+<input
+    type="checkbox"
+    id="application-agree"
+>
+
+<span>
+    上記の「申請時の注意事項」を読み、内容を確認し、これに同意しました。
+</span>
+
+</label>
 
 <p class="small">
     ※申請前に、抽選方法、登録申請、提出画像、登録の判断、登録後の取扱い等について、
@@ -2791,6 +2985,21 @@ It means preserving a record of what was determined at that point in time.
 <p class="small">
     ※現在は新規登録申請を休止しています。
 </p>
+
+<button
+    type="button"
+    id="application-next"
+    class="application-next"
+    disabled
+    onclick="applicationNext()"
+>
+    確認して次へ
+</button>
+
+<div
+    id="application-next-message"
+    class="application-next-message"
+></div>
 
 </div>
 
@@ -2941,6 +3150,195 @@ async function checkRegistration() {
             "照会できませんでした。";
 
     }
+
+}
+
+
+
+/* =====================================================
+   抽選結果照会
+   ===================================================== */
+
+async function checkApplication() {
+
+    const input =
+        document.getElementById(
+            "application-number"
+        );
+
+    const result =
+        document.getElementById(
+            "application-result"
+        );
+
+
+    const applicationNumber =
+        input.value.trim();
+
+
+    if (!applicationNumber) {
+
+        result.textContent =
+            "確認番号（8桁）を入力してください。";
+
+        return;
+    }
+
+
+    result.textContent =
+        "確認中…";
+
+
+    try {
+
+        const response =
+            await fetch(
+                WORKER_URL + "/check-application",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        applicationNumber:
+                            applicationNumber
+                    })
+                }
+            );
+
+
+        /*
+         * 429ならホラー
+         */
+
+        if (response.status === 429) {
+
+            await startHorror();
+
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data &&
+            data.winner === true &&
+            Number(data.slots) > 0
+        ) {
+
+            result.innerHTML = `
+                <div>
+                    今回の抽選に当選しています。
+                </div>
+
+                <div class="application-slots">
+                    登録申請：${Number(data.slots)}枠
+                </div>
+            `;
+
+            return;
+        }
+
+
+        result.textContent =
+            "今回の抽選では、登録申請の対象となっていません。";
+
+
+    } catch (error) {
+
+        result.textContent =
+            "確認できませんでした。";
+
+    }
+
+}
+
+
+
+/* =====================================================
+   申請前チェック
+   ===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const checkbox =
+            document.getElementById(
+                "application-agree"
+            );
+
+        const nextButton =
+            document.getElementById(
+                "application-next"
+            );
+
+
+        if (
+            !checkbox ||
+            !nextButton
+        ) {
+            return;
+        }
+
+
+        checkbox.addEventListener(
+            "change",
+            function() {
+
+                nextButton.disabled =
+                    !checkbox.checked;
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =====================================================
+   申請「次へ」
+   ===================================================== */
+
+function applicationNext() {
+
+    const checkbox =
+        document.getElementById(
+            "application-agree"
+        );
+
+    const message =
+        document.getElementById(
+            "application-next-message"
+        );
+
+
+    if (
+        !checkbox ||
+        !checkbox.checked
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * 現在は申請休止中。
+     *
+     * 申請再開時には、
+     * ここから正式な申請フォームへ
+     * 遷移させる。
+     */
+
+    message.textContent =
+        "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
 
 }
 
