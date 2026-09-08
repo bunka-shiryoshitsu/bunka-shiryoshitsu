@@ -3161,102 +3161,154 @@ async function checkRegistration() {
 
 async function checkApplication() {
 
-    const input =
-        document.getElementById(
-            "application-number"
+```
+const input =
+    document.getElementById(
+        "application-number"
+    );
+
+const result =
+    document.getElementById(
+        "application-result"
+    );
+
+
+const applicationNumber =
+    input.value.trim();
+
+
+if (!applicationNumber) {
+
+    result.textContent =
+        "確認番号（8桁）を入力してください。";
+
+    return;
+}
+
+
+result.textContent =
+    "確認中…";
+
+
+try {
+
+    const response =
+        await fetch(
+            WORKER_URL + "/check-application",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    ap: applicationNumber
+                })
+            }
         );
 
-    const result =
-        document.getElementById(
-            "application-result"
-        );
 
+    /*
+     * 429ならホラー
+     */
 
-    const applicationNumber =
-        input.value.trim();
+    if (response.status === 429) {
 
-
-    if (!applicationNumber) {
-
-        result.textContent =
-            "確認番号（8桁）を入力してください。";
+        await startHorror();
 
         return;
     }
 
 
-    result.textContent =
-        "確認中…";
+    const data =
+        await response.json();
 
 
-    try {
+    /*
+     * ============================================
+     * まだ確認開始前
+     * ============================================
+     */
 
-        const response =
-            await fetch(
-                WORKER_URL + "/check-application",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                   ap: applicationNumber
-                    })
-                }
-            );
-
-
-        /*
-         * 429ならホラー
-         */
-
-        if (response.status === 429) {
-
-            await startHorror();
-
-            return;
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            data &&
-            data.winner === true &&
-            Number(data.slots) > 0
-        ) {
-
-            result.innerHTML = `
-                <div>
-                    今回の抽選に当選しています。
-                </div>
-
-                <div class="application-slots">
-                    登録申請：${Number(data.slots)}枠
-                </div>
-            `;
-
-            return;
-        }
-
+    if (
+        data &&
+        data.status === "not_started"
+    ) {
 
         result.textContent =
-            "今回の抽選では、登録申請の対象となっていません。";
+            "抽選結果はまだ確認できません。";
 
-
-    } catch (error) {
-
-        result.textContent =
-            "確認できませんでした。";
-
+        return;
     }
 
+
+    /*
+     * ============================================
+     * 有効期限切れ
+     * ============================================
+     */
+
+    if (
+        data &&
+        data.status === "expired"
+    ) {
+
+        result.textContent =
+            "この当選による登録申請は、有効期限を過ぎています。";
+
+        return;
+    }
+
+
+    /*
+     * ============================================
+     * 当選・有効期間中
+     * ============================================
+     */
+
+    if (
+        data &&
+        data.status === "active" &&
+        data.winner === true &&
+        Number(data.slots) > 0
+    ) {
+
+        result.innerHTML = `
+            <div>
+                今回の抽選に当選しています。
+            </div>
+
+            <div class="application-slots">
+                登録申請：${Number(data.slots)}枠
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /*
+     * ============================================
+     * 落選・対象外
+     * ============================================
+     */
+
+    result.textContent =
+        "今回の抽選では、登録申請の対象となっていません。";
+
+
+} catch (error) {
+
+    result.textContent =
+        "確認できませんでした。";
+
 }
+```
+
+}
+
 
 
 
