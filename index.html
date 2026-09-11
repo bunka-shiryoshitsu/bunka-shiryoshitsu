@@ -4253,7 +4253,506 @@ document.addEventListener(
 
 </script>
 
+const MAX_IMAGES = 20;
+const MAX_IMAGE_SIZE = 2500;
 
+const registrationImages = {};
+
+function renderRegistrationSlots(slots) {
+
+    const container =
+        document.getElementById(
+            "registration-slots"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const count =
+        Math.min(
+            Math.max(
+                Number(slots),
+                1
+            ),
+            10
+        );
+
+    container.innerHTML = "";
+
+    for (
+        let i = 1;
+        i <= count;
+        i++
+    ) {
+
+        registrationImages[i] = [];
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+        item.className =
+            "registration-form-item";
+
+        item.innerHTML = `
+
+            <h4>
+                登録資料 ${i}
+            </h4>
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-name-${i}"
+                >
+                    資料名称
+                </label>
+
+                <p class="small">
+                    例：サイン色紙
+                </p>
+
+                <input
+                    type="text"
+                    id="material-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <div class="registration-form-item">
+
+                <label
+                    for="related-name-${i}"
+                >
+                    関連資料名称
+                </label>
+
+                <p class="small">
+                    人物名、作品名、イベント名など、
+                    資料に関連する名称を入力してください。
+                    <br>
+                    例：鳥山明
+                </p>
+
+                <input
+                    type="text"
+                    id="related-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <div class="registration-form-item">
+
+                <label
+                    for="acquisition-info-${i}"
+                >
+                    入手経路など
+                </label>
+
+                <p class="small">
+                    資料を入手した経緯、購入先、譲渡、
+                    入手時期など、資料について分かることを
+                    自由に記入してください。
+                </p>
+
+                <textarea
+                    id="acquisition-info-${i}"
+                    rows="7"
+                    maxlength="5000"
+                ></textarea>
+
+            </div>
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-images-${i}"
+                >
+                    資料画像
+                </label>
+
+                <p class="small">
+                    申請者自身が申請時に現物を撮影した画像を
+                    アップロードしてください。
+                </p>
+
+                <p class="small">
+                    最大20枚まで提出できます。
+                    長辺が2,500pxを超える画像は、
+                    自動的に2,500px以内へ縮小します。
+                </p>
+
+                <input
+                    type="file"
+                    id="material-images-${i}"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                >
+
+                <div
+                    id="image-preview-${i}"
+                    class="image-preview"
+                ></div>
+
+            </div>
+        `;
+
+        container.appendChild(
+            item
+        );
+
+        setupRegistrationImageInput(i);
+    }
+
+    updateRegistrationSubmitState();
+}
+
+
+function setupRegistrationImageInput(
+    slot
+) {
+
+    const input =
+        document.getElementById(
+            `material-images-${slot}`
+        );
+
+    if (!input) {
+        return;
+    }
+
+    input.addEventListener(
+        "change",
+        async function() {
+
+            const files =
+                Array.from(
+                    input.files || []
+                );
+
+            if (!files.length) {
+                return;
+            }
+
+            if (
+                registrationImages[slot].length +
+                files.length >
+                MAX_IMAGES
+            ) {
+
+                alert(
+                    "画像は最大20枚まで提出できます。"
+                );
+
+                input.value = "";
+
+                return;
+            }
+
+            for (
+                const file of files
+            ) {
+
+                if (
+                    !file.type.startsWith(
+                        "image/"
+                    )
+                ) {
+                    continue;
+                }
+
+                try {
+
+                    const resized =
+                        await resizeRegistrationImage(
+                            file
+                        );
+
+                    registrationImages[
+                        slot
+                    ].push(
+                        resized
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "画像の処理に失敗しました。"
+                    );
+                }
+            }
+
+            input.value = "";
+
+            renderRegistrationImages(
+                slot
+            );
+
+            updateRegistrationSubmitState();
+        }
+    );
+}
+
+
+async function resizeRegistrationImage(
+    file
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            const image =
+                new Image();
+
+            const url =
+                URL.createObjectURL(
+                    file
+                );
+
+            image.onload =
+                function() {
+
+                    URL.revokeObjectURL(
+                        url
+                    );
+
+                    let width =
+                        image.naturalWidth;
+
+                    let height =
+                        image.naturalHeight;
+
+                    const longestSide =
+                        Math.max(
+                            width,
+                            height
+                        );
+
+                    if (
+                        longestSide >
+                        MAX_IMAGE_SIZE
+                    ) {
+
+                        const scale =
+                            MAX_IMAGE_SIZE /
+                            longestSide;
+
+                        width =
+                            Math.round(
+                                width *
+                                scale
+                            );
+
+                        height =
+                            Math.round(
+                                height *
+                                scale
+                            );
+                    }
+
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
+
+                    canvas.width =
+                        width;
+
+                    canvas.height =
+                        height;
+
+                    const context =
+                        canvas.getContext(
+                            "2d"
+                        );
+
+                    context.drawImage(
+                        image,
+                        0,
+                        0,
+                        width,
+                        height
+                    );
+
+                    canvas.toBlob(
+                        function(blob) {
+
+                            if (!blob) {
+
+                                reject(
+                                    new Error(
+                                        "画像変換に失敗しました。"
+                                    )
+                                );
+
+                                return;
+                            }
+
+                            resolve({
+                                blob:
+                                    blob,
+                                width:
+                                    width,
+                                height:
+                                    height
+                            });
+
+                        },
+                        "image/jpeg",
+                        0.90
+                    );
+                };
+
+            image.onerror =
+                function() {
+
+                    URL.revokeObjectURL(
+                        url
+                    );
+
+                    reject(
+                        new Error(
+                            "画像を読み込めませんでした。"
+                        )
+                    );
+                };
+
+            image.src =
+                url;
+        }
+    );
+}
+
+
+function renderRegistrationImages(
+    slot
+) {
+
+    const preview =
+        document.getElementById(
+            `image-preview-${slot}`
+        );
+
+    if (!preview) {
+        return;
+    }
+
+    preview.innerHTML = "";
+
+    const images =
+        registrationImages[
+            slot
+        ] || [];
+
+    images.forEach(
+        function(
+            image,
+            index
+        ) {
+
+            const wrapper =
+                document.createElement(
+                    "div"
+                );
+
+            wrapper.className =
+                "image-preview-item";
+
+            const img =
+                document.createElement(
+                    "img"
+                );
+
+            img.src =
+                URL.createObjectURL(
+                    image.blob
+                );
+
+            img.alt =
+                `登録資料 ${slot} 画像 ${index + 1}`;
+
+            img.width = 150;
+            img.height = 150;
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.textContent =
+                "削除";
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    registrationImages[
+                        slot
+                    ].splice(
+                        index,
+                        1
+                    );
+
+                    renderRegistrationImages(
+                        slot
+                    );
+
+                    updateRegistrationSubmitState();
+                }
+            );
+
+            wrapper.appendChild(
+                img
+            );
+
+            wrapper.appendChild(
+                button
+            );
+
+            preview.appendChild(
+                wrapper
+            );
+        }
+    );
+}
+
+
+function updateRegistrationSubmitState() {
+
+    const button =
+        document.getElementById(
+            "registration-submit"
+        );
+
+    if (!button) {
+        return;
+    }
+
+    /*
+     * 現段階ではCloudflare側の
+     * 最終登録申請送信処理をまだ実装していないため、
+     * 誤送信を防ぐ目的で常に無効にしておきます。
+     */
+
+    button.disabled =
+        true;
+}
 </body>
 
 </html>
