@@ -3346,23 +3346,29 @@ async function checkApplication() {
             "registration-application"
         );
 
-
-    if (
-        !input ||
-        !result ||
-        !applicationBox
-    ) {
+    if (!input || !result) {
         return;
     }
 
-
     const applicationNumber =
-        input.value.trim();
+        input.value
+            .trim()
+            .toUpperCase();
 
+    if (applicationBox) {
+        applicationBox.style.display =
+            "none";
+    }
 
-    applicationBox.style.display =
-        "none";
+    const slotsContainer =
+        document.getElementById(
+            "registration-slots"
+        );
 
+    if (slotsContainer) {
+        slotsContainer.innerHTML =
+            "";
+    }
 
     if (!applicationNumber) {
 
@@ -3372,10 +3378,8 @@ async function checkApplication() {
         return;
     }
 
-
     result.textContent =
-        "確認中…";
-
+        "確認しています……";
 
     try {
 
@@ -3399,9 +3403,9 @@ async function checkApplication() {
                 }
             );
 
-
         if (
-            response.status === 429
+            response.status ===
+            429
         ) {
 
             result.textContent =
@@ -3410,15 +3414,22 @@ async function checkApplication() {
             return;
         }
 
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+        }
 
         const data =
             await response.json();
 
-
         if (
-            data &&
             data.status ===
-                "not_started"
+            "not_started"
         ) {
 
             result.textContent =
@@ -3427,11 +3438,9 @@ async function checkApplication() {
             return;
         }
 
-
         if (
-            data &&
             data.status ===
-                "expired"
+            "expired"
         ) {
 
             result.textContent =
@@ -3439,7 +3448,6 @@ async function checkApplication() {
 
             return;
         }
-
 
         if (
             data &&
@@ -3458,7 +3466,6 @@ async function checkApplication() {
                     10
                 );
 
-
             result.innerHTML = `
                 <div>
                     今回の抽選に当選しています。
@@ -3470,40 +3477,34 @@ async function checkApplication() {
                 </div>
             `;
 
-
             renderRegistrationSlots(
                 slots
             );
 
+            if (
+                applicationBox
+            ) {
 
-            applicationBox.style.display =
-                "block";
-
+                applicationBox.style.display =
+                    "block";
+            }
 
             return;
         }
 
-
         result.textContent =
             "今回の抽選では、登録申請の対象となっていません。";
 
-
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         result.textContent =
-            "確認できませんでした。";
-
+            "確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
     }
-
 }
-
-
-/* =====================================================
-   登録申請枠を生成
-   ===================================================== */
-
 function renderRegistrationSlots(
     slots
 ) {
