@@ -2026,8 +2026,6 @@ It means preserving a record of what was determined at that point in time.
 
 
 <!-- =====================================================
-  
-<!-- =====================================================
      05 登録番号照会
      ===================================================== -->
 
@@ -3234,6 +3232,75 @@ const registrationImages =
     );
 
 
+/*
+ * 現在確認中の当選情報。
+ *
+ * ap:
+ * 抽選確認番号
+ *
+ * slots:
+ * 登録申請枠数
+ */
+
+let activeApplication =
+    {
+        ap: "",
+        slots: 0
+    };
+
+
+/*
+ * 登録申請送信中かどうか。
+ */
+
+let registrationSubmitting =
+    false;
+
+
+/*
+ * 登録申請が正常に完了したかどうか。
+ */
+
+let registrationSubmitted =
+    false;
+
+
+/* =====================================================
+   Workerレスポンス処理
+   ===================================================== */
+
+async function readWorkerResponse(
+    response
+) {
+
+    const text =
+        await response.text();
+
+    let data =
+        null;
+
+    try {
+
+        data =
+            text
+                ? JSON.parse(text)
+                : null;
+
+    } catch (error) {
+
+        data =
+            null;
+
+    }
+
+    return {
+        text: text,
+        data: data
+    };
+
+}
+
+
 /* =====================================================
    登録番号照会
    ===================================================== */
@@ -3348,6 +3415,23 @@ async function checkApplication() {
             .trim()
             .toUpperCase();
 
+    /*
+     * 新しいAPを確認するたびに、
+     * 現在の申請状態をリセットする。
+     */
+
+    activeApplication =
+        {
+            ap: "",
+            slots: 0
+        };
+
+    registrationSubmitting =
+        false;
+
+    registrationSubmitted =
+        false;
+
     if (applicationBox) {
 
         applicationBox.style.display =
@@ -3456,6 +3540,19 @@ async function checkApplication() {
                     ),
                     10
                 );
+
+            /*
+             * 当選情報を保持。
+             */
+
+            activeApplication =
+                {
+                    ap:
+                        applicationNumber,
+
+                    slots:
+                        slots
+                };
 
             result.innerHTML = `
                 <div>
@@ -3661,6 +3758,49 @@ function renderRegistrationSlots(
 
         setupRegistrationImageInput(
             i
+        );
+
+        /*
+         * テキスト入力の変更時にも
+         * 送信可能状態を更新する。
+         */
+
+        const nameInput =
+            document.getElementById(
+                `material-name-${i}`
+            );
+
+        const relatedInput =
+            document.getElementById(
+                `related-name-${i}`
+            );
+
+        const acquisitionInput =
+            document.getElementById(
+                `acquisition-info-${i}`
+            );
+
+        [
+            nameInput,
+            relatedInput,
+            acquisitionInput
+        ].forEach(
+            function(element) {
+
+                if (!element) {
+                    return;
+                }
+
+                element.addEventListener(
+                    "input",
+                    function() {
+
+                        updateRegistrationSubmitState();
+
+                    }
+                );
+
+            }
         );
 
     }
@@ -4099,7 +4239,120 @@ function clearRegistrationImages() {
 
 
 /* =====================================================
-   登録申請送信ボタン
+   登録申請入力内容取得
+   ===================================================== */
+
+function collectRegistrationItems() {
+
+    const slots =
+        Number(
+            activeApplication.slots
+        );
+
+    const items =
+        [];
+
+    if (
+        !slots ||
+        slots < 1 ||
+        slots > 10
+    ) {
+
+        return {
+            ok: false,
+            message:
+                "登録申請枠を確認できません。"
+        };
+
+    }
+
+    for (
+        let i = 1;
+        i <= slots;
+        i++
+    ) {
+
+        const nameInput =
+            document.getElementById(
+                `material-name-${i}`
+            );
+
+        const relatedInput =
+            document.getElementById(
+                `related-name-${i}`
+            );
+
+        const acquisitionInput =
+            document.getElementById(
+                `acquisition-info-${i}`
+            );
+
+        const images =
+            registrationImages[i] ||
+            [];
+
+        const name =
+            nameInput
+                ? nameInput.value.trim()
+                : "";
+
+        const relatedName =
+            relatedInput
+                ? relatedInput.value.trim()
+                : "";
+
+        const acquisition =
+            acquisitionInput
+                ? acquisitionInput.value.trim()
+                : "";
+
+        if (!name) {
+
+            return {
+                ok: false,
+                message:
+                    `資料 ${i} の「資料名称」を入力してください。`
+            };
+
+        }
+
+        if (!images.length) {
+
+            return {
+                ok: false,
+                message:
+                    `資料 ${i} の画像を1枚以上アップロードしてください。`
+            };
+
+        }
+
+        items.push(
+            {
+                item: i,
+
+                name:
+                    name,
+
+                relatedName:
+                    relatedName,
+
+                acquisition:
+                    acquisition
+            }
+        );
+
+    }
+
+    return {
+        ok: true,
+        items: items
+    };
+
+}
+
+
+/* =====================================================
+   登録申請送信ボタン状態
    ===================================================== */
 
 function updateRegistrationSubmitState() {
@@ -4113,16 +4366,426 @@ function updateRegistrationSubmitState() {
         return;
     }
 
+    if (
+        registrationSubmitting ||
+        registrationSubmitted
+    ) {
+
+        button.disabled =
+            true;
+
+        return;
+    }
+
+    const slots =
+        Number(
+            activeApplication.slots
+        );
+
+    const ap =
+        activeApplication.ap;
+
+    if (
+        !ap ||
+        !slots ||
+        slots < 1 ||
+        slots > 10
+    ) {
+
+        button.disabled =
+            true;
+
+        return;
+    }
+
     /*
-     * 現段階ではCloudflare側の
-     * 最終登録申請送信処理をまだ実装していない。
+     * すべての資料について
      *
-     * そのため、誤送信防止のため
-     * 常に無効にしておく。
+     * ・資料名称
+     * ・画像1枚以上
+     *
+     * が揃っている場合のみ送信可能にする。
      */
 
+    for (
+        let i = 1;
+        i <= slots;
+        i++
+    ) {
+
+        const nameInput =
+            document.getElementById(
+                `material-name-${i}`
+            );
+
+        const name =
+            nameInput
+                ? nameInput.value.trim()
+                : "";
+
+        const images =
+            registrationImages[i] ||
+            [];
+
+        if (
+            !name ||
+            !images.length
+        ) {
+
+            button.disabled =
+                true;
+
+            return;
+        }
+
+    }
+
     button.disabled =
+        false;
+
+}
+
+
+/* =====================================================
+   画像アップロード
+   ===================================================== */
+
+async function uploadRegistrationImage(
+    ap,
+    item,
+    image,
+    imageIndex
+) {
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "ap",
+        ap
+    );
+
+    formData.append(
+        "item",
+        String(item).padStart(
+            2,
+            "0"
+        )
+    );
+
+    formData.append(
+        "image",
+        image.blob,
+        `item-${String(item).padStart(2, "0")}-image-${String(imageIndex).padStart(2, "0")}.jpg`
+    );
+
+    const response =
+        await fetch(
+            WORKER_URL +
+            "/image-upload",
+            {
+                method: "POST",
+
+                body:
+                    formData
+            }
+        );
+
+    const result =
+        await readWorkerResponse(
+            response
+        );
+
+    if (
+        response.status === 429
+    ) {
+
+        throw new Error(
+            "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
+        );
+
+    }
+
+    if (!response.ok) {
+
+        if (
+            result.data &&
+            result.data.message
+        ) {
+
+            throw new Error(
+                result.data.message
+            );
+
+        }
+
+        throw new Error(
+            result.text ||
+            "画像のアップロードに失敗しました。"
+        );
+
+    }
+
+    if (
+        result.data &&
+        result.data.ok === false
+    ) {
+
+        throw new Error(
+            result.data.message ||
+            "画像のアップロードに失敗しました。"
+        );
+
+    }
+
+    return result.data;
+
+}
+
+
+/* =====================================================
+   登録申請送信
+   ===================================================== */
+
+async function submitRegistrationApplication() {
+
+    if (
+        registrationSubmitting ||
+        registrationSubmitted
+    ) {
+        return;
+    }
+
+    const message =
+        document.getElementById(
+            "registration-submit-message"
+        );
+
+    const button =
+        document.getElementById(
+            "registration-submit"
+        );
+
+    if (!message || !button) {
+        return;
+    }
+
+    /*
+     * 入力内容を確認。
+     */
+
+    const collected =
+        collectRegistrationItems();
+
+    if (!collected.ok) {
+
+        message.textContent =
+            collected.message;
+
+        return;
+    }
+
+    if (
+        !activeApplication.ap ||
+        !activeApplication.slots
+    ) {
+
+        message.textContent =
+            "抽選結果を確認できません。もう一度AP番号を確認してください。";
+
+        return;
+    }
+
+    /*
+     * 送信開始。
+     */
+
+    registrationSubmitting =
         true;
+
+    updateRegistrationSubmitState();
+
+    message.textContent =
+        "登録申請の準備をしています……";
+
+    try {
+
+        const items =
+            collected.items;
+
+        /*
+         * 画像を順番にアップロードする。
+         *
+         * 先に全画像をWorkerへ送信し、
+         * すべて成功してから
+         * /registration-submit を呼び出す。
+         */
+
+        let totalImages =
+            0;
+
+        items.forEach(
+            function(item) {
+
+                totalImages +=
+                    (
+                        registrationImages[
+                            item.item
+                        ] || []
+                    ).length;
+
+            }
+        );
+
+        let uploadedImages =
+            0;
+
+        for (
+            const item of items
+        ) {
+
+            const images =
+                registrationImages[
+                    item.item
+                ] || [];
+
+            for (
+                let imageIndex = 0;
+                imageIndex < images.length;
+                imageIndex++
+            ) {
+
+                uploadedImages++;
+
+                message.textContent =
+                    `画像を送信しています…… ${uploadedImages} / ${totalImages}`;
+
+                await uploadRegistrationImage(
+                    activeApplication.ap,
+                    item.item,
+                    images[imageIndex],
+                    imageIndex + 1
+                );
+
+            }
+
+        }
+
+        /*
+         * 画像がすべて送信できたら、
+         * 最終的な申請情報を送信する。
+         */
+
+        message.textContent =
+            "画像の送信が完了しました。登録申請を送信しています……";
+
+        const response =
+            await fetch(
+                WORKER_URL +
+                "/registration-submit",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            ap:
+                                activeApplication.ap,
+
+                            items:
+                                items
+                        })
+                }
+            );
+
+        const result =
+            await readWorkerResponse(
+                response
+            );
+
+        if (
+            response.status === 429
+        ) {
+
+            throw new Error(
+                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
+            );
+
+        }
+
+        if (!response.ok) {
+
+            if (
+                result.data &&
+                result.data.message
+            ) {
+
+                throw new Error(
+                    result.data.message
+                );
+
+            }
+
+            throw new Error(
+                result.text ||
+                "登録申請の送信に失敗しました。"
+            );
+
+        }
+
+        if (
+            result.data &&
+            result.data.ok === false
+        ) {
+
+            throw new Error(
+                result.data.message ||
+                "登録申請の送信に失敗しました。"
+            );
+
+        }
+
+        /*
+         * 正常終了。
+         */
+
+        registrationSubmitted =
+            true;
+
+        registrationSubmitting =
+            false;
+
+        button.disabled =
+            true;
+
+        message.textContent =
+            (
+                result.data &&
+                result.data.message
+            )
+            ||
+            "登録申請を受け付けました。";
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+        registrationSubmitting =
+            false;
+
+        updateRegistrationSubmitState();
+
+        message.textContent =
+            error.message ||
+            "登録申請を送信できませんでした。しばらく時間をおいて、もう一度お試しください。";
+
+    }
 
 }
 
@@ -4146,21 +4809,46 @@ document.addEventListener(
             );
 
         if (
-            !checkbox ||
-            !nextButton
+            checkbox &&
+            nextButton
         ) {
-            return;
+
+            checkbox.addEventListener(
+                "change",
+                function() {
+
+                    nextButton.disabled =
+                        !checkbox.checked;
+
+                }
+            );
+
         }
 
-        checkbox.addEventListener(
-            "change",
-            function() {
 
-                nextButton.disabled =
-                    !checkbox.checked;
+        /*
+         * 登録申請送信ボタン。
+         */
 
-            }
-        );
+        const registrationSubmit =
+            document.getElementById(
+                "registration-submit"
+            );
+
+        if (
+            registrationSubmit
+        ) {
+
+            registrationSubmit.addEventListener(
+                "click",
+                function() {
+
+                    submitRegistrationApplication();
+
+                }
+            );
+
+        }
 
     }
 );
