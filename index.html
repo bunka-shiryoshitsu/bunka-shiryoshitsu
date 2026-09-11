@@ -30,6 +30,7 @@ html {
 
 body {
     margin: 0;
+
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -865,10 +866,6 @@ section p {
     border: 1px solid #ddd7ca;
 }
 
-.application-check strong {
-    font-weight: 600;
-}
-
 .application-agree-label {
     display: flex;
 
@@ -933,6 +930,154 @@ section p {
     font-size: 13px;
 
     color: #777;
+}
+
+
+/* =====================================================
+   登録申請フォーム
+   ===================================================== */
+
+.registration-application {
+    margin-top: 45px;
+
+    padding: 35px;
+
+    background: #f6f4ef;
+
+    border: 1px solid #ddd7ca;
+
+    text-align: left;
+}
+
+.registration-form-item {
+    margin-top: 25px;
+
+    padding: 25px;
+
+    background: white;
+
+    border: 1px solid #dedbd2;
+}
+
+.registration-form-item h4 {
+    margin-top: 0;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #e2ded5;
+}
+
+.registration-form-item label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.registration-form-item input[type="text"],
+.registration-form-item textarea {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #aaa;
+
+    background: white;
+
+    font-size: 14px;
+
+    font-family: inherit;
+
+    outline: none;
+}
+
+.registration-form-item input[type="text"]:focus,
+.registration-form-item textarea:focus {
+    border-color: #8e7b4d;
+}
+
+.registration-form-item textarea {
+    resize: vertical;
+}
+
+.image-preview {
+    margin-top: 15px;
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.image-preview-item {
+    width: 150px;
+
+    padding: 5px;
+
+    background: #f5f5f5;
+
+    border: 1px solid #ccc;
+}
+
+.image-preview-item img {
+    display: block;
+
+    width: 140px;
+    height: 140px;
+
+    object-fit: contain;
+
+    background: #fff;
+}
+
+.image-preview-remove {
+    width: 100%;
+
+    margin-top: 5px;
+
+    padding: 6px;
+
+    border: none;
+
+    background: #555;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+.image-preview-remove:hover {
+    background: #333;
+}
+
+.registration-submit {
+    margin-top: 30px;
+
+    padding: 14px 30px;
+
+    border: none;
+
+    background: #292824;
+
+    color: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.registration-submit:disabled {
+    background: #bbb7ae;
+
+    color: #eee;
+
+    cursor: not-allowed;
 }
 
 
@@ -1054,6 +1199,14 @@ footer {
         font-size: 18px;
     }
 
+    .registration-application {
+        padding: 20px 15px;
+    }
+
+    .registration-form-item {
+        padding: 18px;
+    }
+
 }
 
 </style>
@@ -1078,33 +1231,13 @@ footer {
 
 <nav>
 
-<a href="#about">
-    概要
-</a>
-
-<a href="#philosophy">
-    理念
-</a>
-
-<a href="#materials">
-    対象資料
-</a>
-
-<a href="#registration">
-    登録制度
-</a>
-
-<a href="#lookup">
-    登録番号照会
-</a>
-
-<a href="#rules">
-    規約
-</a>
-
-<a href="#application">
-    登録申請
-</a>
+<a href="#about">概要</a>
+<a href="#philosophy">理念</a>
+<a href="#materials">対象資料</a>
+<a href="#registration">登録制度</a>
+<a href="#lookup">登録番号照会</a>
+<a href="#rules">規約</a>
+<a href="#application">登録申請</a>
 
 </nav>
 
@@ -1205,7 +1338,6 @@ footer {
     文化資料登録室の基本理念
 </h2>
 
-
 <p class="philosophy-opening">
 
 文化資料を、「真作か偽物か」という二択だけで終わらせない。
@@ -1224,7 +1356,6 @@ We seek to preserve records for the future, rather than allowing authority alone
 to determine their value.
 
 </p>
-
 
 <p>
     文化資料には、長い年月の中で、さまざまな評価が与えられてきました。
@@ -1248,7 +1379,6 @@ to determine their value.
     「これは絶対にこうだった」と完全に証明することは、
     本当に可能なのでしょうか。
 </p>
-
 
 <div class="philosophy-principle">
 
@@ -1294,7 +1424,6 @@ to determine their value.
 </p>
 
 </div>
-
 
 <p>
     だからといって、何も分からないということではありません。
@@ -1371,7 +1500,6 @@ to determine their value.
     私たちは、その構造そのものに疑問を持っています。
 </p>
 
-
 <div class="philosophy-quote">
 
 「何様なのか」という問いを、
@@ -1384,7 +1512,6 @@ It is worth asking, at least once:
 </p>
 
 </div>
-
 
 <p>
     鑑定する人が偉いのではありません。
@@ -1490,7 +1617,6 @@ It is worth asking, at least once:
     ならば、その記録を残す機会は、
     できるだけ広く開かれていてよい。
 </p>
-
 
 <div class="philosophy-quote">
 
@@ -1682,7 +1808,6 @@ It means preserving a record of what was determined at that point in time.
 
 <div class="card-grid">
 
-
 <div class="card">
 
 <h3>
@@ -1766,7 +1891,6 @@ It means preserving a record of what was determined at that point in time.
 
 </div>
 
-
 </div>
 
 </section>
@@ -1800,7 +1924,6 @@ It means preserving a record of what was determined at that point in time.
 
 
 <div class="registration-grid">
-
 
 <div class="registration">
 
@@ -1876,7 +1999,6 @@ It means preserving a record of what was determined at that point in time.
 
 </div>
 
-
 </div>
 
 
@@ -1939,7 +2061,10 @@ It means preserving a record of what was determined at that point in time.
 
 <br>
 
-<button onclick="checkRegistration()">
+<button
+    type="button"
+    onclick="checkRegistration()"
+>
     登録番号を照会
 </button>
 
@@ -1955,6 +2080,71 @@ It means preserving a record of what was determined at that point in time.
     真贋、真正性、作者、制作年代、来歴、所有権その他の事項を
     判定又は回答するものではありません。
 </p>
+
+
+<!-- =====================================================
+     抽選結果確認
+     ===================================================== -->
+
+<div class="application-lookup">
+
+<div class="application-lookup-title">
+    抽選結果確認
+</div>
+
+<p>
+    抽選申込時に発行された確認番号（AP番号）を入力してください。
+</p>
+
+<input
+    type="text"
+    id="application-number"
+    placeholder="例：AP-E5F6G7H5"
+    maxlength="11"
+    autocomplete="off"
+>
+
+<br>
+
+<button
+    type="button"
+    onclick="checkApplication()"
+>
+    抽選結果を確認
+</button>
+
+<div id="application-result"></div>
+
+<div
+    id="registration-application"
+    class="registration-application"
+    style="display:none;"
+>
+
+<h3>
+    登録申請
+</h3>
+
+<p>
+    抽選に当選された方は、以下の内容を入力してください。
+</p>
+
+<div id="registration-slots"></div>
+
+<button
+    type="button"
+    id="registration-submit"
+    class="registration-submit"
+    disabled
+>
+    登録申請を送信
+</button>
+
+<div id="registration-submit-message"></div>
+
+</div>
+
+</div>
 
 </div>
 
@@ -2029,7 +2219,6 @@ It means preserving a record of what was determined at that point in time.
 </p>
 
 <ol>
-
 <li>文学作品、作家に関する資料</li>
 <li>肉筆原稿、草稿、創作ノート等</li>
 <li>書籍、初版本、限定本、サイン本、献呈本等</li>
@@ -2045,7 +2234,6 @@ It means preserving a record of what was determined at that point in time.
 <li>陶磁器、工芸品その他の文化資料</li>
 <li>作家、作者、作品又は文化活動に関連する手紙、記録、資料等</li>
 <li>その他、当資料室が文化資料として登録することが適当と認めた資料</li>
-
 </ol>
 
 </article>
@@ -2123,7 +2311,6 @@ It means preserving a record of what was determined at that point in time.
 </li>
 
 </ul>
-
 
 <h4>抽選結果について</h4>
 
@@ -2686,182 +2873,8 @@ It means preserving a record of what was determined at that point in time.
 
 </ol>
 
-/* =====================================================
-   登録申請枠を生成
-   ===================================================== */
 
-function renderRegistrationSlots(
-    slots
-) {
-
-    const container =
-        document.getElementById(
-            "registration-slots"
-        );
-
-
-    if (!container) {
-
-        return;
-    }
-
-
-    const count =
-        Math.min(
-            Math.max(
-                Number(slots),
-                1
-            ),
-            10
-        );
-
-
-    container.innerHTML =
-        "";
-
-
-    for (
-        let i = 1;
-        i <= count;
-        i++
-    ) {
-
-        const item =
-            document.createElement(
-                "div"
-            );
-
-
-        item.className =
-            "registration-form-item";
-
-
-        item.innerHTML = `
-
-            <h4>
-                登録資料 ${i}
-            </h4>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="material-name-${i}"
-                >
-                    資料名称
-                </label>
-
-                <p class="small">
-                    例：サイン色紙
-                </p>
-
-                <input
-                    type="text"
-                    id="material-name-${i}"
-                    maxlength="200"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="related-name-${i}"
-                >
-                    関連資料名称
-                </label>
-
-                <p class="small">
-                    人物名、作品名、イベント名など、
-                    資料に関連する名称を入力してください。
-                    <br>
-                    例：鳥山明
-                </p>
-
-                <input
-                    type="text"
-                    id="related-name-${i}"
-                    maxlength="200"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="acquisition-info-${i}"
-                >
-                    入手経路など
-                </label>
-
-                <p class="small">
-                    資料を入手した経緯、購入先、譲渡、
-                    入手時期など、資料について分かることを
-                    自由に記入してください。
-                </p>
-
-                <textarea
-                    id="acquisition-info-${i}"
-                    rows="7"
-                    maxlength="5000"
-                ></textarea>
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="material-images-${i}"
-                >
-                    資料画像
-                </label>
-
-                <p class="small">
-                    申請者自身が申請時に現物を撮影した画像を
-                    アップロードしてください。
-                </p>
-
-                <p class="small">
-                    最大20枚まで提出できます。
-                    長辺が2,500pxを超える画像は、
-                    自動的に2,500px以内へ縮小します。
-                </p>
-
-                <input
-                    type="file"
-                    id="material-images-${i}"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                >
-
-                <div
-                    id="image-preview-${i}"
-                    class="image-preview"
-                ></div>
-
-            </div>
-
-        `;
-
-
-        container.appendChild(
-            item
-        );
-
-    }
-
-}
-
-<!-- =====================================================
-     抽選結果確認
-     ===================================================== -->
-
-
+<h3>
     抽選への申し込みについて
 </h3>
 
@@ -2964,7 +2977,9 @@ function renderRegistrationSlots(
 </h3>
 
 <p>
-    <strong>申請画像は、申請者自身が申請時に現物を撮影した画像に限ります。</strong>
+    <strong>
+        申請画像は、申請者自身が申請時に現物を撮影した画像に限ります。
+    </strong>
 </p>
 
 <p>
@@ -2974,8 +2989,8 @@ function renderRegistrationSlots(
 
 <p>
     <strong>
-    申請者自身が過去にインターネット等へ掲載した画像についても、
-    申請画像として使い回さず、申請時に改めて現物を撮影してください。
+        申請者自身が過去にインターネット等へ掲載した画像についても、
+        申請画像として使い回さず、申請時に改めて現物を撮影してください。
     </strong>
 </p>
 
@@ -3033,7 +3048,7 @@ function renderRegistrationSlots(
 
 <p>
     <strong>
-    登録料、審査料その他、登録に関する費用は徴収しません。
+        登録料、審査料その他、登録に関する費用は徴収しません。
     </strong>
 </p>
 
@@ -3196,9 +3211,23 @@ const MAX_IMAGE_SIZE = 2500;
    状態
    ===================================================== */
 
-let horrorRunning = false;
+/*
+ * 申請枠ごとの画像を管理する。
+ *
+ * registrationImages[1]
+ * registrationImages[2]
+ * ...
+ *
+ * のように、資料番号ごとに配列を持つ。
+ */
 
-let registrationImages = [];
+const registrationImages =
+    Array.from(
+        { length: 11 },
+        function() {
+            return [];
+        }
+    );
 
 
 /* =====================================================
@@ -3216,6 +3245,10 @@ async function checkRegistration() {
         document.getElementById(
             "lookup-result"
         );
+
+    if (!input || !result) {
+        return;
+    }
 
     const number =
         input.value.trim();
@@ -3247,9 +3280,10 @@ async function checkRegistration() {
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-                        number: number
-                    })
+                    body:
+                        JSON.stringify({
+                            number: number
+                        })
                 }
             );
 
@@ -3258,7 +3292,8 @@ async function checkRegistration() {
             response.status === 429
         ) {
 
-            await startHorror();
+            result.textContent =
+                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
 
             return;
         }
@@ -3269,6 +3304,8 @@ async function checkRegistration() {
 
 
     } catch (error) {
+
+        console.error(error);
 
         result.textContent =
             "照会できませんでした。";
@@ -3299,6 +3336,16 @@ async function checkApplication() {
             "registration-application"
         );
 
+
+    if (
+        !input ||
+        !result ||
+        !applicationBox
+    ) {
+        return;
+    }
+
+
     const applicationNumber =
         input.value.trim();
 
@@ -3310,7 +3357,7 @@ async function checkApplication() {
     if (!applicationNumber) {
 
         result.textContent =
-            "確認番号（8桁）を入力してください。";
+            "確認番号（AP番号）を入力してください。";
 
         return;
     }
@@ -3327,8 +3374,7 @@ async function checkApplication() {
                 WORKER_URL +
                 "/check-application",
                 {
-                    method:
-                        "POST",
+                    method: "POST",
 
                     headers: {
                         "Content-Type":
@@ -3348,7 +3394,8 @@ async function checkApplication() {
             response.status === 429
         ) {
 
-            await startHorror();
+            result.textContent =
+                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
 
             return;
         }
@@ -3384,47 +3431,47 @@ async function checkApplication() {
         }
 
 
-      if (
-    data &&
-    data.status ===
-        "active" &&
-    data.winner === true &&
-    Number(data.slots) > 0
-) {
+        if (
+            data &&
+            data.status ===
+                "active" &&
+            data.winner === true &&
+            Number(data.slots) > 0
+        ) {
 
-    const slots =
-        Math.min(
-            Math.max(
-                Number(data.slots),
-                1
-            ),
-            10
-        );
-
-
-    result.innerHTML = `
-        <div>
-            今回の抽選に当選しています。
-        </div>
-
-        <div class="application-slots">
-            登録申請：
-            ${slots}枠
-        </div>
-    `;
+            const slots =
+                Math.min(
+                    Math.max(
+                        Number(data.slots),
+                        1
+                    ),
+                    10
+                );
 
 
-    renderRegistrationSlots(
-        slots
-    );
+            result.innerHTML = `
+                <div>
+                    今回の抽選に当選しています。
+                </div>
+
+                <div class="application-slots">
+                    登録申請：
+                    ${slots}枠
+                </div>
+            `;
 
 
-    applicationBox.style.display =
-        "block";
+            renderRegistrationSlots(
+                slots
+            );
 
 
-    return;
-}
+            applicationBox.style.display =
+                "block";
+
+
+            return;
+        }
 
 
         result.textContent =
@@ -3432,6 +3479,8 @@ async function checkApplication() {
 
 
     } catch (error) {
+
+        console.error(error);
 
         result.textContent =
             "確認できませんでした。";
@@ -3442,216 +3491,293 @@ async function checkApplication() {
 
 
 /* =====================================================
-   申請前チェック
+   登録申請枠を生成
    ===================================================== */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+function renderRegistrationSlots(
+    slots
+) {
 
-        const checkbox =
-            document.getElementById(
-                "application-agree"
-            );
-
-        const nextButton =
-            document.getElementById(
-                "application-next"
-            );
-
-
-        if (
-            !checkbox ||
-            !nextButton
-        ) {
-            return;
-        }
-
-
-        checkbox.addEventListener(
-            "change",
-            function() {
-
-                nextButton.disabled =
-                    !checkbox.checked;
-
-            }
+    const container =
+        document.getElementById(
+            "registration-slots"
         );
 
+
+    if (!container) {
+        return;
     }
-);
+
+
+    const count =
+        Math.min(
+            Math.max(
+                Number(slots),
+                1
+            ),
+            10
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    for (
+        let i = 1;
+        i <= count;
+        i++
+    ) {
+
+        registrationImages[i] =
+            [];
+
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "registration-form-item";
+
+
+        item.innerHTML = `
+
+            <h4>
+                登録資料 ${i}
+            </h4>
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-name-${i}"
+                >
+                    資料名称
+                </label>
+
+                <p class="small">
+                    例：サイン色紙
+                </p>
+
+                <input
+                    type="text"
+                    id="material-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="related-name-${i}"
+                >
+                    関連資料名称
+                </label>
+
+                <p class="small">
+                    人物名、作品名、イベント名など、
+                    資料に関連する名称を入力してください。
+                    <br>
+                    例：鳥山明
+                </p>
+
+                <input
+                    type="text"
+                    id="related-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="acquisition-info-${i}"
+                >
+                    入手経路など
+                </label>
+
+                <p class="small">
+                    資料を入手した経緯、購入先、譲渡、
+                    入手時期など、資料について分かることを
+                    自由に記入してください。
+                </p>
+
+                <textarea
+                    id="acquisition-info-${i}"
+                    rows="7"
+                    maxlength="5000"
+                ></textarea>
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-images-${i}"
+                >
+                    資料画像
+                </label>
+
+                <p class="small">
+                    申請者自身が申請時に現物を撮影した画像を
+                    アップロードしてください。
+                </p>
+
+                <p class="small">
+                    最大20枚まで提出できます。
+                    長辺が2,500pxを超える画像は、
+                    自動的に2,500px以内へ縮小します。
+                </p>
+
+                <input
+                    type="file"
+                    id="material-images-${i}"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                >
+
+                <div
+                    id="image-preview-${i}"
+                    class="image-preview"
+                ></div>
+
+            </div>
+        `;
+
+
+        container.appendChild(
+            item
+        );
+
+
+        const input =
+            document.getElementById(
+                `material-images-${i}`
+            );
+
+
+        if (input) {
+
+            input.addEventListener(
+                "change",
+                function() {
+
+                    handleRegistrationImages(
+                        i,
+                        input
+                    );
+
+                }
+            );
+
+        }
+
+    }
+
+
+    updateRegistrationSubmitState();
+
+}
 
 
 /* =====================================================
-   申請「次へ」
+   登録申請画像処理
    ===================================================== */
 
-function applicationNext() {
+async function handleRegistrationImages(
+    slot,
+    input
+) {
 
-    const checkbox =
-        document.getElementById(
-            "application-agree"
+    const files =
+        Array.from(
+            input.files || []
         );
 
-    const message =
-        document.getElementById(
-            "application-next-message"
-        );
+
+    if (!files.length) {
+        return;
+    }
+
+
+    const currentCount =
+        registrationImages[slot].length;
 
 
     if (
-        !checkbox ||
-        !checkbox.checked
+        currentCount +
+        files.length >
+        MAX_IMAGES
     ) {
+
+        alert(
+            `資料 ${slot} の画像は最大20枚まで提出できます。`
+        );
+
+        input.value =
+            "";
 
         return;
     }
 
 
-    message.textContent =
-        "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
-
-}
-
-
-/* =====================================================
-   異常アクセス監視
-   ===================================================== */
-
-async function monitorSiteAccess() {
-
-    try {
-
-        const response =
-            await fetch(
-                WORKER_URL +
-                "/site-monitor",
-                {
-                    method:
-                        "POST"
-                }
-            );
-
+    for (
+        const file of files
+    ) {
 
         if (
-            response.status === 429
+            !file.type.startsWith(
+                "image/"
+            )
         ) {
-
-            await startHorror();
-
+            continue;
         }
 
-    } catch (error) {
 
-        /*
-         * 監視通信の失敗では
-         * サイトを止めない
-         */
+        try {
 
-    }
-
-}
+            const resized =
+                await resizeRegistrationImage(
+                    file
+                );
 
 
-/* =====================================================
-   登録申請画像
-   ===================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        const input =
-            document.getElementById(
-                "material-images"
+            registrationImages[slot].push(
+                resized
             );
 
-        if (!input) {
 
-            return;
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "画像の処理に失敗しました。"
+            );
+
         }
 
-
-        input.addEventListener(
-            "change",
-            async function() {
-
-                const files =
-                    Array.from(
-                        input.files || []
-                    );
-
-
-                if (!files.length) {
-
-                    return;
-                }
-
-
-                if (
-                    registrationImages.length +
-                    files.length >
-                    MAX_IMAGES
-                ) {
-
-                    alert(
-                        "画像は最大20枚まで提出できます。"
-                    );
-
-                    input.value =
-                        "";
-
-                    return;
-                }
-
-
-                for (
-                    const file of files
-                ) {
-
-                    if (
-                        !file.type.startsWith(
-                            "image/"
-                        )
-                    ) {
-
-                        continue;
-                    }
-
-
-                    try {
-
-                        const resized =
-                            await resizeRegistrationImage(
-                                file
-                            );
-
-                        registrationImages.push(
-                            resized
-                        );
-
-                    } catch (error) {
-
-                        console.error(
-                            error
-                        );
-
-                    }
-
-                }
-
-
-                input.value =
-                    "";
-
-
-                renderRegistrationImages();
-
-            }
-        );
-
     }
-);
+
+
+    input.value =
+        "";
+
+
+    renderRegistrationImages(
+        slot
+    );
+
+}
 
 
 /* =====================================================
@@ -3824,16 +3950,17 @@ function resizeRegistrationImage(
    画像プレビュー
    ===================================================== */
 
-function renderRegistrationImages() {
+function renderRegistrationImages(
+    slot
+) {
 
     const preview =
         document.getElementById(
-            "image-preview"
+            `image-preview-${slot}`
         );
 
 
     if (!preview) {
-
         return;
     }
 
@@ -3842,7 +3969,7 @@ function renderRegistrationImages() {
         "";
 
 
-    registrationImages.forEach(
+    registrationImages[slot].forEach(
         function(item, index) {
 
             const wrapper =
@@ -3851,14 +3978,8 @@ function renderRegistrationImages() {
                 );
 
 
-            wrapper.style.position =
-                "relative";
-
-            wrapper.style.display =
-                "inline-block";
-
-            wrapper.style.margin =
-                "8px";
+            wrapper.className =
+                "image-preview-item";
 
 
             const image =
@@ -3867,26 +3988,24 @@ function renderRegistrationImages() {
                 );
 
 
-            image.src =
+            const imageUrl =
                 URL.createObjectURL(
                     item.blob
                 );
 
 
-            image.style.width =
-                "150px";
+            image.src =
+                imageUrl;
 
-            image.style.height =
-                "150px";
 
-            image.style.objectFit =
-                "contain";
+            image.onload =
+                function() {
 
-            image.style.border =
-                "1px solid #ccc";
+                    URL.revokeObjectURL(
+                        imageUrl
+                    );
 
-            image.style.background =
-                "#f5f5f5";
+                };
 
 
             const removeButton =
@@ -3898,30 +4017,26 @@ function renderRegistrationImages() {
             removeButton.type =
                 "button";
 
+            removeButton.className =
+                "image-preview-remove";
+
             removeButton.textContent =
                 "削除";
-
-            removeButton.style.display =
-                "block";
-
-            removeButton.style.width =
-                "100%";
-
-            removeButton.style.marginTop =
-                "4px";
 
 
             removeButton.addEventListener(
                 "click",
                 function() {
 
-                    registrationImages.splice(
+                    registrationImages[slot].splice(
                         index,
                         1
                     );
 
 
-                    renderRegistrationImages();
+                    renderRegistrationImages(
+                        slot
+                    );
 
                 }
             );
@@ -3943,442 +4058,172 @@ function renderRegistrationImages() {
     );
 
 
+    updateRegistrationSubmitState();
+
+}
+
+
+/* =====================================================
+   登録申請送信ボタン状態
+   ===================================================== */
+
+function updateRegistrationSubmitState() {
+
     const submitButton =
         document.getElementById(
             "registration-submit"
         );
 
 
-    if (submitButton) {
-
-        submitButton.disabled =
-            registrationImages.length === 0;
-
-    }
-
-}
-
-
-/* =====================================================
-   429ホラー演出
-   ===================================================== */
-
-async function startHorror() {
-
-    if (horrorRunning) {
+    if (!submitButton) {
         return;
     }
 
-    horrorRunning = true;
 
+    /*
+     * 現段階では送信処理そのものは未実装。
+     *
+     * そのため、画像が1枚以上存在した場合のみ
+     * ボタンを有効化する。
+     */
 
-    document.body.innerHTML =
-        "";
+    const hasImages =
+        registrationImages.some(
+            function(images) {
 
+                return images.length > 0;
 
-    document.body.style.margin =
-        "0";
-
-    document.body.style.background =
-        "#000";
-
-    document.body.style.overflow =
-        "hidden";
-
-
-    const overlay =
-        document.createElement(
-            "div"
+            }
         );
 
 
-    Object.assign(
-        overlay.style,
-        {
-            position: "fixed",
-            inset: "0",
-            width: "100vw",
-            height: "100vh",
-            background: "#000",
-            zIndex: "999999",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-        }
-    );
-
-
-    const image =
-        document.createElement(
-            "img"
-        );
-
-
-    image.src =
-        "horror.jpg";
-
-    image.alt =
-        "";
-
-
-    Object.assign(
-        image.style,
-        {
-            position: "absolute",
-            inset: "0",
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: "0",
-            filter:
-                "brightness(0.35) contrast(1.2)",
-            transition:
-                "opacity 1.2s ease, filter 0.3s ease"
-        }
-    );
-
-
-    const flash =
-        document.createElement(
-            "div"
-        );
-
-
-    Object.assign(
-        flash.style,
-        {
-            position: "absolute",
-            inset: "0",
-            background: "#fff",
-            opacity: "0",
-            pointerEvents: "none"
-        }
-    );
-
-
-    overlay.appendChild(
-        image
-    );
-
-    overlay.appendChild(
-        flash
-    );
-
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    const ghost =
-        new Audio(
-            "dragon-studio-ghost-horror-sound-382709.mp3"
-        );
-
-    const scary =
-        new Audio(
-            "dragon-studio-scary-sound-effect-359877.mp3"
-        );
-
-    const crack =
-        new Audio(
-            "universfield-bone-crack-horror-352450.mp3"
-        );
-
-
-    ghost.preload =
-        "auto";
-
-    scary.preload =
-        "auto";
-
-    crack.preload =
-        "auto";
-
-
-    ghost.volume =
-        0.05;
-
-    scary.volume =
-        0.12;
-
-    crack.volume =
-        0.55;
-
-
-    try {
-
-        await ghost.play();
-
-    } catch (error) {}
-
-
-    await wait(2000);
-
-
-    try {
-
-        await scary.play();
-
-    } catch (error) {}
-
-
-    fadeVolume(
-        scary,
-        0.12,
-        0.32,
-        2500
-    );
-
-
-    await wait(2500);
-
-
-    image.style.opacity =
-        "0.55";
-
-
-    await wait(1000);
-
-
-    try {
-
-        crack.currentTime =
-            0;
-
-        crack.volume =
-            0.50;
-
-        await crack.play();
-
-    } catch (error) {}
-
-
-    await wait(1000);
-
-
-    image.style.opacity =
-        "0.85";
-
-
-    try {
-
-        crack.currentTime =
-            0;
-
-        crack.volume =
-            0.65;
-
-        await crack.play();
-
-    } catch (error) {}
-
-
-    await wait(500);
-
-
-    image.style.opacity =
-        "1";
-
-
-    image.style.filter =
-        "brightness(0.65) contrast(1.35)";
-
-
-    flash.style.transition =
-        "opacity 0.08s ease";
-
-    flash.style.opacity =
-        "0.75";
-
-
-    setTimeout(
-        function() {
-
-            flash.style.opacity =
-                "0";
-
-        },
-        80
-    );
-
-
-    await wait(1500);
-
-
-    fadeVolume(
-        scary,
-        scary.volume,
-        0,
-        1500
-    );
-
-
-    fadeVolume(
-        ghost,
-        ghost.volume,
-        0,
-        1000
-    );
-
-
-    await wait(500);
-
-
-    image.style.opacity =
-        "0";
-
-
-    await wait(1000);
-
-
-    ghost.pause();
-
-    scary.pause();
-
-    crack.pause();
-
-
-    overlay.innerHTML = `
-
-        <div style="
-            width:100%;
-            max-width:650px;
-            padding:40px 25px;
-            text-align:center;
-            color:#fff;
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                'Noto Sans JP',
-                sans-serif;
-        ">
-
-            <div style="
-                font-size:12px;
-                letter-spacing:4px;
-                color:#c9b98b;
-                margin-bottom:18px;
-            ">
-                ACCESS MONITOR
-            </div>
-
-
-            <h2 style="
-                font-size:27px;
-                margin:0 0 22px;
-                font-weight:500;
-                color:#fff;
-            ">
-                アクセスが集中しています。
-            </h2>
-
-
-            <p style="
-                font-size:15px;
-                line-height:2;
-                color:#ddd;
-            ">
-                短時間に多数のアクセスが確認されたため、
-                <br>
-                安全対策として一時的に制限しています。
-            </p>
-
-
-            <p style="
-                font-size:14px;
-                color:#aaa;
-                margin-top:30px;
-            ">
-                ……そんなに急がなくても大丈夫です。
-            </p>
-
-
-            <p style="
-                font-size:12px;
-                color:#777;
-                margin-top:35px;
-            ">
-                しばらく時間をおいてから、
-                <br>
-                もう一度お試しください。
-            </p>
-
-        </div>
-
-    `;
+    submitButton.disabled =
+        !hasImages;
 
 }
 
 
 /* =====================================================
-   待機
+   申請前チェック
    ===================================================== */
 
-function wait(ms) {
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
 
-    return new Promise(
-        function(resolve) {
-
-            setTimeout(
-                resolve,
-                ms
+        const checkbox =
+            document.getElementById(
+                "application-agree"
             );
 
-        }
-    );
-
-}
-
-
-/* =====================================================
-   音量フェード
-   ===================================================== */
-
-function fadeVolume(
-    audio,
-    from,
-    to,
-    duration
-) {
-
-    const start =
-        performance.now();
-
-
-    function step(now) {
-
-        const progress =
-            Math.min(
-                (now - start) /
-                duration,
-                1
+        const nextButton =
+            document.getElementById(
+                "application-next"
             );
-
-
-        audio.volume =
-            from +
-            (to - from) *
-            progress;
 
 
         if (
-            progress < 1
+            !checkbox ||
+            !nextButton
+        ) {
+            return;
+        }
+
+
+        checkbox.addEventListener(
+            "change",
+            function() {
+
+                nextButton.disabled =
+                    !checkbox.checked;
+
+            }
+        );
+
+    }
+);
+
+
+/* =====================================================
+   申請「次へ」
+   ===================================================== */
+
+function applicationNext() {
+
+    const checkbox =
+        document.getElementById(
+            "application-agree"
+        );
+
+    const message =
+        document.getElementById(
+            "application-next-message"
+        );
+
+
+    if (
+        !checkbox ||
+        !checkbox.checked ||
+        !message
+    ) {
+        return;
+    }
+
+
+    message.textContent =
+        "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
+
+}
+
+
+/* =====================================================
+   異常アクセス監視
+   ===================================================== */
+
+async function monitorSiteAccess() {
+
+    try {
+
+        const response =
+            await fetch(
+                WORKER_URL +
+                "/site-monitor",
+                {
+                    method: "POST"
+                }
+            );
+
+
+        /*
+         * 429の場合も、現在は
+         * サイト全体を変更・停止しない。
+         *
+         * ホラー演出は完全に削除。
+         */
+
+        if (
+            response.status === 429
         ) {
 
-            requestAnimationFrame(
-                step
+            console.warn(
+                "アクセス集中が検出されました。"
             );
 
         }
 
+    } catch (error) {
+
+        /*
+         * 監視通信の失敗では
+         * サイトを止めない。
+         */
+
+        console.warn(
+            "アクセス監視に失敗しました。",
+            error
+        );
+
     }
-
-
-    requestAnimationFrame(
-        step
-    );
 
 }
 
