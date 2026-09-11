@@ -2122,22 +2122,32 @@ It means preserving a record of what was determined at that point in time.
 >
 
 <h3>
-    登録申請
-</h3>
-
-<p>
-    抽選に当選された方は、以下の内容を入力してください。
-</p>
-
-<div id="registration-slots"></div>
-
-<button
-    type="button"
-    id="registration-submit"
-    class="registration-submit"
-    disabled
+ <div
+    id="registration-application"
+    class="registration-application"
+    style="display:none;"
 >
-    登録申請を送信
+    <h3>登録申請</h3>
+
+    <p>
+        抽選に当選された方は、以下の内容を入力してください。
+    </p>
+
+    <div id="registration-slots"></div>
+
+    <button
+        type="button"
+        id="registration-submit"
+        disabled
+    >
+        登録申請を送信
+    </button>
+
+    <div
+        id="registration-submit-message"
+        class="application-next-message"
+    ></div>
+</div>
 </button>
 
 <div id="registration-submit-message"></div>
