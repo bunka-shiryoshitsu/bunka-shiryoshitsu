@@ -873,7 +873,7 @@ It means preserving a record of what was determined at that point in time.
 <div class="lookup">
 <div class="lookup-title">REGISTRATION NUMBER</div>
 <p>登録番号を入力してください。</p>
-<input type="text" id="registration-number" placeholder="例：AR-7K4M92Q8">
+<input type="text" id="registration-number" placeholder="例：F8ZB225Y" autocomplete="off">
 <br>
 <button type="button" onclick="checkRegistration()">登録番号を照会</button>
 <div id="lookup-result"></div>
@@ -1261,16 +1261,24 @@ let registrationSubmitted=false;
 async function readWorkerResponse(response){
  const text=await response.text();
  let data=null;
- try{data=text?JSON.parse(text):null}catch(e){}
+
+ try{
+  data=text?JSON.parse(text):null;
+ }catch(error){
+  data=null;
+ }
+
  return{text,data};
 }
 
 async function checkRegistration(){
  const input=document.getElementById("registration-number");
  const result=document.getElementById("lookup-result");
+
  if(!input||!result)return;
 
- const number=input.value.trim();
+ const number=input.value.trim().toUpperCase();
+
  if(!number){
   result.textContent="登録番号を入力してください。";
   return;
@@ -1279,7 +1287,7 @@ async function checkRegistration(){
  result.textContent="照会中…";
 
  try{
-  const response=await fetch(WORKER_URL,{
+  const response=await fetch(WORKER_URL+"/check",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({number})
@@ -1291,6 +1299,7 @@ async function checkRegistration(){
   }
 
   result.textContent=await response.text();
+
  }catch(error){
   console.error(error);
   result.textContent="照会できませんでした。";
@@ -1313,6 +1322,7 @@ async function checkApplication(){
 
  if(box)box.style.display="none";
  if(container)container.innerHTML="";
+
  clearRegistrationImages();
 
  if(!ap){
@@ -1334,7 +1344,9 @@ async function checkApplication(){
    return;
   }
 
-  if(!response.ok)throw new Error("HTTP "+response.status);
+  if(!response.ok){
+   throw new Error("HTTP "+response.status);
+  }
 
   const data=await response.json();
 
@@ -1359,11 +1371,14 @@ async function checkApplication(){
    `;
 
    renderRegistrationSlots(slots);
+
    if(box)box.style.display="block";
+
    return;
   }
 
   result.textContent="今回の抽選では、登録申請の対象となっていません。";
+
  }catch(error){
   console.error(error);
   result.textContent="確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
@@ -1372,9 +1387,11 @@ async function checkApplication(){
 
 function renderRegistrationSlots(slots){
  const container=document.getElementById("registration-slots");
+
  if(!container)return;
 
  const count=Math.min(Math.max(Number(slots),1),10);
+
  container.innerHTML="";
  clearRegistrationImages();
 
@@ -1419,7 +1436,10 @@ function renderRegistrationSlots(slots){
 
   ["material-name-","related-name-","acquisition-info-"].forEach(prefix=>{
    const element=document.getElementById(prefix+i);
-   if(element)element.addEventListener("input",updateRegistrationSubmitState);
+
+   if(element){
+    element.addEventListener("input",updateRegistrationSubmitState);
+   }
   });
  }
 
@@ -1428,11 +1448,17 @@ function renderRegistrationSlots(slots){
 
 function setupRegistrationImageInput(slot){
  const input=document.getElementById(`material-images-${slot}`);
- if(input)input.addEventListener("change",()=>handleRegistrationImages(slot,input));
+
+ if(input){
+  input.addEventListener("change",()=>{
+   handleRegistrationImages(slot,input);
+  });
+ }
 }
 
 async function handleRegistrationImages(slot,input){
  const files=Array.from(input.files||[]);
+
  if(!files.length)return;
 
  const remaining=MAX_IMAGES-registrationImages[slot].length;
@@ -1451,7 +1477,9 @@ async function handleRegistrationImages(slot,input){
   if(!file.type.startsWith("image/"))continue;
 
   try{
-   registrationImages[slot].push(await resizeRegistrationImage(file));
+   registrationImages[slot].push(
+    await resizeRegistrationImage(file)
+   );
   }catch(error){
    console.error(error);
    alert("画像の処理に失敗しました。");
@@ -1499,7 +1527,12 @@ function resizeRegistrationImage(file){
      return;
     }
 
-    resolve({blob,width,height});
+    resolve({
+     blob,
+     width,
+     height
+    });
+
    },"image/jpeg",IMAGE_QUALITY);
   };
 
@@ -1514,6 +1547,7 @@ function resizeRegistrationImage(file){
 
 function renderRegistrationImages(slot){
  const preview=document.getElementById(`image-preview-${slot}`);
+
  if(!preview)return;
 
  preview.innerHTML="";
@@ -1527,9 +1561,13 @@ function renderRegistrationImages(slot){
 
   img.src=objectUrl;
   img.alt=`登録資料 ${slot} 画像 ${index+1}`;
-  img.onload=()=>URL.revokeObjectURL(objectUrl);
+
+  img.onload=()=>{
+   URL.revokeObjectURL(objectUrl);
+  };
 
   const button=document.createElement("button");
+
   button.type="button";
   button.className="image-preview-remove";
   button.textContent="削除";
@@ -1547,7 +1585,9 @@ function renderRegistrationImages(slot){
 }
 
 function clearRegistrationImages(){
- for(let i=1;i<=10;i++)registrationImages[i]=[];
+ for(let i=1;i<=10;i++){
+  registrationImages[i]=[];
+ }
 }
 
 function collectRegistrationItems(){
@@ -1555,21 +1595,36 @@ function collectRegistrationItems(){
  const items=[];
 
  if(!slots||slots<1||slots>10){
-  return{ok:false,message:"登録申請枠を確認できません。"};
+  return{
+   ok:false,
+   message:"登録申請枠を確認できません。"
+  };
  }
 
  for(let i=1;i<=slots;i++){
-  const name=document.getElementById(`material-name-${i}`)?.value.trim()||"";
-  const relatedName=document.getElementById(`related-name-${i}`)?.value.trim()||"";
-  const acquisition=document.getElementById(`acquisition-info-${i}`)?.value.trim()||"";
+  const name=
+   document.getElementById(`material-name-${i}`)?.value.trim()||"";
+
+  const relatedName=
+   document.getElementById(`related-name-${i}`)?.value.trim()||"";
+
+  const acquisition=
+   document.getElementById(`acquisition-info-${i}`)?.value.trim()||"";
+
   const images=registrationImages[i]||[];
 
   if(!name){
-   return{ok:false,message:`資料 ${i} の「資料名称」を入力してください。`};
+   return{
+    ok:false,
+    message:`資料 ${i} の「資料名称」を入力してください。`
+   };
   }
 
   if(!images.length){
-   return{ok:false,message:`資料 ${i} の画像を1枚以上アップロードしてください。`};
+   return{
+    ok:false,
+    message:`資料 ${i} の画像を1枚以上アップロードしてください。`
+   };
   }
 
   items.push({
@@ -1580,11 +1635,15 @@ function collectRegistrationItems(){
   });
  }
 
- return{ok:true,items};
+ return{
+  ok:true,
+  items
+ };
 }
 
 function updateRegistrationSubmitState(){
  const button=document.getElementById("registration-submit");
+
  if(!button)return;
 
  if(registrationSubmitting||registrationSubmitted){
@@ -1600,15 +1659,12 @@ function updateRegistrationSubmitState(){
  }
 
  for(let i=1;i<=slots;i++){
-  const name=document.getElementById(`material-name-${i}`)?.value.trim()||"";
-  if(!name||(registrationImages[i]||[]).length){
-   if(!name){
-    button.disabled=true;
-    return;
-   }
-  }
+  const name=
+   document.getElementById(`material-name-${i}`)?.value.trim()||"";
 
-  if(!(registrationImages[i]||[]).length){
+  const images=registrationImages[i]||[];
+
+  if(!name||!images.length){
    button.disabled=true;
    return;
   }
@@ -1621,30 +1677,46 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
  const formData=new FormData();
 
  formData.append("ap",ap);
- formData.append("item",String(item).padStart(2,"0"));
+ formData.append(
+  "item",
+  String(item).padStart(2,"0")
+ );
+
  formData.append(
   "image",
   image.blob,
   `item-${String(item).padStart(2,"0")}-image-${String(imageIndex).padStart(2,"0")}.jpg`
  );
 
- const response=await fetch(WORKER_URL+"/image-upload",{
-  method:"POST",
-  body:formData
- });
+ const response=await fetch(
+  WORKER_URL+"/image-upload",
+  {
+   method:"POST",
+   body:formData
+  }
+ );
 
  const result=await readWorkerResponse(response);
 
  if(response.status===429){
-  throw new Error("現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。");
+  throw new Error(
+   "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
+  );
  }
 
  if(!response.ok){
-  throw new Error(result.data?.message||result.text||"画像のアップロードに失敗しました。");
+  throw new Error(
+   result.data?.message||
+   result.text||
+   "画像のアップロードに失敗しました。"
+  );
  }
 
  if(result.data?.ok===false){
-  throw new Error(result.data.message||"画像のアップロードに失敗しました。");
+  throw new Error(
+   result.data.message||
+   "画像のアップロードに失敗しました。"
+  );
  }
 
  return result.data;
@@ -1653,8 +1725,12 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
 async function submitRegistrationApplication(){
  if(registrationSubmitting||registrationSubmitted)return;
 
- const message=document.getElementById("registration-submit-message");
- const button=document.getElementById("registration-submit");
+ const message=
+  document.getElementById("registration-submit-message");
+
+ const button=
+  document.getElementById("registration-submit");
+
  if(!message||!button)return;
 
  const collected=collectRegistrationItems();
@@ -1665,18 +1741,23 @@ async function submitRegistrationApplication(){
  }
 
  if(!activeApplication.ap||!activeApplication.slots){
-  message.textContent="抽選結果を確認できません。もう一度AP番号を確認してください。";
+  message.textContent=
+   "抽選結果を確認できません。もう一度AP番号を確認してください。";
   return;
  }
 
  registrationSubmitting=true;
  updateRegistrationSubmitState();
+
  message.textContent="登録申請の準備をしています……";
 
  try{
   const items=collected.items;
+
   const totalImages=items.reduce(
-   (total,item)=>total+(registrationImages[item.item]||[]).length,
+   (total,item)=>{
+    return total+(registrationImages[item.item]||[]).length;
+   },
    0
   );
 
@@ -1687,7 +1768,9 @@ async function submitRegistrationApplication(){
 
    for(let i=0;i<images.length;i++){
     uploadedImages++;
-    message.textContent=`画像を送信しています…… ${uploadedImages} / ${totalImages}`;
+
+    message.textContent=
+     `画像を送信しています…… ${uploadedImages} / ${totalImages}`;
 
     await uploadRegistrationImage(
      activeApplication.ap,
@@ -1698,41 +1781,63 @@ async function submitRegistrationApplication(){
    }
   }
 
-  message.textContent="画像の送信が完了しました。登録申請を送信しています……";
+  message.textContent=
+   "画像の送信が完了しました。登録申請を送信しています……";
 
-  const response=await fetch(WORKER_URL+"/registration-submit",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    ap:activeApplication.ap,
-    items
-   })
-  });
+  const response=await fetch(
+   WORKER_URL+"/registration-submit",
+   {
+    method:"POST",
+    headers:{
+     "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+     ap:activeApplication.ap,
+     items
+    })
+   }
+  );
 
   const result=await readWorkerResponse(response);
 
   if(response.status===429){
-   throw new Error("現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。");
+   throw new Error(
+    "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
+   );
   }
 
   if(!response.ok){
-   throw new Error(result.data?.message||result.text||"登録申請の送信に失敗しました。");
+   throw new Error(
+    result.data?.message||
+    result.text||
+    "登録申請の送信に失敗しました。"
+   );
   }
 
   if(result.data?.ok===false){
-   throw new Error(result.data.message||"登録申請の送信に失敗しました。");
+   throw new Error(
+    result.data.message||
+    "登録申請の送信に失敗しました。"
+   );
   }
 
   registrationSubmitted=true;
   registrationSubmitting=false;
   button.disabled=true;
-  message.textContent=result.data?.message||"登録申請を受け付けました。";
+
+  message.textContent=
+   result.data?.message||
+   "登録申請を受け付けました。";
 
  }catch(error){
   console.error(error);
+
   registrationSubmitting=false;
   updateRegistrationSubmitState();
-  message.textContent=error.message||"登録申請を送信できませんでした。しばらく時間をおいて、もう一度お試しください。";
+
+  message.textContent=
+   error.message||
+   "登録申請を送信できませんでした。しばらく時間をおいて、もう一度お試しください。";
  }
 }
 
@@ -1742,13 +1847,23 @@ function applicationNext(){
 
  if(!checkbox?.checked||!message)return;
 
- message.textContent="現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
+ message.textContent=
+  "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
 }
 
 async function monitorSiteAccess(){
  try{
-  const response=await fetch(WORKER_URL+"/site-monitor",{method:"POST"});
-  if(response.status===429)console.warn("アクセス集中が検出されました。");
+  const response=await fetch(
+   WORKER_URL+"/site-monitor",
+   {
+    method:"POST"
+   }
+  );
+
+  if(response.status===429){
+   console.warn("アクセス集中が検出されました。");
+  }
+
  }catch(error){
   console.warn("アクセス監視に失敗しました。");
  }
@@ -1766,11 +1881,17 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
 
  if(nextButton){
-  nextButton.addEventListener("click",applicationNext);
+  nextButton.addEventListener(
+   "click",
+   applicationNext
+  );
  }
 
  if(registrationSubmit){
-  registrationSubmit.addEventListener("click",submitRegistrationApplication);
+  registrationSubmit.addEventListener(
+   "click",
+   submitRegistrationApplication
+  );
  }
 
  monitorSiteAccess();
