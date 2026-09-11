@@ -3376,30 +3376,47 @@ async function checkApplication() {
         }
 
 
-        if (
-            data &&
-            data.status ===
-                "active" &&
-            data.winner === true &&
-            Number(data.slots) > 0
-        ) {
+      if (
+    data &&
+    data.status ===
+        "active" &&
+    data.winner === true &&
+    Number(data.slots) > 0
+) {
 
-            result.innerHTML = `
-                <div>
-                    今回の抽選に当選しています。
-                </div>
+    const slots =
+        Math.min(
+            Math.max(
+                Number(data.slots),
+                1
+            ),
+            10
+        );
 
-                <div class="application-slots">
-                    登録申請：
-                    ${Number(data.slots)}枠
-                </div>
-            `;
 
-            applicationBox.style.display =
-                "block";
+    result.innerHTML = `
+        <div>
+            今回の抽選に当選しています。
+        </div>
 
-            return;
-        }
+        <div class="application-slots">
+            登録申請：
+            ${slots}枠
+        </div>
+    `;
+
+
+    renderRegistrationSlots(
+        slots
+    );
+
+
+    applicationBox.style.display =
+        "block";
+
+
+    return;
+}
 
 
         result.textContent =
