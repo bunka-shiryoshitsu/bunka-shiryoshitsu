@@ -1673,14 +1673,23 @@ function updateRegistrationSubmitState(){
  button.disabled=false;
 }
 
+/*
+ * ここを修正しています。
+ *
+ * Worker側は、
+ *   ap
+ *   item
+ *   image
+ *
+ * をFormDataではなくURLのクエリパラメータから取得します。
+ *
+ * そのため、
+ * /image-upload?ap=AP-XXXXXXXX&item=01&image=01
+ *
+ * の形で送信し、FormDataには実際の画像ファイルだけを入れます。
+ */
 async function uploadRegistrationImage(ap,item,image,imageIndex){
  const formData=new FormData();
-
- formData.append("ap",ap);
- formData.append(
-  "item",
-  String(item).padStart(2,"0")
- );
 
  formData.append(
   "image",
@@ -1689,7 +1698,10 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
  );
 
  const response=await fetch(
-  WORKER_URL+"/image-upload",
+  WORKER_URL+
+  "/image-upload?ap="+encodeURIComponent(ap)+
+  "&item="+encodeURIComponent(String(item).padStart(2,"0"))+
+  "&image="+encodeURIComponent(String(imageIndex).padStart(2,"0")),
   {
    method:"POST",
    body:formData
@@ -1707,6 +1719,7 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
  if(!response.ok){
   throw new Error(
    result.data?.message||
+   result.data?.error||
    result.text||
    "画像のアップロードに失敗しました。"
   );
@@ -1715,6 +1728,7 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
  if(result.data?.ok===false){
   throw new Error(
    result.data.message||
+   result.data.error||
    "画像のアップロードに失敗しました。"
   );
  }
@@ -1809,6 +1823,7 @@ async function submitRegistrationApplication(){
   if(!response.ok){
    throw new Error(
     result.data?.message||
+    result.data?.error||
     result.text||
     "登録申請の送信に失敗しました。"
    );
@@ -1817,6 +1832,7 @@ async function submitRegistrationApplication(){
   if(result.data?.ok===false){
    throw new Error(
     result.data.message||
+    result.data.error||
     "登録申請の送信に失敗しました。"
    );
   }
