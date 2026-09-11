@@ -1,1236 +1,589 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="google-site-verification" content="05ROUvfQ15XwY7dBXa80SaXTya1teOZy4FbfEebijZs">
-
 <meta name="msvalidate.01" content="2A7C51A1A85F88E308EA07440A7A5A88">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>文化資料登録室</title>
 
-
 <style>
-
-/* =====================================================
-   基本設定
-   ===================================================== */
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    margin: 0;
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Noto Sans JP",
-        "Yu Gothic",
-        "Hiragino Kaku Gothic ProN",
-        sans-serif;
-
-    color: #292929;
-    background: #f3f1ec;
-    line-height: 1.85;
-}
-
-
-/* =====================================================
-   ヘッダー
-   ===================================================== */
-
-header {
-    background: rgba(25, 25, 24, 0.97);
-    color: white;
-
-    padding: 16px 20px;
-
-    position: sticky;
-    top: 0;
-
-    z-index: 100;
-
-    border-bottom: 1px solid #555;
-
-    backdrop-filter: blur(8px);
-}
-
-.header-inner {
-    max-width: 1180px;
-    margin: auto;
-
-    display: flex;
-
-    justify-content: space-between;
-    align-items: center;
-
-    gap: 25px;
-}
-
-.logo {
-    font-size: 20px;
-    font-weight: 600;
-
-    letter-spacing: 3px;
-
-    white-space: nowrap;
-}
-
-.logo::before {
-    content: "◆";
-
-    font-size: 10px;
-
-    margin-right: 10px;
-
-    color: #c9b98b;
-}
-
-nav {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 18px;
-
-    justify-content: flex-end;
-}
-
-nav a {
-    color: #eee;
-
-    text-decoration: none;
-
-    font-size: 13px;
-
-    letter-spacing: 0.5px;
-
-    transition: 0.2s;
-}
-
-nav a:hover {
-    color: #d4c28d;
-}
-
-
-/* =====================================================
-   ヒーロー
-   ===================================================== */
-
-.hero {
-    position: relative;
-
-    min-height: 500px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    color: white;
-
-    padding: 90px 20px;
-
-    overflow: hidden;
-
-    background:
-        linear-gradient(
-            rgba(25, 25, 23, 0.82),
-            rgba(25, 25, 23, 0.88)
-        ),
-        radial-gradient(
-            circle at center,
-            #6b665b 0%,
-            #302f2b 45%,
-            #171716 100%
-        );
-}
-
-.hero::before {
-    content: "";
-
-    position: absolute;
-
-    width: 520px;
-    height: 520px;
-
-    border: 1px solid rgba(205, 190, 145, 0.25);
-
-    border-radius: 50%;
-
-    left: 50%;
-    top: 50%;
-
-    transform: translate(-50%, -50%);
-}
-
-.hero::after {
-    content: "";
-
-    position: absolute;
-
-    width: 390px;
-    height: 390px;
-
-    border: 1px solid rgba(205, 190, 145, 0.18);
-
-    border-radius: 50%;
-
-    left: 50%;
-    top: 50%;
-
-    transform: translate(-50%, -50%);
-}
-
-.hero-content {
-    position: relative;
-
-    z-index: 2;
-
-    max-width: 820px;
-}
-
-.hero-mark {
-    font-size: 13px;
-
-    letter-spacing: 6px;
-
-    color: #cdbd8c;
-
-    margin-bottom: 20px;
-}
-
-.hero h1 {
-    font-size: clamp(38px, 6vw, 64px);
-
-    margin: 0 0 25px;
-
-    letter-spacing: 8px;
-
-    font-weight: 500;
-}
-
-.hero-line {
-    width: 70px;
-    height: 1px;
-
-    background: #cdbd8c;
-
-    margin: 0 auto 25px;
-}
-
-.hero p {
-    max-width: 700px;
-
-    margin: auto;
-
-    color: #ddd;
-
-    font-size: 15px;
-
-    letter-spacing: 1px;
-}
-
-
-/* =====================================================
-   共通セクション
-   ===================================================== */
-
-section {
-    max-width: 1080px;
-
-    margin: auto;
-
-    padding: 90px 25px;
-}
-
-section h2 {
-    font-size: 30px;
-
-    font-weight: 500;
-
-    margin: 0 0 38px;
-
-    letter-spacing: 2px;
-
-    color: #252525;
-
-    position: relative;
-}
-
-section h2::after {
-    content: "";
-
-    display: block;
-
-    width: 45px;
-    height: 2px;
-
-    background: #a28d5c;
-
-    margin-top: 14px;
-}
-
-section p {
-    margin-top: 0;
-}
-
-.section-label {
-    font-size: 11px;
-
-    letter-spacing: 4px;
-
-    color: #9a8755;
-
-    margin-bottom: 8px;
-}
-
-
-/* =====================================================
-   概要
-   ===================================================== */
-
-.about-box {
-    background: #fff;
-
-    border: 1px solid #dedbd2;
-
-    padding: 42px;
-
-    box-shadow: 0 8px 25px rgba(0,0,0,0.04);
-}
-
-.notice {
-    background: #ebe8df;
-
-    border-left: 4px solid #9d8a5a;
-
-    padding: 20px 24px;
-
-    margin: 28px 0;
-}
-
-
-/* =====================================================
-   基本理念
-   ===================================================== */
-
-.philosophy {
-    background: #ffffff;
-
-    color: #292929;
-
-    max-width: none;
-
-    padding-left: calc((100% - 1030px) / 2);
-    padding-right: calc((100% - 1030px) / 2);
-}
-
-.philosophy-text {
-    max-width: 850px;
-
-    margin: auto;
-}
-
-.philosophy-opening {
-    font-size: 23px;
-
-    line-height: 1.9;
-
-    color: #292929;
-
-    border-left: 2px solid #a28d5c;
-
-    padding-left: 25px;
-
-    margin-bottom: 35px;
-}
-
-.philosophy h3 {
-    font-size: 22px;
-
-    font-weight: 500;
-
-    margin: 55px 0 25px;
-
-    letter-spacing: 1px;
-
-    color: #292929;
-}
-
-.philosophy-principle {
-    margin: 45px 0;
-
-    padding: 35px 30px;
-
-    background: #f6f4ef;
-
-    border-top: 1px solid #d8d2c4;
-
-    border-bottom: 1px solid #d8d2c4;
-}
-
-.philosophy-principle p:last-child {
-    margin-bottom: 0;
-}
-
-.philosophy-quote {
-    font-size: 21px;
-
-    line-height: 1.9;
-
-    text-align: center;
-
-    margin: 50px auto;
-
-    padding: 10px 20px;
-
-    color: #4b4436;
-}
-
-.philosophy-en {
-    font-size: 11px;
-
-    line-height: 1.8;
-
-    color: #999;
-
-    margin-top: 8px;
-
-    letter-spacing: 0.2px;
-}
-
-
-/* =====================================================
-   カード
-   ===================================================== */
-
-.card-grid {
-    display: grid;
-
-    grid-template-columns: repeat(3, 1fr);
-
-    gap: 18px;
-}
-
-.card {
-    background: #fff;
-
-    padding: 30px 26px;
-
-    border: 1px solid #dedbd2;
-
-    min-height: 210px;
-
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-
-    position: relative;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-
-    box-shadow: 0 10px 25px rgba(0,0,0,0.07);
-}
-
-.card::before {
-    content: "";
-
-    display: block;
-
-    width: 28px;
-    height: 2px;
-
-    background: #aa965f;
-
-    margin-bottom: 20px;
-}
-
-.card h3 {
-    margin: 0 0 13px;
-
-    font-size: 18px;
-
-    font-weight: 600;
-}
-
-.card p {
-    font-size: 14px;
-
-    color: #666;
-}
-
-
-/* =====================================================
-   登録制度
-   ===================================================== */
-
-.registration-grid {
-    display: grid;
-
-    grid-template-columns: repeat(2, 1fr);
-
-    gap: 18px;
-}
-
-.registration {
-    background: white;
-
-    border: 1px solid #dedbd2;
-
-    padding: 30px;
-
-    position: relative;
-
-    overflow: hidden;
-}
-
-.registration-number {
-    position: absolute;
-
-    right: 20px;
-    top: 8px;
-
-    font-size: 62px;
-
-    font-weight: 700;
-
-    color: #eeeae1;
-
-    line-height: 1;
-}
-
-.registration h3 {
-    margin: 0 0 15px;
-
-    position: relative;
-
-    z-index: 2;
-
-    font-size: 19px;
-}
-
-.registration p {
-    position: relative;
-
-    z-index: 2;
-
-    font-size: 14px;
-
-    color: #555;
-}
-
-.registration-special {
-    border-top: 3px solid #9d8751;
-}
-
-
-/* =====================================================
-   登録番号照会
-   ===================================================== */
-
-.lookup-section {
-    max-width: none;
-
-    background:
-        linear-gradient(
-            135deg,
-            #292824 0%,
-            #1e1e1c 100%
-        );
-
-    color: white;
-
-    text-align: center;
-
-    padding: 100px 20px;
-}
-
-.lookup-section h2 {
-    color: white;
-}
-
-.lookup-section .section-label {
-    color: #c9b98b;
-}
-
-.lookup-section h2::after {
-    margin-left: auto;
-    margin-right: auto;
-
-    background: #c9b98b;
-}
-
-.lookup {
-    max-width: 760px;
-
-    margin: 40px auto 0;
-
-    background: #f7f6f2;
-
-    color: #333;
-
-    border: 1px solid #aaa;
-
-    padding: 45px;
-
-    text-align: center;
-
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-}
-
-.lookup-title {
-    font-size: 17px;
-
-    letter-spacing: 2px;
-
-    margin-bottom: 10px;
-}
-
-.lookup input {
-    width: min(500px, 100%);
-
-    padding: 15px 16px;
-
-    border: 1px solid #aaa;
-
-    background: white;
-
-    font-size: 16px;
-
-    margin: 18px 0;
-
-    outline: none;
-
-    transition: border 0.2s;
-}
-
-.lookup input:focus {
-    border-color: #8e7b4d;
-}
-
-.lookup button {
-    background: #292824;
-
-    color: white;
-
-    border: none;
-
-    padding: 14px 34px;
-
-    font-size: 14px;
-
-    letter-spacing: 1px;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.lookup button:hover {
-    background: #756443;
-}
-
-#lookup-result {
-    margin-top: 28px;
-
-    font-size: 21px;
-
-    font-weight: bold;
-
-    min-height: 34px;
-}
-
-.small {
-    font-size: 12px;
-
-    color: #777;
-
-    line-height: 1.8;
-}
-
-
-/* =====================================================
-   抽選結果照会
-   ===================================================== */
-
-.application-lookup {
-    margin-top: 50px;
-
-    padding: 35px 30px;
-
-    background: #f6f4ef;
-
-    border: 1px solid #ddd7ca;
-
-    text-align: center;
-}
-
-.application-lookup-title {
-    font-size: 18px;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 8px;
-}
-
-.application-lookup input {
-    width: min(500px, 100%);
-
-    padding: 15px 16px;
-
-    border: 1px solid #aaa;
-
-    background: white;
-
-    font-size: 16px;
-
-    margin: 18px 0;
-
-    outline: none;
-}
-
-.application-lookup input:focus {
-    border-color: #8e7b4d;
-}
-
-.application-lookup button {
-    background: #292824;
-
-    color: white;
-
-    border: none;
-
-    padding: 14px 34px;
-
-    font-size: 14px;
-
-    letter-spacing: 1px;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.application-lookup button:hover {
-    background: #756443;
-}
-
-#application-result {
-    margin-top: 25px;
-
-    min-height: 40px;
-
-    font-size: 18px;
-
-    font-weight: 600;
-}
-
-.application-slots {
-    margin-top: 8px;
-
-    font-size: 17px;
-
-    font-weight: 600;
-}
-
-
-/* =====================================================
-   規約
-   ===================================================== */
-
-.rules {
-    background: white;
-
-    border: 1px solid #dedbd2;
-
-    padding: 45px;
-
-    box-shadow: 0 8px 25px rgba(0,0,0,0.03);
-}
-
-.rules article {
-    margin-bottom: 38px;
-
-    padding-bottom: 30px;
-
-    border-bottom: 1px solid #e8e5dd;
-}
-
-.rules article:last-child {
-    margin-bottom: 0;
-
-    padding-bottom: 0;
-
-    border-bottom: none;
-}
-
-.rules h3 {
-    font-size: 18px;
-
-    margin: 0 0 13px;
-
-    color: #333;
-}
-
-.rules h4 {
-    font-size: 16px;
-
-    margin: 24px 0 10px;
-
-    color: #4a4336;
-}
-
-.rules p,
-.rules li {
-    font-size: 14px;
-}
-
-.rules ol,
-.rules ul {
-    padding-left: 25px;
-}
-
-
-/* =====================================================
-   申請
-   ===================================================== */
-
-.application-box {
-    background: #fff;
-
-    border: 1px solid #dedbd2;
-
-    padding: 40px;
-}
-
-.application-box .notice {
-    margin-top: 0;
-}
-
-.application-box h3 {
-    font-size: 20px;
-
-    font-weight: 500;
-
-    margin: 45px 0 20px;
-
-    padding-bottom: 10px;
-
-    border-bottom: 1px solid #dedbd2;
-}
-
-.application-box h3:first-of-type {
-    margin-top: 35px;
-}
-
-.application-box h4 {
-    font-size: 16px;
-
-    margin: 28px 0 10px;
-
-    color: #4a4336;
-}
-
-.application-box p,
-.application-box li {
-    font-size: 14px;
-}
-
-.application-box ol,
-.application-box ul {
-    padding-left: 25px;
-}
-
-.application-check {
-    margin-top: 40px;
-
-    padding: 25px;
-
-    background: #f6f4ef;
-
-    border: 1px solid #ddd7ca;
-}
-
-.application-agree-label {
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-    cursor: pointer;
-
-    font-size: 14px;
-
-    line-height: 1.8;
-}
-
-.application-agree-label input {
-    width: 18px;
-
-    height: 18px;
-
-    margin-top: 4px;
-
-    flex-shrink: 0;
-
-    cursor: pointer;
-}
-
-.application-next {
-    margin-top: 20px;
-
-    padding: 14px 30px;
-
-    border: none;
-
-    background: #292824;
-
-    color: white;
-
-    font-size: 14px;
-
-    letter-spacing: 1px;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.application-next:hover:not(:disabled) {
-    background: #756443;
-}
-
-.application-next:disabled {
-    background: #bbb7ae;
-
-    color: #eee;
-
-    cursor: not-allowed;
-}
-
-.application-next-message {
-    margin-top: 15px;
-
-    font-size: 13px;
-
-    color: #777;
-}
-
-
-/* =====================================================
-   登録申請フォーム
-   ===================================================== */
-
-.registration-application {
-    margin-top: 45px;
-
-    padding: 35px;
-
-    background: #f6f4ef;
-
-    border: 1px solid #ddd7ca;
-
-    text-align: left;
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;
+ font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;
+ color:#292929;
+ background:#f3f1ec;
+ line-height:1.85
+}
+header{
+ background:rgba(25,25,24,.97);
+ color:#fff;
+ padding:16px 20px;
+ position:sticky;
+ top:0;
+ z-index:100;
+ border-bottom:1px solid #555;
+ backdrop-filter:blur(8px)
+}
+.header-inner{
+ max-width:1180px;
+ margin:auto;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:25px
+}
+.logo{
+ font-size:20px;
+ font-weight:600;
+ letter-spacing:3px;
+ white-space:nowrap
+}
+.logo::before{
+ content:"◆";
+ font-size:10px;
+ margin-right:10px;
+ color:#c9b98b
+}
+nav{
+ display:flex;
+ flex-wrap:wrap;
+ gap:18px;
+ justify-content:flex-end
+}
+nav a{
+ color:#eee;
+ text-decoration:none;
+ font-size:13px;
+ letter-spacing:.5px;
+ transition:.2s
+}
+nav a:hover{color:#d4c28d}
+
+.hero{
+ min-height:500px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ color:#fff;
+ padding:90px 20px;
+ overflow:hidden;
+ position:relative;
+ background:
+ linear-gradient(rgba(25,25,23,.82),rgba(25,25,23,.88)),
+ radial-gradient(circle at center,#6b665b 0%,#302f2b 45%,#171716 100%)
+}
+.hero::before,.hero::after{
+ content:"";
+ position:absolute;
+ border:1px solid rgba(205,190,145,.25);
+ border-radius:50%;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%)
+}
+.hero::before{width:520px;height:520px}
+.hero::after{
+ width:390px;
+ height:390px;
+ border-color:rgba(205,190,145,.18)
+}
+.hero-content{
+ position:relative;
+ z-index:2;
+ max-width:820px
+}
+.hero-mark{
+ font-size:13px;
+ letter-spacing:6px;
+ color:#cdbd8c;
+ margin-bottom:20px
+}
+.hero h1{
+ font-size:clamp(38px,6vw,64px);
+ margin:0 0 25px;
+ letter-spacing:8px;
+ font-weight:500
+}
+.hero-line{
+ width:70px;
+ height:1px;
+ background:#cdbd8c;
+ margin:0 auto 25px
+}
+.hero p{
+ max-width:700px;
+ margin:auto;
+ color:#ddd;
+ font-size:15px;
+ letter-spacing:1px
+}
+
+section{
+ max-width:1080px;
+ margin:auto;
+ padding:90px 25px
+}
+section h2{
+ font-size:30px;
+ font-weight:500;
+ margin:0 0 38px;
+ letter-spacing:2px;
+ color:#252525;
+ position:relative
+}
+section h2::after{
+ content:"";
+ display:block;
+ width:45px;
+ height:2px;
+ background:#a28d5c;
+ margin-top:14px
+}
+section p{margin-top:0}
+.section-label{
+ font-size:11px;
+ letter-spacing:4px;
+ color:#9a8755;
+ margin-bottom:8px
+}
+
+.about-box{
+ background:#fff;
+ border:1px solid #dedbd2;
+ padding:42px;
+ box-shadow:0 8px 25px rgba(0,0,0,.04)
+}
+.notice{
+ background:#ebe8df;
+ border-left:4px solid #9d8a5a;
+ padding:20px 24px;
+ margin:28px 0
+}
+
+.philosophy{
+ background:#fff;
+ color:#292929;
+ max-width:none;
+ padding-left:calc((100% - 1030px)/2);
+ padding-right:calc((100% - 1030px)/2)
+}
+.philosophy-text{max-width:850px;margin:auto}
+.philosophy-opening{
+ font-size:23px;
+ line-height:1.9;
+ color:#292929;
+ border-left:2px solid #a28d5c;
+ padding-left:25px;
+ margin-bottom:35px
+}
+.philosophy h3{
+ font-size:22px;
+ font-weight:500;
+ margin:55px 0 25px;
+ letter-spacing:1px;
+ color:#292929
+}
+.philosophy-principle{
+ margin:45px 0;
+ padding:35px 30px;
+ background:#f6f4ef;
+ border-top:1px solid #d8d2c4;
+ border-bottom:1px solid #d8d2c4
+}
+.philosophy-principle p:last-child{margin-bottom:0}
+.philosophy-quote{
+ font-size:21px;
+ line-height:1.9;
+ text-align:center;
+ margin:50px auto;
+ padding:10px 20px;
+ color:#4b4436
+}
+.philosophy-en{
+ font-size:11px;
+ line-height:1.8;
+ color:#999;
+ margin-top:8px;
+ letter-spacing:.2px
+}
+
+.card-grid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:18px
+}
+.card{
+ background:#fff;
+ padding:30px 26px;
+ border:1px solid #dedbd2;
+ min-height:210px;
+ transition:transform .2s,box-shadow .2s;
+ position:relative
+}
+.card:hover{
+ transform:translateY(-4px);
+ box-shadow:0 10px 25px rgba(0,0,0,.07)
+}
+.card::before{
+ content:"";
+ display:block;
+ width:28px;
+ height:2px;
+ background:#aa965f;
+ margin-bottom:20px
+}
+.card h3{margin:0 0 13px;font-size:18px;font-weight:600}
+.card p{font-size:14px;color:#666}
+
+.registration-grid{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:18px
+}
+.registration{
+ background:#fff;
+ border:1px solid #dedbd2;
+ padding:30px;
+ position:relative;
+ overflow:hidden
+}
+.registration-number{
+ position:absolute;
+ right:20px;
+ top:8px;
+ font-size:62px;
+ font-weight:700;
+ color:#eeeae1;
+ line-height:1
+}
+.registration h3{
+ margin:0 0 15px;
+ position:relative;
+ z-index:2;
+ font-size:19px
+}
+.registration p{
+ position:relative;
+ z-index:2;
+ font-size:14px;
+ color:#555
+}
+.registration-special{border-top:3px solid #9d8751}
+
+.lookup-section{
+ max-width:none;
+ background:linear-gradient(135deg,#292824 0%,#1e1e1c 100%);
+ color:#fff;
+ text-align:center;
+ padding:100px 20px
+}
+.lookup-section h2{color:#fff}
+.lookup-section .section-label{color:#c9b98b}
+.lookup-section h2::after{
+ margin-left:auto;
+ margin-right:auto;
+ background:#c9b98b
+}
+.lookup{
+ max-width:760px;
+ margin:40px auto 0;
+ background:#f7f6f2;
+ color:#333;
+ border:1px solid #aaa;
+ padding:45px;
+ text-align:center;
+ box-shadow:0 15px 40px rgba(0,0,0,.25)
+}
+.lookup-title{
+ font-size:17px;
+ letter-spacing:2px;
+ margin-bottom:10px
+}
+.lookup input,.application-lookup input{
+ width:min(500px,100%);
+ padding:15px 16px;
+ border:1px solid #aaa;
+ background:#fff;
+ font-size:16px;
+ margin:18px 0;
+ outline:none
+}
+.lookup input:focus,.application-lookup input:focus{border-color:#8e7b4d}
+.lookup button,.application-lookup button{
+ background:#292824;
+ color:#fff;
+ border:none;
+ padding:14px 34px;
+ font-size:14px;
+ letter-spacing:1px;
+ cursor:pointer;
+ transition:.2s
+}
+.lookup button:hover,.application-lookup button:hover{background:#756443}
+#lookup-result{
+ margin-top:28px;
+ font-size:21px;
+ font-weight:bold;
+ min-height:34px
+}
+.small{
+ font-size:12px;
+ color:#777;
+ line-height:1.8
+}
+
+.application-lookup{
+ margin-top:50px;
+ padding:35px 30px;
+ background:#f6f4ef;
+ border:1px solid #ddd7ca;
+ text-align:center
+}
+.application-lookup-title{
+ font-size:18px;
+ letter-spacing:1px;
+ margin-bottom:8px
+}
+#application-result{
+ margin-top:25px;
+ min-height:40px;
+ font-size:18px;
+ font-weight:600
+}
+.application-slots{
+ margin-top:8px;
+ font-size:17px;
+ font-weight:600
+}
+
+.rules{
+ background:#fff;
+ border:1px solid #dedbd2;
+ padding:45px;
+ box-shadow:0 8px 25px rgba(0,0,0,.03)
+}
+.rules article{
+ margin-bottom:38px;
+ padding-bottom:30px;
+ border-bottom:1px solid #e8e5dd
+}
+.rules article:last-child{
+ margin-bottom:0;
+ padding-bottom:0;
+ border-bottom:none
+}
+.rules h3{
+ font-size:18px;
+ margin:0 0 13px;
+ color:#333
+}
+.rules h4{
+ font-size:16px;
+ margin:24px 0 10px;
+ color:#4a4336
+}
+.rules p,.rules li{font-size:14px}
+.rules ol,.rules ul{padding-left:25px}
+
+.application-box{
+ background:#fff;
+ border:1px solid #dedbd2;
+ padding:40px
+}
+.application-box .notice{margin-top:0}
+.application-box h3{
+ font-size:20px;
+ font-weight:500;
+ margin:45px 0 20px;
+ padding-bottom:10px;
+ border-bottom:1px solid #dedbd2
+}
+.application-box h3:first-of-type{margin-top:35px}
+.application-box h4{
+ font-size:16px;
+ margin:28px 0 10px;
+ color:#4a4336
+}
+.application-box p,.application-box li{font-size:14px}
+.application-box ol,.application-box ul{padding-left:25px}
+
+.application-check{
+ margin-top:40px;
+ padding:25px;
+ background:#f6f4ef;
+ border:1px solid #ddd7ca
+}
+.application-agree-label{
+ display:flex;
+ align-items:flex-start;
+ gap:10px;
+ cursor:pointer;
+ font-size:14px;
+ line-height:1.8
+}
+.application-agree-label input{
+ width:18px;
+ height:18px;
+ margin-top:4px;
+ flex-shrink:0;
+ cursor:pointer
+}
+.application-next,.registration-submit{
+ margin-top:20px;
+ padding:14px 30px;
+ border:none;
+ background:#292824;
+ color:#fff;
+ font-size:14px;
+ letter-spacing:1px;
+ cursor:pointer;
+ transition:.2s
+}
+.application-next:hover:not(:disabled){background:#756443}
+.application-next:disabled,.registration-submit:disabled{
+ background:#bbb7ae;
+ color:#eee;
+ cursor:not-allowed
+}
+.application-next-message{
+ margin-top:15px;
+ font-size:13px;
+ color:#777
+}
+
+.registration-application{
+ margin-top:45px;
+ padding:35px;
+ background:#f6f4ef;
+ border:1px solid #ddd7ca;
+ text-align:left
+}
+.registration-form-item{
+ margin-top:25px;
+ padding:25px;
+ background:#fff;
+ border:1px solid #dedbd2
+}
+.registration-form-item h4{
+ margin-top:0;
+ padding-bottom:10px;
+ border-bottom:1px solid #e2ded5
+}
+.registration-form-item label{
+ display:block;
+ margin-bottom:7px;
+ font-size:14px;
+ font-weight:600
 }
-
-.registration-form-item {
-    margin-top: 25px;
-
-    padding: 25px;
-
-    background: white;
-
-    border: 1px solid #dedbd2;
-}
-
-.registration-form-item h4 {
-    margin-top: 0;
-
-    padding-bottom: 10px;
-
-    border-bottom: 1px solid #e2ded5;
-}
-
-.registration-form-item label {
-    display: block;
-
-    margin-bottom: 7px;
-
-    font-size: 14px;
-
-    font-weight: 600;
-}
-
 .registration-form-item input[type="text"],
-.registration-form-item textarea {
-    width: 100%;
-
-    padding: 12px;
-
-    border: 1px solid #aaa;
-
-    background: white;
-
-    font-size: 14px;
-
-    font-family: inherit;
-
-    outline: none;
+.registration-form-item textarea{
+ width:100%;
+ padding:12px;
+ border:1px solid #aaa;
+ background:#fff;
+ font-size:14px;
+ font-family:inherit;
+ outline:none
 }
-
 .registration-form-item input[type="text"]:focus,
-.registration-form-item textarea:focus {
-    border-color: #8e7b4d;
+.registration-form-item textarea:focus{border-color:#8e7b4d}
+.registration-form-item textarea{resize:vertical}
+.image-preview{
+ margin-top:15px;
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px
+}
+.image-preview-item{
+ width:150px;
+ padding:5px;
+ background:#f5f5f5;
+ border:1px solid #ccc
+}
+.image-preview-item img{
+ display:block;
+ width:140px;
+ height:140px;
+ object-fit:contain;
+ background:#fff
+}
+.image-preview-remove{
+ width:100%;
+ margin-top:5px;
+ padding:6px;
+ border:none;
+ background:#555;
+ color:#fff;
+ cursor:pointer;
+ font-size:12px
+}
+.image-preview-remove:hover{background:#333}
+.registration-submit{margin-top:30px}
+
+footer{
+ background:#1e1e1c;
+ color:#bbb;
+ text-align:center;
+ padding:45px 20px;
+ font-size:12px;
+ letter-spacing:1px
+}
+.footer-title{
+ color:#eee;
+ font-size:17px;
+ letter-spacing:3px;
+ margin-bottom:8px
+}
+.footer-mark{
+ color:#bca86e;
+ font-size:12px;
+ margin-bottom:18px
 }
 
-.registration-form-item textarea {
-    resize: vertical;
+@media(max-width:800px){
+ header{position:relative}
+ .header-inner{
+  flex-direction:column;
+  align-items:flex-start
+ }
+ nav{
+  justify-content:flex-start;
+  gap:10px 15px
+ }
+ nav a{font-size:12px}
+ .hero{
+  min-height:430px;
+  padding:70px 20px
+ }
+ .hero h1{letter-spacing:5px}
+ .hero::before{width:360px;height:360px}
+ .hero::after{width:270px;height:270px}
+ section{padding:65px 20px}
+ .card-grid,.registration-grid{grid-template-columns:1fr}
+ .about-box,.rules,.application-box{padding:28px 22px}
+ .lookup{padding:30px 20px}
+ .philosophy{
+  padding-left:20px;
+  padding-right:20px
+ }
+ .philosophy-opening{font-size:19px}
+ .philosophy-quote{font-size:18px}
+ .registration-application{padding:20px 15px}
+ .registration-form-item{padding:18px}
 }
-
-.image-preview {
-    margin-top: 15px;
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 10px;
-}
-
-.image-preview-item {
-    width: 150px;
-
-    padding: 5px;
-
-    background: #f5f5f5;
-
-    border: 1px solid #ccc;
-}
-
-.image-preview-item img {
-    display: block;
-
-    width: 140px;
-    height: 140px;
-
-    object-fit: contain;
-
-    background: #fff;
-}
-
-.image-preview-remove {
-    width: 100%;
-
-    margin-top: 5px;
-
-    padding: 6px;
-
-    border: none;
-
-    background: #555;
-
-    color: white;
-
-    cursor: pointer;
-
-    font-size: 12px;
-}
-
-.image-preview-remove:hover {
-    background: #333;
-}
-
-.registration-submit {
-    margin-top: 30px;
-
-    padding: 14px 30px;
-
-    border: none;
-
-    background: #292824;
-
-    color: white;
-
-    font-size: 14px;
-
-    cursor: pointer;
-}
-
-.registration-submit:disabled {
-    background: #bbb7ae;
-
-    color: #eee;
-
-    cursor: not-allowed;
-}
-
-
-/* =====================================================
-   フッター
-   ===================================================== */
-
-footer {
-    background: #1e1e1c;
-
-    color: #bbb;
-
-    text-align: center;
-
-    padding: 45px 20px;
-
-    font-size: 12px;
-
-    letter-spacing: 1px;
-}
-
-.footer-title {
-    color: #eee;
-
-    font-size: 17px;
-
-    letter-spacing: 3px;
-
-    margin-bottom: 8px;
-}
-
-.footer-mark {
-    color: #bca86e;
-
-    font-size: 12px;
-
-    margin-bottom: 18px;
-}
-
-
-/* =====================================================
-   スマートフォン
-   ===================================================== */
-
-@media (max-width: 800px) {
-
-    header {
-        position: relative;
-    }
-
-    .header-inner {
-        flex-direction: column;
-
-        align-items: flex-start;
-    }
-
-    nav {
-        justify-content: flex-start;
-
-        gap: 10px 15px;
-    }
-
-    nav a {
-        font-size: 12px;
-    }
-
-    .hero {
-        min-height: 430px;
-
-        padding: 70px 20px;
-    }
-
-    .hero h1 {
-        letter-spacing: 5px;
-    }
-
-    .hero::before {
-        width: 360px;
-        height: 360px;
-    }
-
-    .hero::after {
-        width: 270px;
-        height: 270px;
-    }
-
-    section {
-        padding: 65px 20px;
-    }
-
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .registration-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .about-box,
-    .rules,
-    .application-box {
-        padding: 28px 22px;
-    }
-
-    .lookup {
-        padding: 30px 20px;
-    }
-
-    .philosophy {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-
-    .philosophy-opening {
-        font-size: 19px;
-    }
-
-    .philosophy-quote {
-        font-size: 18px;
-    }
-
-    .registration-application {
-        padding: 20px 15px;
-    }
-
-    .registration-form-item {
-        padding: 18px;
-    }
-
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
-<!-- =====================================================
-     ヘッダー
-     ===================================================== -->
-
 <header>
-
 <div class="header-inner">
-
-<div class="logo">
-    文化資料登録室
-</div>
-
+<div class="logo">文化資料登録室</div>
 <nav>
-
 <a href="#about">概要</a>
 <a href="#philosophy">理念</a>
 <a href="#materials">対象資料</a>
@@ -1238,994 +591,341 @@ footer {
 <a href="#lookup">登録番号照会</a>
 <a href="#rules">規約</a>
 <a href="#application">登録申請</a>
-
 </nav>
-
 </div>
-
 </header>
 
-
-
-<!-- =====================================================
-     ヒーロー
-     ===================================================== -->
-
 <div class="hero">
-
 <div class="hero-content">
-
-<div class="hero-mark">
-    CULTURAL MATERIALS ARCHIVE
-</div>
-
-<h1>
-    文化資料登録室
-</h1>
-
+<div class="hero-mark">CULTURAL MATERIALS ARCHIVE</div>
+<h1>文化資料登録室</h1>
 <div class="hero-line"></div>
-
 <p>
-    アニメーション、漫画、映像、出版物、美術、工芸その他の
-    文化資料を記録・整理する独立した資料登録制度です。
+アニメーション、漫画、映像、出版物、美術、工芸その他の
+文化資料を記録・整理する独立した資料登録制度です。
 </p>
-
 </div>
-
 </div>
-
-
-
-<!-- =====================================================
-     01 概要
-     ===================================================== -->
 
 <section id="about">
-
-<div class="section-label">
-    01 / ABOUT
-</div>
-
-<h2>
-    概要
-</h2>
-
+<div class="section-label">01 / ABOUT</div>
+<h2>概要</h2>
 <div class="about-box">
-
 <p>
-    文化資料登録室は、さまざまな文化資料について、その資料に関する情報を
-    整理・記録し、独自の登録番号を付与することにより、資料の記録、管理及び
-    照会に資することを目的とする独立した資料登録制度です。
+文化資料登録室は、さまざまな文化資料について、その資料に関する情報を
+整理・記録し、独自の登録番号を付与することにより、資料の記録、管理及び
+照会に資することを目的とする独立した資料登録制度です。
 </p>
-
 <p class="philosophy-en">
-    The Cultural Materials Archive is an independent registration system
-    established to organize and preserve information about cultural materials,
-    assigning unique registration numbers for record-keeping, management and reference.
+The Cultural Materials Archive is an independent registration system
+established to organize and preserve information about cultural materials,
+assigning unique registration numbers for record-keeping, management and reference.
 </p>
-
 <div class="notice">
-
 当資料室は、公的機関、出版社、制作会社、メーカー、作者、著作権者
 その他の権利者とは別個の独立した制度として運営しています。
-
 </div>
-
 <p>
-    登録は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他の
-    事項を保証、認定又は証明するものではありません。
+登録は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他の
+事項を保証、認定又は証明するものではありません。
 </p>
-
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     02 基本理念
-     ===================================================== -->
-
 <section id="philosophy" class="philosophy">
-
 <div class="philosophy-text">
-
-<div class="section-label">
-    02 / PHILOSOPHY
-</div>
-
-<h2>
-    文化資料登録室の基本理念
-</h2>
+<div class="section-label">02 / PHILOSOPHY</div>
+<h2>文化資料登録室の基本理念</h2>
 
 <p class="philosophy-opening">
-
 文化資料を、「真作か偽物か」という二択だけで終わらせない。
 <br>
 権威によって価値を決めるのではなく、
 <br>
 未来に残すための記録をつくる。
-
 </p>
 
 <p class="philosophy-en">
-
 Cultural materials should not be reduced to a simple choice between
 “authentic” and “fake.”
 We seek to preserve records for the future, rather than allowing authority alone
 to determine their value.
-
 </p>
 
-<p>
-    文化資料には、長い年月の中で、さまざまな評価が与えられてきました。
-</p>
-
-<p>
-    その中でも、とりわけ強い力を持っているのが、
-    「真作であるか、偽物であるか」という判断です。
-</p>
-
-<p>
-    もちろん、真贋を確認することには意味があります。
-</p>
-
-<p>
-    しかし私たちは、そこで一度立ち止まって考えます。
-</p>
-
-<p>
-    人間が、何十年、何百年も前の出来事について、
-    「これは絶対にこうだった」と完全に証明することは、
-    本当に可能なのでしょうか。
-</p>
+<p>文化資料には、長い年月の中で、さまざまな評価が与えられてきました。</p>
+<p>その中でも、とりわけ強い力を持っているのが、「真作であるか、偽物であるか」という判断です。</p>
+<p>もちろん、真贋を確認することには意味があります。</p>
+<p>しかし私たちは、そこで一度立ち止まって考えます。</p>
+<p>人間が、何十年、何百年も前の出来事について、「これは絶対にこうだった」と完全に証明することは、本当に可能なのでしょうか。</p>
 
 <div class="philosophy-principle">
-
-<p>
-    一年前に、自分が何を食べたのか。
-</p>
-
-<p>
-    誰もが、それを正確に覚えているわけではありません。
-</p>
-
-<p>
-    仮に覚えていたとしても、
-    何の食材を使い、どの調味料をどれだけ入れ、
-    何分間調理し、どのような火加減で料理したのかまで、
-    完全に再現して説明できる人は、どれほどいるでしょうか。
-</p>
-
-<p>
-    さらに、その食事を口に入れた瞬間の温度や、
-    そのときの味、匂い、食感まで、
-    一年後に完全に証明することができるでしょうか。
-</p>
-
-<p>
-    人間の記憶とは、それほど完全なものではありません。
-</p>
-
-<p>
-    それは作品についても同じです。
-</p>
-
-<p>
-    作者本人でさえ、何十年も前に制作した作品について、
-    どの材料を使い、どの道具を使い、どのような手順で制作し、
-    何時に制作を始め、どの部分を何日かけて仕上げたのかまで、
-    すべてを完全に記憶しているとは限りません。
-</p>
-
-<p>
-    人間が作り、人間が記憶し、人間が判断する以上、
-    そこには必ず限界があります。
-</p>
-
+<p>一年前に、自分が何を食べたのか。</p>
+<p>誰もが、それを正確に覚えているわけではありません。</p>
+<p>仮に覚えていたとしても、何の食材を使い、どの調味料をどれだけ入れ、何分間調理し、どのような火加減で料理したのかまで、完全に再現して説明できる人は、どれほどいるでしょうか。</p>
+<p>さらに、その食事を口に入れた瞬間の温度や、そのときの味、匂い、食感まで、一年後に完全に証明することができるでしょうか。</p>
+<p>人間の記憶とは、それほど完全なものではありません。</p>
+<p>それは作品についても同じです。</p>
+<p>作者本人でさえ、何十年も前に制作した作品について、どの材料を使い、どの道具を使い、どのような手順で制作し、何時に制作を始め、どの部分を何日かけて仕上げたのかまで、すべてを完全に記憶しているとは限りません。</p>
+<p>人間が作り、人間が記憶し、人間が判断する以上、そこには必ず限界があります。</p>
 </div>
 
-<p>
-    だからといって、何も分からないということではありません。
-</p>
+<p>だからといって、何も分からないということではありません。</p>
+<p>資料を見て、比較し、調べ、記録し、考えることには大きな意味があります。</p>
+<p>しかし、「人間が判断した」という事実と、「絶対的な真実が証明された」ということは、同じではありません。</p>
+<p>鑑定人も人間です。研究者も人間です。団体も、人間によって構成されています。</p>
+<p>どれほど著名な人物であっても、どれほど歴史のある団体であっても、その判断が人間による判断であるという事実から逃れることはできません。</p>
+<p>そして、第三者が「この人の判断は絶対に正しい」と永遠に証明することもまた、人間の世界では簡単なことではありません。</p>
 
-<p>
-    資料を見て、比較し、調べ、記録し、考えることには大きな意味があります。
-</p>
-
-<p>
-    しかし、「人間が判断した」という事実と、
-    「絶対的な真実が証明された」ということは、同じではありません。
-</p>
-
-<p>
-    鑑定人も人間です。
-    研究者も人間です。
-    団体も、人間によって構成されています。
-</p>
-
-<p>
-    どれほど著名な人物であっても、どれほど歴史のある団体であっても、
-    その判断が人間による判断であるという事実から逃れることはできません。
-</p>
-
-<p>
-    そして、第三者が「この人の判断は絶対に正しい」と
-    永遠に証明することもまた、人間の世界では簡単なことではありません。
-</p>
-
-
-<h3>
-    鑑定という「権威」について
-</h3>
-
-<p>
-    世の中には、鑑定や認定、登録という言葉があります。
-</p>
-
-<p>
-    そして、その言葉にはしばしば「権威」が伴います。
-</p>
-
-<p>
-    その権威によって安心する人もいます。
-</p>
-
-<p>
-    しかし私たちは、権威そのものを絶対視することには慎重でありたいと考えています。
-</p>
-
-<p>
-    なぜなら、どれほど立派な肩書きや歴史を持っていても、
-    最終的に判断しているのは人間だからです。
-</p>
-
-<p>
-    ましてや、その判断を受けるためだけに、
-    一般の人には大きな負担となるような費用を支払わなければならないのであれば、
-    私たちは「それは本当に文化を残すために必要なことなのだろうか」と考えます。
-</p>
-
-<p>
-    文化を残したいと思う人がいて、
-    その人が大切にしている資料がある。
-</p>
-
-<p>
-    その資料について記録を残すだけのために、
-    高額な費用を払わなければならない。
-</p>
-
-<p>
-    私たちは、その構造そのものに疑問を持っています。
-</p>
+<h3>鑑定という「権威」について</h3>
+<p>世の中には、鑑定や認定、登録という言葉があります。</p>
+<p>そして、その言葉にはしばしば「権威」が伴います。</p>
+<p>その権威によって安心する人もいます。</p>
+<p>しかし私たちは、権威そのものを絶対視することには慎重でありたいと考えています。</p>
+<p>なぜなら、どれほど立派な肩書きや歴史を持っていても、最終的に判断しているのは人間だからです。</p>
+<p>ましてや、その判断を受けるためだけに、一般の人には大きな負担となるような費用を支払わなければならないのであれば、私たちは「それは本当に文化を残すために必要なことなのだろうか」と考えます。</p>
+<p>文化を残したいと思う人がいて、その人が大切にしている資料がある。</p>
+<p>その資料について記録を残すだけのために、高額な費用を払わなければならない。</p>
+<p>私たちは、その構造そのものに疑問を持っています。</p>
 
 <div class="philosophy-quote">
-
 「何様なのか」という問いを、
 <br>
 一度くらい持ってもいい。
-
 <p class="philosophy-en">
 It is worth asking, at least once:
 “Who gave anyone the right to stand above the record itself?”
 </p>
-
 </div>
 
-<p>
-    鑑定する人が偉いのではありません。
-</p>
+<p>鑑定する人が偉いのではありません。</p>
+<p>登録する団体が偉いのでもありません。</p>
+<p>資料を所有する人が偉いのでもありません。</p>
+<p>そして、その誰かの判断に従って安心することだけが、文化を守る方法でもありません。</p>
 
-<p>
-    登録する団体が偉いのでもありません。
-</p>
+<h3>権威に群がる世界から、記録を残す世界へ</h3>
+<p>たとえば、宗教において絶対的な存在が語られるとき、本当に重要なのは、その存在そのものなのか、それとも、その存在を語ることで権威を得ようとする人々なのか。</p>
+<p>これは、文化資料の世界にも通じるところがあると私たちは考えます。</p>
+<p>何か絶対的なものがあると、そこに人が集まり、権威が生まれ、その権威を信じることで安心する人も現れます。</p>
+<p>しかし、私たちは「権威があるから正しい」のではなく、「何が確認され、何が確認できなかったのか」を記録することのほうが大切なのではないかと考えます。</p>
+<p>誰かを神格化する必要はありません。</p>
+<p>誰かの判断を絶対的なものとして崇める必要もありません。</p>
+<p>人間は間違える。記憶も失われる。時代も変わる。判断も変わる。</p>
+<p>だからこそ、今この時点で確認できたことを、できる限り誠実に記録しておく。</p>
 
-<p>
-    資料を所有する人が偉いのでもありません。
-</p>
-
-<p>
-    そして、その誰かの判断に従って安心することだけが、
-    文化を守る方法でもありません。
-</p>
-
-
-<h3>
-    権威に群がる世界から、記録を残す世界へ
-</h3>
-
-<p>
-    たとえば、宗教において絶対的な存在が語られるとき、
-    本当に重要なのは、その存在そのものなのか、
-    それとも、その存在を語ることで権威を得ようとする人々なのか。
-</p>
-
-<p>
-    これは、文化資料の世界にも通じるところがあると私たちは考えます。
-</p>
-
-<p>
-    何か絶対的なものがあると、
-    そこに人が集まり、権威が生まれ、
-    その権威を信じることで安心する人も現れます。
-</p>
-
-<p>
-    しかし、私たちは「権威があるから正しい」のではなく、
-    「何が確認され、何が確認できなかったのか」を
-    記録することのほうが大切なのではないかと考えます。
-</p>
-
-<p>
-    誰かを神格化する必要はありません。
-</p>
-
-<p>
-    誰かの判断を絶対的なものとして崇める必要もありません。
-</p>
-
-<p>
-    人間は間違える。
-    記憶も失われる。
-    時代も変わる。
-    判断も変わる。
-</p>
-
-<p>
-    だからこそ、今この時点で確認できたことを、
-    できる限り誠実に記録しておく。
-</p>
-
-
-<h3>
-    だから、登録を無料にする
-</h3>
-
-<p>
-    文化資料登録室が登録に関する費用を徴収しないのは、
-    単なるサービスとして無料にしているからではありません。
-</p>
-
-<p>
-    「文化を記録することは、特別な人だけに許された行為ではない」
-    という考え方が、その根底にあります。
-</p>
-
-<p>
-    お金を払える人だけが記録を残せる。
-</p>
-
-<p>
-    権威のある人に認められた人だけが記録される。
-</p>
-
-<p>
-    そのような世界だけが文化資料の未来であってよいとは、
-    私たちは考えていません。
-</p>
-
-<p>
-    記録したいと思う人がいる。
-</p>
-
-<p>
-    残したいと思う資料がある。
-</p>
-
-<p>
-    ならば、その記録を残す機会は、
-    できるだけ広く開かれていてよい。
-</p>
+<h3>だから、登録を無料にする</h3>
+<p>文化資料登録室が登録に関する費用を徴収しないのは、単なるサービスとして無料にしているからではありません。</p>
+<p>「文化を記録することは、特別な人だけに許された行為ではない」という考え方が、その根底にあります。</p>
+<p>お金を払える人だけが記録を残せる。</p>
+<p>権威のある人に認められた人だけが記録される。</p>
+<p>そのような世界だけが文化資料の未来であってよいとは、私たちは考えていません。</p>
+<p>記録したいと思う人がいる。</p>
+<p>残したいと思う資料がある。</p>
+<p>ならば、その記録を残す機会は、できるだけ広く開かれていてよい。</p>
 
 <div class="philosophy-quote">
-
 記録は、権威を買うためのものではない。
 <br>
 未来へ渡すためのものです。
-
 <p class="philosophy-en">
 A record is not something to purchase in order to obtain authority.
 It is something preserved for the future.
 </p>
-
 </div>
 
+<h3>無料だから、何でも登録するわけではない</h3>
+<p>ただし、無料であることと、無条件に登録することは同じではありません。</p>
+<p>文化資料登録室は、提出された資料や関連情報を確認し、当資料室独自の基準と視点によって登録の可否及び登録区分を判断します。</p>
+<p>確認できないことを、確認できたことにはしません。</p>
+<p>分からないことを、分かったことにはしません。</p>
+<p>そして、登録されたからといって、真贋や作者、価値が保証されたことにもなりません。</p>
+<p>私たちが残すのは、「絶対的な真実」ではありません。</p>
+<p>その時点で確認することができた資料と情報について、文化資料として記録を残したという事実です。</p>
 
-<h3>
-    無料だから、何でも登録するわけではない
-</h3>
-
-<p>
-    ただし、無料であることと、無条件に登録することは同じではありません。
-</p>
-
-<p>
-    文化資料登録室は、提出された資料や関連情報を確認し、
-    当資料室独自の基準と視点によって登録の可否及び登録区分を判断します。
-</p>
-
-<p>
-    確認できないことを、確認できたことにはしません。
-</p>
-
-<p>
-    分からないことを、分かったことにはしません。
-</p>
-
-<p>
-    そして、登録されたからといって、
-    真贋や作者、価値が保証されたことにもなりません。
-</p>
-
-<p>
-    私たちが残すのは、「絶対的な真実」ではありません。
-</p>
-
-<p>
-    その時点で確認することができた資料と情報について、
-    文化資料として記録を残したという事実です。
-</p>
-
-
-<h3>
-    100年、1000年先へ
-</h3>
-
-<p>
-    文化資料登録室では、資料が100年、1000年先まで残ることを見据え、
-    登録書を資料とともに保存することを大切にしています。
-</p>
-
-<p>
-    登録された時点の資料の状態は、年月とともに変化していきます。
-</p>
-
-<p>
-    色、質感、傷み、汚れ、欠損など、
-    その姿は長い時間の中で少しずつ変わっていきます。
-</p>
-
-<p>
-    だからこそ、特定の時点の姿だけを絶対的なものとして固定するのではなく、
-    「その資料が、その時点で登録された」という事実を記録として残すことに
-    意味があると考えています。
-</p>
-
-<p>
-    登録書は、登録された資料とともに保管してください。
-</p>
-
-<p>
-    遠い未来の誰かがその登録書を見たとき、
-    その資料が少なくともその時点で存在し、
-    文化資料として登録されていたことを知るための
-    手掛かりになるかもしれません。
-</p>
-
-<p>
-    疑えば、きりがありません。
-</p>
-
-<p>
-    真贋、改変、偽装、価値。
-    世の中には、疑おうと思えばいくらでも疑うことのできるものがあります。
-</p>
-
-<p>
-    もちろん、確認することは大切です。
-</p>
-
-<p>
-    しかし、すべてを疑うことだけで一生を終えるのではなく、
-    せめて自分たちが大切にしている文化の世界くらいは、
-    互いの信頼によって成り立つものであってほしい。
-</p>
-
-<p>
-    文化資料登録室は、すべてを証明するための制度ではありません。
-</p>
-
-<p>
-    人と人との間に残された資料と、
-    その資料に添えられた記録を、
-    次の世代へ渡していくための制度です。
-</p>
-
+<h3>100年、1000年先へ</h3>
+<p>文化資料登録室では、資料が100年、1000年先まで残ることを見据え、登録書を資料とともに保存することを大切にしています。</p>
+<p>登録された時点の資料の状態は、年月とともに変化していきます。</p>
+<p>色、質感、傷み、汚れ、欠損など、その姿は長い時間の中で少しずつ変わっていきます。</p>
+<p>だからこそ、特定の時点の姿だけを絶対的なものとして固定するのではなく、「その資料が、その時点で登録された」という事実を記録として残すことに意味があると考えています。</p>
+<p>登録書は、登録された資料とともに保管してください。</p>
+<p>遠い未来の誰かがその登録書を見たとき、その資料が少なくともその時点で存在し、文化資料として登録されていたことを知るための手掛かりになるかもしれません。</p>
+<p>疑えば、きりがありません。</p>
+<p>真贋、改変、偽装、価値。世の中には、疑おうと思えばいくらでも疑うことのできるものがあります。</p>
+<p>もちろん、確認することは大切です。</p>
+<p>しかし、すべてを疑うことだけで一生を終えるのではなく、せめて自分たちが大切にしている文化の世界くらいは、互いの信頼によって成り立つものであってほしい。</p>
+<p>文化資料登録室は、すべてを証明するための制度ではありません。</p>
+<p>人と人との間に残された資料と、その資料に添えられた記録を、次の世代へ渡していくための制度です。</p>
 
 <div class="philosophy-quote">
-
 一枚の登録書が、
 <br>
 資料の過去と未来をつなぐ。
-
 <p class="philosophy-en">
 A single registration document can connect
 the past of a cultural material with its future.
 </p>
-
 </div>
 
-
-<p>
-    文化資料登録室は、
-    「誰が正しいのか」を競うためではなく、
-    「何を残すのか」を考えるために存在します。
-</p>
-
-<p>
-    真作か偽物か。
-    価値があるかないか。
-    有名か無名か。
-    権威が認めたか、認めていないか。
-</p>
-
-<p>
-    その二択だけでは捉えきれないものが、
-    この世界には数多く存在します。
-</p>
-
-<p>
-    私たちは、その「二択の外側」にあるものにも目を向け、
-    今ある文化資料を、未来へ残していきたいと考えています。
-</p>
-
+<p>文化資料登録室は、「誰が正しいのか」を競うためではなく、「何を残すのか」を考えるために存在します。</p>
+<p>真作か偽物か。価値があるかないか。有名か無名か。権威が認めたか、認めていないか。</p>
+<p>その二択だけでは捉えきれないものが、この世界には数多く存在します。</p>
+<p>私たちは、その「二択の外側」にあるものにも目を向け、今ある文化資料を、未来へ残していきたいと考えています。</p>
 
 <div class="philosophy-quote">
-
 <strong>
 登録とは、真実を所有することではありません。
 <br>
 その時点における記録を残すことです。
 </strong>
-
 <p class="philosophy-en">
 Registration does not mean owning the truth.
 It means preserving a record of what was determined at that point in time.
 </p>
-
 </div>
 
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     03 対象資料
-     ===================================================== -->
-
 <section id="materials">
-
-<div class="section-label">
-    03 / MATERIALS
-</div>
-
-<h2>
-    対象資料
-</h2>
-
+<div class="section-label">03 / MATERIALS</div>
+<h2>対象資料</h2>
 <div class="card-grid">
 
 <div class="card">
-
-<h3>
-    出版・文学資料
-</h3>
-
-<p>
-    書籍、初版本、限定本、署名本、献呈本、原稿、草稿、
-    ノート、雑誌、新聞その他の出版・文学関連資料。
-</p>
-
+<h3>出版・文学資料</h3>
+<p>書籍、初版本、限定本、署名本、献呈本、原稿、草稿、ノート、雑誌、新聞その他の出版・文学関連資料。</p>
 </div>
-
 
 <div class="card">
-
-<h3>
-    アニメ・映像資料
-</h3>
-
-<p>
-    原画、複製原画、セル画、設定資料、絵コンテ、
-    台本、ポスター、パンフレットその他の映像関連資料。
-</p>
-
+<h3>アニメ・映像資料</h3>
+<p>原画、複製原画、セル画、設定資料、絵コンテ、台本、ポスター、パンフレットその他の映像関連資料。</p>
 </div>
-
 
 <div class="card">
-
-<h3>
-    漫画・ゲーム資料
-</h3>
-
-<p>
-    漫画原稿、関連資料、ゲーム関連資料、キャラクター関連資料、
-    設定資料その他の関連資料。
-</p>
-
+<h3>漫画・ゲーム資料</h3>
+<p>漫画原稿、関連資料、ゲーム関連資料、キャラクター関連資料、設定資料その他の関連資料。</p>
 </div>
-
 
 <div class="card">
-
-<h3>
-    美術・工芸資料
-</h3>
-
-<p>
-    絵画、版画、色紙、写真、陶磁器、工芸品その他の
-    美術・工芸関連資料。
-</p>
-
+<h3>美術・工芸資料</h3>
+<p>絵画、版画、色紙、写真、陶磁器、工芸品その他の美術・工芸関連資料。</p>
 </div>
-
 
 <div class="card">
-
-<h3>
-    音楽・舞台資料
-</h3>
-
-<p>
-    レコード、CD、楽譜、台本、舞台資料、宣材、
-    公演関連資料その他の音楽・舞台関連資料。
-</p>
-
+<h3>音楽・舞台資料</h3>
+<p>レコード、CD、楽譜、台本、舞台資料、宣材、公演関連資料その他の音楽・舞台関連資料。</p>
 </div>
-
 
 <div class="card">
-
-<h3>
-    その他の文化資料
-</h3>
-
-<p>
-    ポスター、チラシ、広告、写真、記録資料その他、
-    当資料室が文化資料として登録することが適当と認めた資料。
-</p>
-
+<h3>その他の文化資料</h3>
+<p>ポスター、チラシ、広告、写真、記録資料その他、当資料室が文化資料として登録することが適当と認めた資料。</p>
 </div>
 
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     04 登録制度
-     ===================================================== -->
-
 <section id="registration">
+<div class="section-label">04 / REGISTRATION</div>
+<h2>登録制度</h2>
 
-<div class="section-label">
-    04 / REGISTRATION
-</div>
-
-<h2>
-    登録制度
-</h2>
-
-<p>
-    当資料室では、まず抽選によって登録申請の機会を公平に設定し、
-    当選者について、その後の登録申請及び資料確認を行います。
-</p>
-
-<p>
-    抽選への当選は、登録そのものを意味するものではありません。
-    当選後に提出された申請内容、現物画像及び資料関連情報を確認した上で、
-    登録の可否及び登録区分を判断します。
-</p>
-
+<p>当資料室では、まず抽選によって登録申請の機会を公平に設定し、当選者について、その後の登録申請及び資料確認を行います。</p>
+<p>抽選への当選は、登録そのものを意味するものではありません。当選後に提出された申請内容、現物画像及び資料関連情報を確認した上で、登録の可否及び登録区分を判断します。</p>
 
 <div class="registration-grid">
 
 <div class="registration">
-
-<div class="registration-number">
-    01
+<div class="registration-number">01</div>
+<h3>第1種登録（基本登録）</h3>
+<p>資料を識別・管理するために必要となる基本的な情報を確認し、登録します。</p>
 </div>
-
-<h3>
-    第1種登録（基本登録）
-</h3>
-
-<p>
-    資料を識別・管理するために必要となる基本的な情報を確認し、
-    登録します。
-</p>
-
-</div>
-
 
 <div class="registration">
-
-<div class="registration-number">
-    02
+<div class="registration-number">02</div>
+<h3>第2種登録</h3>
+<p>第1種登録の情報に加え、資料上の記載、寸法、形状、付属品、入手経緯その他、資料に関連する事項について、確認できる情報を整理し、登録します。</p>
 </div>
-
-<h3>
-    第2種登録
-</h3>
-
-<p>
-    第1種登録の情報に加え、資料上の記載、寸法、形状、付属品、
-    入手経緯その他、資料に関連する事項について、
-    確認できる情報を整理し、登録します。
-</p>
-
-</div>
-
 
 <div class="registration">
-
-<div class="registration-number">
-    03
+<div class="registration-number">03</div>
+<h3>第3種登録</h3>
+<p>第2種登録の確認に加え、資料の特徴、記載事項、関連資料その他の情報について、確認できる範囲で比較・検討を行い、より詳細な資料記録を作成します。</p>
 </div>
-
-<h3>
-    第3種登録
-</h3>
-
-<p>
-    第2種登録の確認に加え、資料の特徴、記載事項、関連資料
-    その他の情報について、確認できる範囲で比較・検討を行い、
-    より詳細な資料記録を作成します。
-</p>
-
-</div>
-
 
 <div class="registration registration-special">
-
-<div class="registration-number">
-    04
-</div>
-
-<h3>
-    特別登録
-</h3>
-
-<p>
-    第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を
-    総合的に考慮し、文化資料として特に記録する意義があると
-    当資料室が判断した資料について行う登録です。
-</p>
-
+<div class="registration-number">04</div>
+<h3>特別登録</h3>
+<p>第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を総合的に考慮し、文化資料として特に記録する意義があると当資料室が判断した資料について行う登録です。</p>
 </div>
 
 </div>
-
 
 <div class="notice">
-
-<p>
-    特別登録は、資料の真正性、希少性、財産的価値その他の
-    優劣を意味するものではありません。
-</p>
-
-<p>
-    各登録区分は、真贋、真正性、作者、制作年代、来歴、所有権、
-    財産的価値その他の信頼度を示すものではありません。
-</p>
-
-<p>
-    また、各区分に記載された事項のすべてについて、
-    確認又は記録することを保証するものではありません。
-</p>
-
+<p>特別登録は、資料の真正性、希少性、財産的価値その他の優劣を意味するものではありません。</p>
+<p>各登録区分は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他の信頼度を示すものではありません。</p>
+<p>また、各区分に記載された事項のすべてについて、確認又は記録することを保証するものではありません。</p>
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     05 登録番号照会
-     ===================================================== -->
-
 <section id="lookup" class="lookup-section">
-
-<div class="section-label">
-    05 / REGISTRATION NUMBER
-</div>
-
-<h2>
-    登録番号照会
-</h2>
-
-<p>
-    登録番号を入力すると、登録の有無を照会できます。
-</p>
+<div class="section-label">05 / REGISTRATION NUMBER</div>
+<h2>登録番号照会</h2>
+<p>登録番号を入力すると、登録の有無を照会できます。</p>
 
 <div class="lookup">
-
-<div class="lookup-title">
-    REGISTRATION NUMBER
-</div>
-
-<p>
-    登録番号を入力してください。
-</p>
-
-<input
-    type="text"
-    id="registration-number"
-    placeholder="例：AR-7K4M92Q8"
->
-
+<div class="lookup-title">REGISTRATION NUMBER</div>
+<p>登録番号を入力してください。</p>
+<input type="text" id="registration-number" placeholder="例：AR-7K4M92Q8">
 <br>
-
-<button
-    type="button"
-    onclick="checkRegistration()"
->
-    登録番号を照会
-</button>
-
+<button type="button" onclick="checkRegistration()">登録番号を照会</button>
 <div id="lookup-result"></div>
 
 <p class="small">
-    当資料室では、登録番号による照会において、
-    原則として「登録あり」又は「登録なし」のいずれかを表示します。
+当資料室では、登録番号による照会において、原則として「登録あり」又は「登録なし」のいずれかを表示します。
 </p>
-
 <p class="small">
-    登録番号の照会をもって、個別の現物・画像との同一性、
-    真贋、真正性、作者、制作年代、来歴、所有権その他の事項を
-    判定又は回答するものではありません。
+登録番号の照会をもって、個別の現物・画像との同一性、真贋、真正性、作者、制作年代、来歴、所有権その他の事項を判定又は回答するものではありません。
 </p>
-
-
-<!-- =====================================================
-     抽選結果確認
-     ===================================================== -->
 
 <div class="application-lookup">
-
-<div class="application-lookup-title">
-    抽選結果確認
-</div>
-
-<p>
-    抽選申込時に発行された確認番号（AP番号）を入力してください。
-</p>
-
-<input
-    type="text"
-    id="application-number"
-    placeholder="例：AP-E5F6G7H5"
-    maxlength="11"
-    autocomplete="off"
->
-
+<div class="application-lookup-title">抽選結果確認</div>
+<p>抽選申込時に発行された確認番号（AP番号）を入力してください。</p>
+<input type="text" id="application-number" placeholder="例：AP-E5F6G7H5" maxlength="11" autocomplete="off">
 <br>
-
-<button
-    type="button"
-    onclick="checkApplication()"
->
-    抽選結果を確認
-</button>
-
+<button type="button" onclick="checkApplication()">抽選結果を確認</button>
 <div id="application-result"></div>
 
-
-<!-- =====================================================
-     当選者用 登録申請フォーム
-     ===================================================== -->
-
-<div
-    id="registration-application"
-    class="registration-application"
-    style="display:none;"
->
-
-<h3>
-    登録申請
-</h3>
-
-<p>
-    抽選に当選された方は、以下の内容を入力してください。
-</p>
-
+<div id="registration-application" class="registration-application" style="display:none;">
+<h3>登録申請</h3>
+<p>抽選に当選された方は、以下の内容を入力してください。</p>
 <div id="registration-slots"></div>
-
-<button
-    type="button"
-    id="registration-submit"
-    class="registration-submit"
-    disabled
->
-    登録申請を送信
-</button>
-
-<div
-    id="registration-submit-message"
-    class="application-next-message"
-></div>
-
+<button type="button" id="registration-submit" class="registration-submit" disabled>登録申請を送信</button>
+<div id="registration-submit-message" class="application-next-message"></div>
 </div>
 
 </div>
-
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     06 規約
-     ===================================================== -->
-
 <section id="rules">
-
-<div class="section-label">
-    06 / RULES
-</div>
-
-<h2>
-    規約
-</h2>
-
+<div class="section-label">06 / RULES</div>
+<h2>規約</h2>
 <div class="rules">
 
-
 <article>
-
 <h3>第1条（名称）</h3>
-
-<p>
-    本制度は、「文化資料登録室」（以下「当資料室」という。）と称する。
-</p>
-
+<p>本制度は、「文化資料登録室」（以下「当資料室」という。）と称する。</p>
 </article>
 
-
 <article>
-
 <h3>第2条（目的）</h3>
-
-<p>
-    当資料室は、アニメーション、映像、映画、漫画、文学、出版、音楽、
-    舞台、美術、工芸その他の文化に関連する資料について、
-    その資料に関する情報を整理・記録し、後世に残すことを目的とする。
-</p>
-
-<p>
-    当資料室は、一般的な商品・役務の販売又は提供を目的とするものではなく、
-    文化資料に関する記録及び整理を目的とする独立した資料登録制度として運営する。
-</p>
-
-<p>
-    当資料室は、資料の真贋、真正性、作者、制作年代、来歴、所有権又は
-    財産的価値を公的に認定する制度ではなく、一般的な評価や既存の基準のみに
-    とらわれず、当資料室独自の視点から文化的な意義や記録する価値を見出した
-    資料について、その資料に関する情報を登録・管理するものである。
-</p>
-
+<p>当資料室は、アニメーション、映像、映画、漫画、文学、出版、音楽、舞台、美術、工芸その他の文化に関連する資料について、その資料に関する情報を整理・記録し、後世に残すことを目的とする。</p>
+<p>当資料室は、一般的な商品・役務の販売又は提供を目的とするものではなく、文化資料に関する記録及び整理を目的とする独立した資料登録制度として運営する。</p>
+<p>当資料室は、資料の真贋、真正性、作者、制作年代、来歴、所有権又は財産的価値を公的に認定する制度ではなく、一般的な評価や既存の基準のみにとらわれず、当資料室独自の視点から文化的な意義や記録する価値を見出した資料について、その資料に関する情報を登録・管理するものである。</p>
 </article>
 
-
 <article>
-
 <h3>第3条（対象資料）</h3>
-
-<p>
-    当資料室が対象とする資料は、文化、芸術、文学、出版、映像、漫画、
-    アニメーション、映画、音楽、舞台、工芸その他これらに関連する資料とする。
-</p>
-
-<p>
-    具体的には、次のような資料を対象とする。
-</p>
-
+<p>当資料室が対象とする資料は、文化、芸術、文学、出版、映像、漫画、アニメーション、映画、音楽、舞台、工芸その他これらに関連する資料とする。</p>
+<p>具体的には、次のような資料を対象とする。</p>
 <ol>
 <li>文学作品、作家に関する資料</li>
 <li>肉筆原稿、草稿、創作ノート等</li>
@@ -2243,2710 +943,839 @@ It means preserving a record of what was determined at that point in time.
 <li>作家、作者、作品又は文化活動に関連する手紙、記録、資料等</li>
 <li>その他、当資料室が文化資料として登録することが適当と認めた資料</li>
 </ol>
-
 </article>
 
-
 <article>
-
 <h3>第4条（独自の登録基準）</h3>
-
-<p>
-    当資料室は、提出された資料及び資料関連情報について、
-    当資料室独自の基準及び視点により、登録の可否及び登録区分を判断する。
-</p>
-
-<p>
-    当資料室の登録は、公的な鑑定、認定、証明その他の公的判断を
-    代替するものではない。
-</p>
-
+<p>当資料室は、提出された資料及び資料関連情報について、当資料室独自の基準及び視点により、登録の可否及び登録区分を判断する。</p>
+<p>当資料室の登録は、公的な鑑定、認定、証明その他の公的判断を代替するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第5条（抽選及び登録申請）</h3>
-
-<p>
-    登録を希望する者は、当資料室が定める方法により、まず抽選に申し込むものとする。
-</p>
-
-<p>
-    抽選への当選者のみ、当資料室が指定する方法により、
-    登録申請を行うことができる。
-</p>
-
-<p>
-    抽選への当選は、登録を保証するものではない。
-    当選者が登録申請を行った後、当資料室は申請内容、提出された資料関連情報、
-    現物画像その他必要な事項を確認し、登録の可否及び登録区分を判断する。
-</p>
-
-<p>
-    当資料室は、必要に応じて追加の画像、資料又は情報の提出を求めることができる。
-</p>
+<p>登録を希望する者は、当資料室が定める方法により、まず抽選に申し込むものとする。</p>
+<p>抽選への当選者のみ、当資料室が指定する方法により、登録申請を行うことができる。</p>
+<p>抽選への当選は、登録を保証するものではない。当選者が登録申請を行った後、当資料室は申請内容、提出された資料関連情報、現物画像その他必要な事項を確認し、登録の可否及び登録区分を判断する。</p>
+<p>当資料室は、必要に応じて追加の画像、資料又は情報の提出を求めることができる。</p>
 
 <h4>抽選への申し込み</h4>
-
 <ul>
-
-<li>
-    抽選への申し込みは、同一人物につき1日1件までとする。
-</li>
-
-<li>
-    同一人物による同日の複数申込は、重複申込として抽選対象から除外する場合がある。
-</li>
-
-<li>
-    複数の方法を使用して、1日1件の制限を回避したものと
-    当資料室が判断した場合、申込又は当選を無効とすることがある。
-</li>
-
-<li>
-    前項の事実が登録後に判明した場合、当資料室は登録を取り消すことができる。
-</li>
-
-<li>
-    大量の申込その他の行為により、システム又はサーバーに過度の負担を生じさせた場合、
-    当資料室は申込、当選又は登録を取り消すことができる。
-</li>
-
-<li>
-    抽選方法、抽選処理、重複申込の判定方法その他の具体的な処理方法は、
-    原則として公表しない。
-</li>
-
+<li>抽選への申し込みは、同一人物につき1日1件までとする。</li>
+<li>同一人物による同日の複数申込は、重複申込として抽選対象から除外する場合がある。</li>
+<li>複数の方法を使用して、1日1件の制限を回避したものと当資料室が判断した場合、申込又は当選を無効とすることがある。</li>
+<li>前項の事実が登録後に判明した場合、当資料室は登録を取り消すことができる。</li>
+<li>大量の申込その他の行為により、システム又はサーバーに過度の負担を生じさせた場合、当資料室は申込、当選又は登録を取り消すことができる。</li>
+<li>抽選方法、抽選処理、重複申込の判定方法その他の具体的な処理方法は、原則として公表しない。</li>
 </ul>
 
 <h4>抽選結果について</h4>
-
 <ul>
-
-<li>
-    抽選結果は、当選者が当資料室のWebサイト上で確認するものとする。
-</li>
-
-<li>
-    抽選結果の確認には、抽選申込時に発行された確認番号（AP番号）を使用する。
-</li>
-
-<li>
-    落選者に対して、個別の落選通知は行わない。
-</li>
-
-<li>
-    当資料室から、抽選結果をメールで通知することはない。
-</li>
-
-<li>
-    AP番号を紛失した場合、当資料室から個別に結果を通知することはない。
-</li>
-
+<li>抽選結果は、当選者が当資料室のWebサイト上で確認するものとする。</li>
+<li>抽選結果の確認には、抽選申込時に発行された確認番号（AP番号）を使用する。</li>
+<li>落選者に対して、個別の落選通知は行わない。</li>
+<li>当資料室から、抽選結果をメールで通知することはない。</li>
+<li>AP番号を紛失した場合、当資料室から個別に結果を通知することはない。</li>
 </ul>
-
 </article>
 
-
 <article>
-
 <h3>第6条（資料及び申請画像の確認）</h3>
-
-<p>
-    登録申請に際しては、申請者が実際に保有する資料について、
-    当資料室が資料そのものを確認できるよう、必要な情報及び画像を提出するものとする。
-</p>
-
-<p>
-    申請画像は、申請者自身が申請時に現物を撮影した画像に限るものとする。
-</p>
-
-<p>
-    インターネット、SNS、オークションサイト、フリマサイト、書籍、雑誌その他に
-    掲載されている画像を、申請画像として使用することはできない。
-</p>
-
-<p>
-    申請者自身が過去にインターネット、SNS、オークションサイト、
-    フリマサイトその他へ掲載した画像についても、申請画像として使い回さず、
-    申請時に改めて現物を撮影するものとする。
-</p>
-
-<p>
-    資料の状態や特徴を確認できるよう、可能な限り正面だけでなく、
-    裏面、側面、斜め方向その他の異なる角度から撮影した複数の画像を提出するものとする。
-</p>
-
-<p>
-    当資料室は、提出された画像によって資料の状態、特徴その他を十分に確認できないと
-    判断した場合、追加画像の提出を求めることができる。
-</p>
-
-<p>
-    当資料室は、提出された画像、申請内容及び関連情報を確認した上で、
-    登録の可否及び登録区分を判断する。
-</p>
-
-<p>
-    画像及び資料の確認は、真贋、真正性、作者、制作年代、来歴、所有権、
-    財産的価値その他を保証又は証明するものではない。
-</p>
-
+<p>登録申請に際しては、申請者が実際に保有する資料について、当資料室が資料そのものを確認できるよう、必要な情報及び画像を提出するものとする。</p>
+<p>申請画像は、申請者自身が申請時に現物を撮影した画像に限るものとする。</p>
+<p>インターネット、SNS、オークションサイト、フリマサイト、書籍、雑誌その他に掲載されている画像を、申請画像として使用することはできない。</p>
+<p>申請者自身が過去にインターネット、SNS、オークションサイト、フリマサイトその他へ掲載した画像についても、申請画像として使い回さず、申請時に改めて現物を撮影するものとする。</p>
+<p>資料の状態や特徴を確認できるよう、可能な限り正面だけでなく、裏面、側面、斜め方向その他の異なる角度から撮影した複数の画像を提出するものとする。</p>
+<p>当資料室は、提出された画像によって資料の状態、特徴その他を十分に確認できないと判断した場合、追加画像の提出を求めることができる。</p>
+<p>当資料室は、提出された画像、申請内容及び関連情報を確認した上で、登録の可否及び登録区分を判断する。</p>
+<p>画像及び資料の確認は、真贋、真正性、作者、制作年代、来歴、所有権、財産的価値その他を保証又は証明するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第7条（資料関連情報）</h3>
-
-<p>
-    登録に際しては、作品名、資料区分、寸法、形状、付属品、入手経緯、
-    記載事項その他、当該資料に関連する情報について、
-    当資料室が必要と判断する事項を記録することができる。
-</p>
-
-<p>
-    記録する事項及びその範囲は、資料の内容、提出された情報その他の事情に応じて、
-    当資料室が個別に判断するものとする。
-</p>
-
-<p>
-    これらの情報は、当資料室が確認できた範囲で記録するものであり、
-    その内容について真実性、真正性、作者、所有者その他の権利関係を保証するものではない。
-</p>
-
+<p>登録に際しては、作品名、資料区分、寸法、形状、付属品、入手経緯、記載事項その他、当該資料に関連する情報について、当資料室が必要と判断する事項を記録することができる。</p>
+<p>記録する事項及びその範囲は、資料の内容、提出された情報その他の事情に応じて、当資料室が個別に判断するものとする。</p>
+<p>これらの情報は、当資料室が確認できた範囲で記録するものであり、その内容について真実性、真正性、作者、所有者その他の権利関係を保証するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第8条（登録区分）</h3>
-
-<p>
-<strong>1．第1種登録（基本登録）</strong><br>
-    資料を識別・管理するために必要となる基本的な情報を確認し、登録する。
-</p>
-
-<p>
-<strong>2．第2種登録</strong><br>
-    第1種登録の情報に加え、記載事項、寸法、形状、付属品、箱、
-    関連資料、入手経緯その他、資料に関連する事項について、
-    確認できる情報を整理し、登録する。
-</p>
-
-<p>
-<strong>3．第3種登録</strong><br>
-    第2種登録の確認に加え、資料の特徴、記載事項、関連資料その他の情報について、
-    確認できる範囲で比較・検討を行い、より詳細な資料記録を作成する。
-</p>
-
-<p>
-<strong>4．特別登録</strong><br>
-    第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を総合的に考慮し、
-    文化資料として特に記録する意義があると当資料室が判断した資料について行う登録とする。
-</p>
-
-<p>
-    特別登録は、資料の真正性、希少性、財産的価値その他の優劣を意味するものではない。
-</p>
-
-<p>
-    各登録区分において記録・確認する事項及びその範囲は、資料の内容、状態、
-    提出された情報その他の事情に応じて異なるものとし、各区分に記載された事項の
-    すべてについて確認又は記録することを保証するものではない。
-</p>
-
-<p>
-    登録区分は、申請者が自由に決定するものではなく、当資料室が提出資料及び確認結果に基づき決定する。
-</p>
-
+<p><strong>1．第1種登録（基本登録）</strong><br>資料を識別・管理するために必要となる基本的な情報を確認し、登録する。</p>
+<p><strong>2．第2種登録</strong><br>第1種登録の情報に加え、記載事項、寸法、形状、付属品、箱、関連資料、入手経緯その他、資料に関連する事項について、確認できる情報を整理し、登録する。</p>
+<p><strong>3．第3種登録</strong><br>第2種登録の確認に加え、資料の特徴、記載事項、関連資料その他の情報について、確認できる範囲で比較・検討を行い、より詳細な資料記録を作成する。</p>
+<p><strong>4．特別登録</strong><br>第3種登録の基準を踏まえ、確認できた資料及び関連情報の内容を総合的に考慮し、文化資料として特に記録する意義があると当資料室が判断した資料について行う登録とする。</p>
+<p>特別登録は、資料の真正性、希少性、財産的価値その他の優劣を意味するものではない。</p>
+<p>各登録区分において記録・確認する事項及びその範囲は、資料の内容、状態、提出された情報その他の事情に応じて異なるものとし、各区分に記載された事項のすべてについて確認又は記録することを保証するものではない。</p>
+<p>登録区分は、申請者が自由に決定するものではなく、当資料室が提出資料及び確認結果に基づき決定する。</p>
 </article>
 
-
 <article>
-
 <h3>第9条（真贋等の非保証）</h3>
-
-<p>
-    当資料室による登録は、資料の真贋、真正性、作者、制作年代、来歴、
-    所有権、権利関係、財産的価値その他の事項を保証又は認定するものではない。
-</p>
-
+<p>当資料室による登録は、資料の真贋、真正性、作者、制作年代、来歴、所有権、権利関係、財産的価値その他の事項を保証又は認定するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第10条（確認できない事項）</h3>
-
-<p>
-    当資料室は、資料について確認できない事項について、
-    確認済みであるかのような表示を行わない。
-</p>
-
+<p>当資料室は、資料について確認できない事項について、確認済みであるかのような表示を行わない。</p>
 </article>
 
-
 <article>
-
 <h3>第11条（登録番号）</h3>
-
-<p>
-    登録が決定した資料には、当資料室が独自に発行する登録番号を付与する。
-</p>
-
-<p>
-    登録番号は、連番その他の単純な方式ではなく、当資料室所定の方法により発行することができる。
-</p>
-
-<p>
-    登録番号そのものは、資料の真贋、価値その他を示すものではない。
-</p>
-
+<p>登録が決定した資料には、当資料室が独自に発行する登録番号を付与する。</p>
+<p>登録番号は、連番その他の単純な方式ではなく、当資料室所定の方法により発行することができる。</p>
+<p>登録番号そのものは、資料の真贋、価値その他を示すものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第12条（登録書）</h3>
-
-<p>
-    登録された資料について、登録書を作成する。
-</p>
-
-<p>
-    本登録書は、文化資料登録室が当該資料を登録したことを示す記録です。
-</p>
-
-<p>
-    登録書には、登録番号、作品・資料名、資料区分、資料関連情報、
-    登録区分、登録年月日等、必要な事項を記載する。
-</p>
-
-<p>
-    登録書はJPG形式で作成し、L判サイズに合わせて作成する。
-    印刷する場合は、サイズを変更せず、L判サイズのまま印刷することを推奨する。
-</p>
-
-<p>
-    サイズを変更した場合、画像のギザつき、文字の見にくさ、
-    QRコードの読み取り等に影響する場合がある。
-</p>
-
+<p>登録された資料について、登録書を作成する。</p>
+<p>本登録書は、文化資料登録室が当該資料を登録したことを示す記録です。</p>
+<p>登録書には、登録番号、作品・資料名、資料区分、資料関連情報、登録区分、登録年月日等、必要な事項を記載する。</p>
+<p>登録書はJPG形式で作成し、L判サイズに合わせて作成する。印刷する場合は、サイズを変更せず、L判サイズのまま印刷することを推奨する。</p>
+<p>サイズを変更した場合、画像のギザつき、文字の見にくさ、QRコードの読み取り等に影響する場合がある。</p>
 </article>
 
-
 <article>
-
 <h3>第13条（登録書の性質）</h3>
-
-<p>
-    登録書は、当資料室による資料登録を示す管理上の記録であり、
-    鑑定書、保証書、所有権証明書、真正証明書その他これらに類するものではない。
-</p>
-
+<p>登録書は、当資料室による資料登録を示す管理上の記録であり、鑑定書、保証書、所有権証明書、真正証明書その他これらに類するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第14条（登録情報の照会）</h3>
-
-<p>
-    当資料室は、登録番号による登録の有無を自動的に照会できる仕組みを設けることができる。
-</p>
-
-<p>
-    登録番号を入力した場合の照会結果は、原則として「登録あり」又は「登録なし」のいずれかとする。
-</p>
-
-<p>
-    当資料室は、登録番号による照会において、登録対象資料の品名、作品名、作者名、
-    所有者、登録区分、登録年月日、画像その他の登録情報について、
-    原則として回答又は表示を行わない。
-</p>
-
-<p>
-    また、登録番号の照会をもって、個別の現物・画像との同一性、真贋、真正性、
-    作者、制作年代、来歴、所有権その他の事項を判定又は回答するものではない。
-</p>
-
+<p>当資料室は、登録番号による登録の有無を自動的に照会できる仕組みを設けることができる。</p>
+<p>登録番号を入力した場合の照会結果は、原則として「登録あり」又は「登録なし」のいずれかとする。</p>
+<p>当資料室は、登録番号による照会において、登録対象資料の品名、作品名、作者名、所有者、登録区分、登録年月日、画像その他の登録情報について、原則として回答又は表示を行わない。</p>
+<p>また、登録番号の照会をもって、個別の現物・画像との同一性、真贋、真正性、作者、制作年代、来歴、所有権その他の事項を判定又は回答するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第15条（登録情報の変更・訂正）</h3>
-
-<p>
-    登録情報について誤りその他の訂正すべき事情が判明した場合、
-    当資料室は必要に応じて登録情報を変更又は訂正することができる。
-</p>
-
+<p>登録情報について誤りその他の訂正すべき事情が判明した場合、当資料室は必要に応じて登録情報を変更又は訂正することができる。</p>
 </article>
 
-
 <article>
-
 <h3>第16条（登録の取消し）</h3>
-
-<p>
-    虚偽の情報による申請、登録制度の目的に反する利用その他の事情がある場合、
-    当資料室は登録を取り消すことができる。
-</p>
-
-<p>
-    重要な事実についての虚偽、誤認を招く情報、申請画像の不正利用その他、
-    登録判断に影響を与える事情が後日判明した場合も同様とする。
-</p>
-
+<p>虚偽の情報による申請、登録制度の目的に反する利用その他の事情がある場合、当資料室は登録を取り消すことができる。</p>
+<p>重要な事実についての虚偽、誤認を招く情報、申請画像の不正利用その他、登録判断に影響を与える事情が後日判明した場合も同様とする。</p>
 </article>
 
-
 <article>
-
 <h3>第17条（所有権）</h3>
-
-<p>
-    資料の登録によって、資料の所有権その他の権利が当資料室に移転することはない。
-</p>
-
+<p>資料の登録によって、資料の所有権その他の権利が当資料室に移転することはない。</p>
 </article>
 
-
 <article>
-
 <h3>第18条（著作権・商標権等）</h3>
-
-<p>
-    登録対象資料に関する著作権、著作者人格権、商標権その他の権利は、
-    それぞれの権利者に帰属する。
-</p>
-
-<p>
-    当資料室への登録によって、これらの権利が当資料室に移転又は許諾されたものとはならない。
-</p>
-
+<p>登録対象資料に関する著作権、著作者人格権、商標権その他の権利は、それぞれの権利者に帰属する。</p>
+<p>当資料室への登録によって、これらの権利が当資料室に移転又は許諾されたものとはならない。</p>
 </article>
 
-
 <article>
-
 <h3>第19条（権利者等との関係）</h3>
-
-<p>
-    当資料室は、資料に関する権利者、作者、著作者、出版社、制作会社、
-    放送事業者その他の関係者とは、別個の独立した資料登録制度として運営する。
-</p>
-
+<p>当資料室は、資料に関する権利者、作者、著作者、出版社、制作会社、放送事業者その他の関係者とは、別個の独立した資料登録制度として運営する。</p>
 </article>
 
-
 <article>
-
 <h3>第20条（公的登録制度との区別）</h3>
-
-<p>
-    当資料室は、国、地方公共団体、出版社、制作会社、権利者団体その他の
-    公的機関又は公式機関が運営する登録・認定制度ではない。
-</p>
-
-<p>
-    当資料室の登録番号は、公的な登録番号、公式認定番号又は権利者による保証番号ではない。
-</p>
-
+<p>当資料室は、国、地方公共団体、出版社、制作会社、権利者団体その他の公的機関又は公式機関が運営する登録・認定制度ではない。</p>
+<p>当資料室の登録番号は、公的な登録番号、公式認定番号又は権利者による保証番号ではない。</p>
 </article>
 
-
 <article>
-
 <h3>第21条（提出画像の取扱い）</h3>
-
-<p>
-    登録申請に際して提出された画像は、登録可否の確認、登録情報の整理その他、
-    登録に必要な範囲で使用する。
-</p>
-
-<p>
-    提出画像は、原則として継続的に保存しない。
-</p>
-
-<p>
-    確認終了後、当資料室が保有する提出画像は、原則として速やかに削除する。
-</p>
-
-<p>
-    当資料室が保有していない画像については、後日、第三者から提出、開示その他の
-    提供を求められた場合であっても、当資料室から提供することはできない。
-</p>
-
+<p>登録申請に際して提出された画像は、登録可否の確認、登録情報の整理その他、登録に必要な範囲で使用する。</p>
+<p>提出画像は、原則として継続的に保存しない。</p>
+<p>確認終了後、当資料室が保有する提出画像は、原則として速やかに削除する。</p>
+<p>当資料室が保有していない画像については、後日、第三者から提出、開示その他の提供を求められた場合であっても、当資料室から提供することはできない。</p>
 </article>
 
-
 <article>
-
 <h3>第22条（画像の公開）</h3>
-
-<p>
-    当資料室は、提出された画像を原則としてWebサイトその他の方法により公開しない。
-</p>
-
-<p>
-    また、登録番号による照会において、登録対象資料の画像を表示しない。
-</p>
-
+<p>当資料室は、提出された画像を原則としてWebサイトその他の方法により公開しない。</p>
+<p>また、登録番号による照会において、登録対象資料の画像を表示しない。</p>
 </article>
 
-
 <article>
-
 <h3>第23条（登録情報の公開）</h3>
-
-<p>
-    当資料室は、登録された資料について、そのすべての情報を一般公開するものではない。
-</p>
-
-<p>
-    公開する情報は、登録制度の目的及び運営上必要な範囲に限定する。
-</p>
-
+<p>当資料室は、登録された資料について、そのすべての情報を一般公開するものではない。</p>
+<p>公開する情報は、登録制度の目的及び運営上必要な範囲に限定する。</p>
 </article>
 
-
 <article>
-
 <h3>第24条（誤認を招く利用の禁止）</h3>
-
-<p>
-    登録番号、登録書、当資料室の名称その他の登録情報を、
-    当資料室が資料の真正性、作者、所有権、価値その他を保証又は認定したかのように
-    表示又は利用してはならない。
-</p>
-
+<p>登録番号、登録書、当資料室の名称その他の登録情報を、当資料室が資料の真正性、作者、所有権、価値その他を保証又は認定したかのように表示又は利用してはならない。</p>
 </article>
 
-
 <article>
-
 <h3>第25条（個人情報）</h3>
-
-<p>
-    当資料室は、登録申請に伴って取得した個人情報について、
-    資料の登録及び確認その他、当資料室の運営に必要な範囲において適切に取り扱う。
-</p>
-
+<p>当資料室は、登録申請に伴って取得した個人情報について、資料の登録及び確認その他、当資料室の運営に必要な範囲において適切に取り扱う。</p>
 </article>
 
-
 <article>
-
 <h3>第26条（情報の正確性）</h3>
-
-<p>
-    申請者は、登録申請に際して、知り得る範囲で正確な情報を提供するものとする。
-</p>
-
-<p>
-    当資料室は、提供された情報について、確認できない事項を独自に事実として確定するものではない。
-</p>
-
+<p>申請者は、登録申請に際して、知り得る範囲で正確な情報を提供するものとする。</p>
+<p>当資料室は、提供された情報について、確認できない事項を独自に事実として確定するものではない。</p>
 </article>
 
-
 <article>
-
 <h3>第27条（公開停止等）</h3>
-
-<p>
-    当資料室は、システム上の障害、運営上の都合その他必要な事情により、
-    登録情報の照会その他の機能を一時的に停止することができる。
-</p>
-
+<p>当資料室は、システム上の障害、運営上の都合その他必要な事情により、登録情報の照会その他の機能を一時的に停止することができる。</p>
 </article>
 
-
 <article>
-
 <h3>第28条（規約の変更）</h3>
-
-<p>
-    当資料室は、必要に応じて本規約を変更することができる。
-</p>
-
+<p>当資料室は、必要に応じて本規約を変更することができる。</p>
 </article>
 
-
 <article>
-
 <h3>第29条（登録料等）</h3>
-
-<p>
-    登録料、審査料その他、登録に関する費用は徴収しない。
-</p>
-
-<p>
-    当資料室が行う資料の確認及び登録は、金銭的対価を支払うことによって
-    登録の可否又は登録区分が有利になるものではない。
-</p>
-
+<p>登録料、審査料その他、登録に関する費用は徴収しない。</p>
+<p>当資料室が行う資料の確認及び登録は、金銭的対価を支払うことによって登録の可否又は登録区分が有利になるものではない。</p>
 </article>
-
 
 <article>
-
 <h3>第30条（準拠法）</h3>
-
-<p>
-    本規約は、日本法を準拠法とする。
-</p>
-
+<p>本規約は、日本法を準拠法とする。</p>
 </article>
-
 
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     07 登録申請
-     ===================================================== -->
-
 <section id="application">
-
-<div class="section-label">
-    07 / APPLICATION
-</div>
-
-<h2>
-    登録申請
-</h2>
+<div class="section-label">07 / APPLICATION</div>
+<h2>登録申請</h2>
 
 <div class="application-box">
+<div class="notice">現在、新規登録申請は休止しております。</div>
 
-<div class="notice">
+<p>登録申請の受付を再開する場合は、本ページにてご案内します。</p>
 
-    現在、新規登録申請は休止しております。
-
-</div>
-
-<p>
-    登録申請の受付を再開する場合は、本ページにてご案内します。
-</p>
-
-
-<h3>
-    登録までの流れ
-</h3>
-
+<h3>登録までの流れ</h3>
 <ol>
-
-<li>
-    抽選に申し込みます。
-</li>
-
-<li>
-    発行された確認番号（AP番号）を保管してください。
-</li>
-
-<li>
-    抽選結果は、当資料室のWebサイト上でAP番号を入力して確認します。
-</li>
-
-<li>
-    当選した方は、案内された期間内に専用の登録申請を行います。
-</li>
-
-<li>
-    申請者自身が申請時に現物を撮影した画像を提出します。
-</li>
-
-<li>
-    当資料室が提出された画像、資料関連情報その他必要な事項を確認します。
-</li>
-
-<li>
-    必要に応じて、追加画像や追加情報の提出を求める場合があります。
-</li>
-
-<li>
-    確認した内容に基づき、登録の可否及び登録区分を判断します。
-</li>
-
-<li>
-    登録が決定した資料には登録番号を付与し、登録書を作成します。
-</li>
-
+<li>抽選に申し込みます。</li>
+<li>発行された確認番号（AP番号）を保管してください。</li>
+<li>抽選結果は、当資料室のWebサイト上でAP番号を入力して確認します。</li>
+<li>当選した方は、案内された期間内に専用の登録申請を行います。</li>
+<li>申請者自身が申請時に現物を撮影した画像を提出します。</li>
+<li>当資料室が提出された画像、資料関連情報その他必要な事項を確認します。</li>
+<li>必要に応じて、追加画像や追加情報の提出を求める場合があります。</li>
+<li>確認した内容に基づき、登録の可否及び登録区分を判断します。</li>
+<li>登録が決定した資料には登録番号を付与し、登録書を作成します。</li>
 </ol>
 
-
-<h3>
-    抽選への申し込みについて
-</h3>
-
+<h3>抽選への申し込みについて</h3>
 <ul>
-
-<li>
-    登録を希望する場合は、まず抽選にお申し込みください。
-    抽選に当選した方のみ、専用の登録申請を行うことができます。
-</li>
-
-<li>
-    抽選への申し込みは、同一人物につき1日1件までです。
-</li>
-
-<li>
-    同一人物による同日の複数申込は、重複申込として抽選対象から除外する場合があります。
-</li>
-
-<li>
-    複数の方法を使用して申込制限を回避したものと認められる場合、
-    申込又は当選を無効とする場合があります。
-</li>
-
-<li>
-    制限回避が登録後に判明した場合、登録を取り消す場合があります。
-</li>
-
-<li>
-    大量の申込その他の行為により、システム又はサーバーに過度の負担を生じさせた場合、
-    申込、当選又は登録を取り消す場合があります。
-</li>
-
-<li>
-    抽選方法、重複判定その他の具体的な処理方法は公表していません。
-</li>
-
+<li>登録を希望する場合は、まず抽選にお申し込みください。抽選に当選した方のみ、専用の登録申請を行うことができます。</li>
+<li>抽選への申し込みは、同一人物につき1日1件までです。</li>
+<li>同一人物による同日の複数申込は、重複申込として抽選対象から除外する場合があります。</li>
+<li>複数の方法を使用して申込制限を回避したものと認められる場合、申込又は当選を無効とする場合があります。</li>
+<li>制限回避が登録後に判明した場合、登録を取り消す場合があります。</li>
+<li>大量の申込その他の行為により、システム又はサーバーに過度の負担を生じさせた場合、申込、当選又は登録を取り消す場合があります。</li>
+<li>抽選方法、重複判定その他の具体的な処理方法は公表していません。</li>
 </ul>
 
-
-<h3>
-    抽選結果について
-</h3>
-
+<h3>抽選結果について</h3>
 <ul>
-
-<li>
-    抽選結果は、本ページで確認番号（AP番号）を入力して確認してください。
-</li>
-
-<li>
-    当選した場合は、画面上に当選及び登録申請枠数が表示されます。
-</li>
-
-<li>
-    当選していない場合、又は登録対象となっていない確認番号を入力した場合は、
-    同一の結果を表示します。
-</li>
-
-<li>
-    当資料室から、抽選結果をメールで通知することはありません。
-</li>
-
-<li>
-    AP番号を紛失した場合、当資料室から個別に抽選結果を通知することはありません。
-</li>
-
+<li>抽選結果は、本ページで確認番号（AP番号）を入力して確認してください。</li>
+<li>当選した場合は、画面上に当選及び登録申請枠数が表示されます。</li>
+<li>当選していない場合、又は登録対象となっていない確認番号を入力した場合は、同一の結果を表示します。</li>
+<li>当資料室から、抽選結果をメールで通知することはありません。</li>
+<li>AP番号を紛失した場合、当資料室から個別に抽選結果を通知することはありません。</li>
 </ul>
 
+<h3>登録申請について</h3>
+<p>抽選に当選した場合でも、登録が確定したことにはなりません。</p>
+<p>当選者は、案内された方法により登録申請を行い、資料について確認できる情報及び画像を提出してください。</p>
+<p>申請内容、提出画像及び資料関連情報を確認した上で、当資料室が登録の可否及び登録区分を判断します。</p>
+<p>情報が不足している場合、資料の確認が困難な場合、又は当資料室が登録することが適当でないと判断した場合には、登録しないことがあります。</p>
 
-<h3>
-    登録申請について
-</h3>
+<h3>申請画像について</h3>
+<p><strong>申請画像は、申請者自身が申請時に現物を撮影した画像に限ります。</strong></p>
+<p>インターネット、SNS、オークションサイト、フリマサイト、書籍、雑誌その他に掲載されている画像を、申請画像として使用することはできません。</p>
+<p><strong>申請者自身が過去にインターネット等へ掲載した画像についても、申請画像として使い回さず、申請時に改めて現物を撮影してください。</strong></p>
+<p>資料の状態や特徴を確認できるよう、可能な限り正面だけでなく、裏面、側面、斜め方向など、複数の異なる角度から撮影してください。</p>
+<p>資料の大きさ、形状、裏面、側面、付属品その他の確認が必要な場合には、それらが確認できる画像を追加で提出していただくことがあります。</p>
+<p>提出された画像によって現物を十分に確認できない場合、追加画像の提出をお願いすることがあります。</p>
 
-<p>
-    抽選に当選した場合でも、登録が確定したことにはなりません。
-</p>
+<h3>登録の判断について</h3>
+<p>当資料室は、提出された資料、画像及び関連情報を確認し、当資料室独自の基準及び視点により登録の可否及び登録区分を判断します。</p>
+<p>登録に際して、外部の専門家その他の協力者に意見を求める場合があります。ただし、特定の人数による審査会や固定された審査員による審査を必ず行うものではありません。</p>
+<p>個別の審査方法、詳細な判断基準及び外部協力者等については、独立性及び公平性を維持するため、原則として公表しません。</p>
+<p>登録は、真贋、真正性、作者、制作年代、来歴、所有権、希少性、財産的価値その他の事項を保証又は証明するものではありません。</p>
+<p>重要な誤り、虚偽その他の事実が判明した場合には、登録内容を訂正、変更又は取り消す場合があります。</p>
 
-<p>
-    当選者は、案内された方法により登録申請を行い、
-    資料について確認できる情報及び画像を提出してください。
-</p>
+<h3>登録に関する費用</h3>
+<p><strong>登録料、審査料その他、登録に関する費用は徴収しません。</strong></p>
+<p>無料であることは、無条件に登録することを意味するものではありません。提出された資料及び情報を確認した上で、登録の可否を判断します。</p>
 
-<p>
-    申請内容、提出画像及び資料関連情報を確認した上で、
-    当資料室が登録の可否及び登録区分を判断します。
-</p>
-
-<p>
-    情報が不足している場合、資料の確認が困難な場合、
-    又は当資料室が登録することが適当でないと判断した場合には、
-    登録しないことがあります。
-</p>
-
-
-<h3>
-    申請画像について
-</h3>
-
-<p>
-    <strong>
-        申請画像は、申請者自身が申請時に現物を撮影した画像に限ります。
-    </strong>
-</p>
-
-<p>
-    インターネット、SNS、オークションサイト、フリマサイト、書籍、雑誌その他に
-    掲載されている画像を、申請画像として使用することはできません。
-</p>
-
-<p>
-    <strong>
-        申請者自身が過去にインターネット等へ掲載した画像についても、
-        申請画像として使い回さず、申請時に改めて現物を撮影してください。
-    </strong>
-</p>
-
-<p>
-    資料の状態や特徴を確認できるよう、可能な限り正面だけでなく、
-    裏面、側面、斜め方向など、複数の異なる角度から撮影してください。
-</p>
-
-<p>
-    資料の大きさ、形状、裏面、側面、付属品その他の確認が必要な場合には、
-    それらが確認できる画像を追加で提出していただくことがあります。
-</p>
-
-<p>
-    提出された画像によって現物を十分に確認できない場合、
-    追加画像の提出をお願いすることがあります。
-</p>
-
-
-<h3>
-    登録の判断について
-</h3>
-
-<p>
-    当資料室は、提出された資料、画像及び関連情報を確認し、
-    当資料室独自の基準及び視点により登録の可否及び登録区分を判断します。
-</p>
-
-<p>
-    登録に際して、外部の専門家その他の協力者に意見を求める場合があります。
-    ただし、特定の人数による審査会や固定された審査員による審査を必ず行うものではありません。
-</p>
-
-<p>
-    個別の審査方法、詳細な判断基準及び外部協力者等については、
-    独立性及び公平性を維持するため、原則として公表しません。
-</p>
-
-<p>
-    登録は、真贋、真正性、作者、制作年代、来歴、所有権、希少性、
-    財産的価値その他の事項を保証又は証明するものではありません。
-</p>
-
-<p>
-    重要な誤り、虚偽その他の事実が判明した場合には、
-    登録内容を訂正、変更又は取り消す場合があります。
-</p>
-
-
-<h3>
-    登録に関する費用
-</h3>
-
-<p>
-    <strong>
-        登録料、審査料その他、登録に関する費用は徴収しません。
-    </strong>
-</p>
-
-<p>
-    無料であることは、無条件に登録することを意味するものではありません。
-    提出された資料及び情報を確認した上で、登録の可否を判断します。
-</p>
-
-
-<h3>
-    登録後について
-</h3>
-
-<p>
-    登録が決定すると、登録番号を付与し、登録書を作成します。
-</p>
-
-<p>
-    本登録書は、文化資料登録室が当該資料を登録したことを示す記録です。
-    登録番号により、登録された記録を確認することができます。
-</p>
-
-<p>
-    登録書はJPG形式でお送りします。
-    L判サイズに合わせて作成していますので、印刷する際はサイズを変更せず、
-    L判サイズのまま印刷してください。
-</p>
-
-<p>
-    最寄りのセブン‐イレブンのマルチコピー機から印刷することもできます。
-    サイズを変更すると、画像のギザつきや文字の見にくさ、
-    QRコードの読み取りに影響する場合があります。
-</p>
-
-<p>
-    登録書は、可能な限り登録された資料とともに保管してください。
-</p>
-
-<p>
-    登録番号の照会では、原則として「登録あり」又は「登録なし」の
-    いずれかを表示します。
-</p>
-
-<p>
-    登録番号の照会によって、現在手元にある現物が登録された資料と
-    同一であること、真贋、真正性、作者、制作年代、来歴、所有権その他を
-    当資料室が確認又は保証するものではありません。
-</p>
-
-<p>
-    登録後、当資料室が登録時に提出された画像と現在の現物を改めて照合するものではありません。
-</p>
-
-<p>
-    登録された資料の現在の状態について記録を希望する場合には、
-    改めて登録申請を行う必要があります。
-</p>
-
-
-<!-- =====================================================
-     申請前の確認
-     ===================================================== -->
+<h3>登録後について</h3>
+<p>登録が決定すると、登録番号を付与し、登録書を作成します。</p>
+<p>本登録書は、文化資料登録室が当該資料を登録したことを示す記録です。登録番号により、登録された記録を確認することができます。</p>
+<p>登録書はJPG形式でお送りします。L判サイズに合わせて作成していますので、印刷する際はサイズを変更せず、L判サイズのまま印刷してください。</p>
+<p>最寄りのセブン‐イレブンのマルチコピー機から印刷することもできます。サイズを変更すると、画像のギザつきや文字の見にくさ、QRコードの読み取りに影響する場合があります。</p>
+<p>登録書は、可能な限り登録された資料とともに保管してください。</p>
+<p>登録番号の照会では、原則として「登録あり」又は「登録なし」のいずれかを表示します。</p>
+<p>登録番号の照会によって、現在手元にある現物が登録された資料と同一であること、真贋、真正性、作者、制作年代、来歴、所有権その他を当資料室が確認又は保証するものではありません。</p>
+<p>登録後、当資料室が登録時に提出された画像と現在の現物を改めて照合するものではありません。</p>
+<p>登録された資料の現在の状態について記録を希望する場合には、改めて登録申請を行う必要があります。</p>
 
 <div class="application-check">
-
-<p>
-    <strong>申請前の確認</strong>
-</p>
+<p><strong>申請前の確認</strong></p>
 
 <label class="application-agree-label">
-
-<input
-    type="checkbox"
-    id="application-agree"
->
-
-<span>
-    上記の「申請時の注意事項」を読み、内容を確認し、これに同意しました。
-</span>
-
+<input type="checkbox" id="application-agree">
+<span>上記の「申請時の注意事項」を読み、内容を確認し、これに同意しました。</span>
 </label>
 
 <p class="small">
-    ※申請前に、抽選方法、登録申請、提出画像、登録の判断、登録後の取扱い等について、
-    必ず「申請時の注意事項」を確認してください。
+※申請前に、抽選方法、登録申請、提出画像、登録の判断、登録後の取扱い等について、必ず「申請時の注意事項」を確認してください。
 </p>
+<p class="small">※現在は新規登録申請を休止しています。</p>
 
-<p class="small">
-    ※現在は新規登録申請を休止しています。
-</p>
-
-<button
-    type="button"
-    id="application-next"
-    class="application-next"
-    disabled
-    onclick="applicationNext()"
->
-    確認して次へ
+<button type="button" id="application-next" class="application-next" disabled>
+確認して次へ
 </button>
 
-<div
-    id="application-next-message"
-    class="application-next-message"
-></div>
-
+<div id="application-next-message" class="application-next-message"></div>
 </div>
 
 </div>
-
 </section>
 
-
-
-<!-- =====================================================
-     フッター
-     ===================================================== -->
-
 <footer>
-
-<div class="footer-mark">
-    ◆
-</div>
-
-<div class="footer-title">
-    文化資料登録室
-</div>
-
-<p>
-    独立した民間資料登録・管理制度
-</p>
-
+<div class="footer-mark">◆</div>
+<div class="footer-title">文化資料登録室</div>
+<p>独立した民間資料登録・管理制度</p>
 </footer>
 
-
-
 <script>
+const WORKER_URL="https://bunka-shiryoshitsu-checksoft-mountain-b5a9.08084947685jddhdj.workers.dev";
+const MAX_IMAGES=20;
+const MAX_IMAGE_SIZE=2500;
+const IMAGE_QUALITY=.90;
 
-/* =====================================================
-   文化資料登録室 JavaScript
-   ===================================================== */
+const registrationImages=Array.from({length:11},()=>[]);
+let activeApplication={ap:"",slots:0};
+let registrationSubmitting=false;
+let registrationSubmitted=false;
 
+async function readWorkerResponse(response){
+ const text=await response.text();
+ let data=null;
+ try{data=text?JSON.parse(text):null}catch(e){}
+ return{text,data};
+}
 
-/* =====================================================
-   設定
-   ===================================================== */
+async function checkRegistration(){
+ const input=document.getElementById("registration-number");
+ const result=document.getElementById("lookup-result");
+ if(!input||!result)return;
 
-const WORKER_URL =
-    "https://bunka-shiryoshitsu-checksoft-mountain-b5a9.08084947685jddhdj.workers.dev";
+ const number=input.value.trim();
+ if(!number){
+  result.textContent="登録番号を入力してください。";
+  return;
+ }
 
-const MAX_IMAGES = 20;
+ result.textContent="照会中…";
 
-const MAX_IMAGE_SIZE = 2500;
+ try{
+  const response=await fetch(WORKER_URL,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({number})
+  });
 
-const IMAGE_QUALITY = 0.90;
+  if(response.status===429){
+   result.textContent="現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
+   return;
+  }
 
+  result.textContent=await response.text();
+ }catch(error){
+  console.error(error);
+  result.textContent="照会できませんでした。";
+ }
+}
 
-/* =====================================================
-   状態
-   ===================================================== */
+async function checkApplication(){
+ const input=document.getElementById("application-number");
+ const result=document.getElementById("application-result");
+ const box=document.getElementById("registration-application");
+ const container=document.getElementById("registration-slots");
 
-/*
- * 資料ごとの画像を管理する。
- *
- * registrationImages[1]
- * registrationImages[2]
- * ...
- *
- * 各配列には、縮小済みJPEG画像を保存する。
- */
+ if(!input||!result)return;
 
-const registrationImages =
-    Array.from(
-        { length: 11 },
-        function() {
-            return [];
-        }
+ const ap=input.value.trim().toUpperCase();
+
+ activeApplication={ap:"",slots:0};
+ registrationSubmitting=false;
+ registrationSubmitted=false;
+
+ if(box)box.style.display="none";
+ if(container)container.innerHTML="";
+ clearRegistrationImages();
+
+ if(!ap){
+  result.textContent="確認番号（AP番号）を入力してください。";
+  return;
+ }
+
+ result.textContent="確認しています……";
+
+ try{
+  const response=await fetch(WORKER_URL+"/check-application",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({ap})
+  });
+
+  if(response.status===429){
+   result.textContent="現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
+   return;
+  }
+
+  if(!response.ok)throw new Error("HTTP "+response.status);
+
+  const data=await response.json();
+
+  if(data.status==="not_started"){
+   result.textContent="抽選結果はまだ確認できません。";
+   return;
+  }
+
+  if(data.status==="expired"){
+   result.textContent="この当選による登録申請は、有効期限を過ぎています。";
+   return;
+  }
+
+  if(data.status==="active"&&data.winner===true&&Number(data.slots)>0){
+   const slots=Math.min(Math.max(Number(data.slots),1),10);
+
+   activeApplication={ap,slots};
+
+   result.innerHTML=`
+    <div>今回の抽選に当選しています。</div>
+    <div class="application-slots">登録申請：${slots}枠</div>
+   `;
+
+   renderRegistrationSlots(slots);
+   if(box)box.style.display="block";
+   return;
+  }
+
+  result.textContent="今回の抽選では、登録申請の対象となっていません。";
+ }catch(error){
+  console.error(error);
+  result.textContent="確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
+ }
+}
+
+function renderRegistrationSlots(slots){
+ const container=document.getElementById("registration-slots");
+ if(!container)return;
+
+ const count=Math.min(Math.max(Number(slots),1),10);
+ container.innerHTML="";
+ clearRegistrationImages();
+
+ for(let i=1;i<=count;i++){
+  registrationImages[i]=[];
+
+  const item=document.createElement("div");
+  item.className="registration-form-item";
+
+  item.innerHTML=`
+   <h4>登録資料 ${i}</h4>
+
+   <label for="material-name-${i}">資料名称</label>
+   <p class="small">例：サイン色紙</p>
+   <input type="text" id="material-name-${i}" maxlength="200" autocomplete="off">
+
+   <label for="related-name-${i}" style="margin-top:22px">関連資料名称</label>
+   <p class="small">
+    人物名、作品名、イベント名など、資料に関連する名称を入力してください。
+    <br>例：鳥山明
+   </p>
+   <input type="text" id="related-name-${i}" maxlength="200" autocomplete="off">
+
+   <label for="acquisition-info-${i}" style="margin-top:22px">入手経路など</label>
+   <p class="small">
+    資料を入手した経緯、購入先、譲渡、入手時期など、資料について分かることを自由に記入してください。
+   </p>
+   <textarea id="acquisition-info-${i}" rows="7" maxlength="5000"></textarea>
+
+   <label for="material-images-${i}" style="margin-top:22px">資料画像</label>
+   <p class="small">申請者自身が申請時に現物を撮影した画像をアップロードしてください。</p>
+   <p class="small">
+    最大20枚まで提出できます。長辺が2,500pxを超える画像は、自動的に2,500px以内へ縮小します。
+   </p>
+   <input type="file" id="material-images-${i}" accept="image/jpeg,image/png,image/webp" multiple>
+   <div id="image-preview-${i}" class="image-preview"></div>
+  `;
+
+  container.appendChild(item);
+
+  setupRegistrationImageInput(i);
+
+  ["material-name-","related-name-","acquisition-info-"].forEach(prefix=>{
+   const element=document.getElementById(prefix+i);
+   if(element)element.addEventListener("input",updateRegistrationSubmitState);
+  });
+ }
+
+ updateRegistrationSubmitState();
+}
+
+function setupRegistrationImageInput(slot){
+ const input=document.getElementById(`material-images-${slot}`);
+ if(input)input.addEventListener("change",()=>handleRegistrationImages(slot,input));
+}
+
+async function handleRegistrationImages(slot,input){
+ const files=Array.from(input.files||[]);
+ if(!files.length)return;
+
+ const remaining=MAX_IMAGES-registrationImages[slot].length;
+
+ if(remaining<=0){
+  alert(`資料 ${slot} の画像は最大${MAX_IMAGES}枚まで提出できます。`);
+  input.value="";
+  return;
+ }
+
+ if(files.length>remaining){
+  alert(`資料 ${slot} の画像は最大${MAX_IMAGES}枚まで提出できます。`);
+ }
+
+ for(const file of files.slice(0,remaining)){
+  if(!file.type.startsWith("image/"))continue;
+
+  try{
+   registrationImages[slot].push(await resizeRegistrationImage(file));
+  }catch(error){
+   console.error(error);
+   alert("画像の処理に失敗しました。");
+  }
+ }
+
+ input.value="";
+ renderRegistrationImages(slot);
+}
+
+function resizeRegistrationImage(file){
+ return new Promise((resolve,reject)=>{
+  const image=new Image();
+  const url=URL.createObjectURL(file);
+
+  image.onload=()=>{
+   URL.revokeObjectURL(url);
+
+   let width=image.naturalWidth;
+   let height=image.naturalHeight;
+   const longest=Math.max(width,height);
+
+   if(longest>MAX_IMAGE_SIZE){
+    const scale=MAX_IMAGE_SIZE/longest;
+    width=Math.round(width*scale);
+    height=Math.round(height*scale);
+   }
+
+   const canvas=document.createElement("canvas");
+   canvas.width=width;
+   canvas.height=height;
+
+   const context=canvas.getContext("2d");
+
+   if(!context){
+    reject(new Error("画像処理を開始できませんでした。"));
+    return;
+   }
+
+   context.drawImage(image,0,0,width,height);
+
+   canvas.toBlob(blob=>{
+    if(!blob){
+     reject(new Error("画像変換に失敗しました。"));
+     return;
+    }
+
+    resolve({blob,width,height});
+   },"image/jpeg",IMAGE_QUALITY);
+  };
+
+  image.onerror=()=>{
+   URL.revokeObjectURL(url);
+   reject(new Error("画像を読み込めませんでした。"));
+  };
+
+  image.src=url;
+ });
+}
+
+function renderRegistrationImages(slot){
+ const preview=document.getElementById(`image-preview-${slot}`);
+ if(!preview)return;
+
+ preview.innerHTML="";
+
+ (registrationImages[slot]||[]).forEach((image,index)=>{
+  const wrapper=document.createElement("div");
+  wrapper.className="image-preview-item";
+
+  const img=document.createElement("img");
+  const objectUrl=URL.createObjectURL(image.blob);
+
+  img.src=objectUrl;
+  img.alt=`登録資料 ${slot} 画像 ${index+1}`;
+  img.onload=()=>URL.revokeObjectURL(objectUrl);
+
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="image-preview-remove";
+  button.textContent="削除";
+
+  button.addEventListener("click",()=>{
+   registrationImages[slot].splice(index,1);
+   renderRegistrationImages(slot);
+  });
+
+  wrapper.append(img,button);
+  preview.appendChild(wrapper);
+ });
+
+ updateRegistrationSubmitState();
+}
+
+function clearRegistrationImages(){
+ for(let i=1;i<=10;i++)registrationImages[i]=[];
+}
+
+function collectRegistrationItems(){
+ const slots=Number(activeApplication.slots);
+ const items=[];
+
+ if(!slots||slots<1||slots>10){
+  return{ok:false,message:"登録申請枠を確認できません。"};
+ }
+
+ for(let i=1;i<=slots;i++){
+  const name=document.getElementById(`material-name-${i}`)?.value.trim()||"";
+  const relatedName=document.getElementById(`related-name-${i}`)?.value.trim()||"";
+  const acquisition=document.getElementById(`acquisition-info-${i}`)?.value.trim()||"";
+  const images=registrationImages[i]||[];
+
+  if(!name){
+   return{ok:false,message:`資料 ${i} の「資料名称」を入力してください。`};
+  }
+
+  if(!images.length){
+   return{ok:false,message:`資料 ${i} の画像を1枚以上アップロードしてください。`};
+  }
+
+  items.push({
+   item:i,
+   name,
+   relatedName,
+   acquisition
+  });
+ }
+
+ return{ok:true,items};
+}
+
+function updateRegistrationSubmitState(){
+ const button=document.getElementById("registration-submit");
+ if(!button)return;
+
+ if(registrationSubmitting||registrationSubmitted){
+  button.disabled=true;
+  return;
+ }
+
+ const slots=Number(activeApplication.slots);
+
+ if(!activeApplication.ap||!slots||slots<1||slots>10){
+  button.disabled=true;
+  return;
+ }
+
+ for(let i=1;i<=slots;i++){
+  const name=document.getElementById(`material-name-${i}`)?.value.trim()||"";
+  if(!name||(registrationImages[i]||[]).length){
+   if(!name){
+    button.disabled=true;
+    return;
+   }
+  }
+
+  if(!(registrationImages[i]||[]).length){
+   button.disabled=true;
+   return;
+  }
+ }
+
+ button.disabled=false;
+}
+
+async function uploadRegistrationImage(ap,item,image,imageIndex){
+ const formData=new FormData();
+
+ formData.append("ap",ap);
+ formData.append("item",String(item).padStart(2,"0"));
+ formData.append(
+  "image",
+  image.blob,
+  `item-${String(item).padStart(2,"0")}-image-${String(imageIndex).padStart(2,"0")}.jpg`
+ );
+
+ const response=await fetch(WORKER_URL+"/image-upload",{
+  method:"POST",
+  body:formData
+ });
+
+ const result=await readWorkerResponse(response);
+
+ if(response.status===429){
+  throw new Error("現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。");
+ }
+
+ if(!response.ok){
+  throw new Error(result.data?.message||result.text||"画像のアップロードに失敗しました。");
+ }
+
+ if(result.data?.ok===false){
+  throw new Error(result.data.message||"画像のアップロードに失敗しました。");
+ }
+
+ return result.data;
+}
+
+async function submitRegistrationApplication(){
+ if(registrationSubmitting||registrationSubmitted)return;
+
+ const message=document.getElementById("registration-submit-message");
+ const button=document.getElementById("registration-submit");
+ if(!message||!button)return;
+
+ const collected=collectRegistrationItems();
+
+ if(!collected.ok){
+  message.textContent=collected.message;
+  return;
+ }
+
+ if(!activeApplication.ap||!activeApplication.slots){
+  message.textContent="抽選結果を確認できません。もう一度AP番号を確認してください。";
+  return;
+ }
+
+ registrationSubmitting=true;
+ updateRegistrationSubmitState();
+ message.textContent="登録申請の準備をしています……";
+
+ try{
+  const items=collected.items;
+  const totalImages=items.reduce(
+   (total,item)=>total+(registrationImages[item.item]||[]).length,
+   0
+  );
+
+  let uploadedImages=0;
+
+  for(const item of items){
+   const images=registrationImages[item.item]||[];
+
+   for(let i=0;i<images.length;i++){
+    uploadedImages++;
+    message.textContent=`画像を送信しています…… ${uploadedImages} / ${totalImages}`;
+
+    await uploadRegistrationImage(
+     activeApplication.ap,
+     item.item,
+     images[i],
+     i+1
     );
+   }
+  }
 
+  message.textContent="画像の送信が完了しました。登録申請を送信しています……";
 
-/*
- * 現在確認中の当選情報。
- *
- * ap:
- * 抽選確認番号
- *
- * slots:
- * 登録申請枠数
- */
+  const response=await fetch(WORKER_URL+"/registration-submit",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    ap:activeApplication.ap,
+    items
+   })
+  });
 
-let activeApplication =
-    {
-        ap: "",
-        slots: 0
-    };
+  const result=await readWorkerResponse(response);
 
+  if(response.status===429){
+   throw new Error("現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。");
+  }
 
-/*
- * 登録申請送信中かどうか。
- */
+  if(!response.ok){
+   throw new Error(result.data?.message||result.text||"登録申請の送信に失敗しました。");
+  }
 
-let registrationSubmitting =
-    false;
+  if(result.data?.ok===false){
+   throw new Error(result.data.message||"登録申請の送信に失敗しました。");
+  }
 
+  registrationSubmitted=true;
+  registrationSubmitting=false;
+  button.disabled=true;
+  message.textContent=result.data?.message||"登録申請を受け付けました。";
 
-/*
- * 登録申請が正常に完了したかどうか。
- */
-
-let registrationSubmitted =
-    false;
-
-
-/* =====================================================
-   Workerレスポンス処理
-   ===================================================== */
-
-async function readWorkerResponse(
-    response
-) {
-
-    const text =
-        await response.text();
-
-    let data =
-        null;
-
-    try {
-
-        data =
-            text
-                ? JSON.parse(text)
-                : null;
-
-    } catch (error) {
-
-        data =
-            null;
-
-    }
-
-    return {
-        text: text,
-        data: data
-    };
-
+ }catch(error){
+  console.error(error);
+  registrationSubmitting=false;
+  updateRegistrationSubmitState();
+  message.textContent=error.message||"登録申請を送信できませんでした。しばらく時間をおいて、もう一度お試しください。";
+ }
 }
 
+function applicationNext(){
+ const checkbox=document.getElementById("application-agree");
+ const message=document.getElementById("application-next-message");
 
-/* =====================================================
-   登録番号照会
-   ===================================================== */
+ if(!checkbox?.checked||!message)return;
 
-async function checkRegistration() {
-
-    const input =
-        document.getElementById(
-            "registration-number"
-        );
-
-    const result =
-        document.getElementById(
-            "lookup-result"
-        );
-
-    if (!input || !result) {
-        return;
-    }
-
-    const number =
-        input.value.trim();
-
-    if (!number) {
-
-        result.textContent =
-            "登録番号を入力してください。";
-
-        return;
-    }
-
-    result.textContent =
-        "照会中…";
-
-    try {
-
-        const response =
-            await fetch(
-                WORKER_URL,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            number: number
-                        })
-                }
-            );
-
-        if (
-            response.status === 429
-        ) {
-
-            result.textContent =
-                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
-
-            return;
-        }
-
-        result.textContent =
-            await response.text();
-
-    } catch (error) {
-
-        console.error(error);
-
-        result.textContent =
-            "照会できませんでした。";
-
-    }
-
+ message.textContent="現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
 }
 
-
-/* =====================================================
-   抽選結果照会
-   ===================================================== */
-
-async function checkApplication() {
-
-    const input =
-        document.getElementById(
-            "application-number"
-        );
-
-    const result =
-        document.getElementById(
-            "application-result"
-        );
-
-    const applicationBox =
-        document.getElementById(
-            "registration-application"
-        );
-
-    const slotsContainer =
-        document.getElementById(
-            "registration-slots"
-        );
-
-    if (!input || !result) {
-        return;
-    }
-
-    const applicationNumber =
-        input.value
-            .trim()
-            .toUpperCase();
-
-    /*
-     * 新しいAPを確認するたびに、
-     * 現在の申請状態をリセットする。
-     */
-
-    activeApplication =
-        {
-            ap: "",
-            slots: 0
-        };
-
-    registrationSubmitting =
-        false;
-
-    registrationSubmitted =
-        false;
-
-    if (applicationBox) {
-
-        applicationBox.style.display =
-            "none";
-
-    }
-
-    if (slotsContainer) {
-
-        slotsContainer.innerHTML =
-            "";
-
-    }
-
-    clearRegistrationImages();
-
-    if (!applicationNumber) {
-
-        result.textContent =
-            "確認番号（AP番号）を入力してください。";
-
-        return;
-    }
-
-    result.textContent =
-        "確認しています……";
-
-    try {
-
-        const response =
-            await fetch(
-                WORKER_URL +
-                "/check-application",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            ap:
-                                applicationNumber
-                        })
-                }
-            );
-
-        if (
-            response.status === 429
-        ) {
-
-            result.textContent =
-                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
-
-            return;
-        }
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " +
-                response.status
-            );
-
-        }
-
-        const data =
-            await response.json();
-
-        if (
-            data.status ===
-            "not_started"
-        ) {
-
-            result.textContent =
-                "抽選結果はまだ確認できません。";
-
-            return;
-        }
-
-        if (
-            data.status ===
-            "expired"
-        ) {
-
-            result.textContent =
-                "この当選による登録申請は、有効期限を過ぎています。";
-
-            return;
-        }
-
-        if (
-            data &&
-            data.status === "active" &&
-            data.winner === true &&
-            Number(data.slots) > 0
-        ) {
-
-            const slots =
-                Math.min(
-                    Math.max(
-                        Number(data.slots),
-                        1
-                    ),
-                    10
-                );
-
-            /*
-             * 当選情報を保持。
-             */
-
-            activeApplication =
-                {
-                    ap:
-                        applicationNumber,
-
-                    slots:
-                        slots
-                };
-
-            result.innerHTML = `
-                <div>
-                    今回の抽選に当選しています。
-                </div>
-
-                <div class="application-slots">
-                    登録申請：
-                    ${slots}枠
-                </div>
-            `;
-
-            renderRegistrationSlots(
-                slots
-            );
-
-            if (applicationBox) {
-
-                applicationBox.style.display =
-                    "block";
-
-            }
-
-            return;
-        }
-
-        result.textContent =
-            "今回の抽選では、登録申請の対象となっていません。";
-
-    } catch (error) {
-
-        console.error(error);
-
-        result.textContent =
-            "確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
-
-    }
-
+async function monitorSiteAccess(){
+ try{
+  const response=await fetch(WORKER_URL+"/site-monitor",{method:"POST"});
+  if(response.status===429)console.warn("アクセス集中が検出されました。");
+ }catch(error){
+  console.warn("アクセス監視に失敗しました。");
+ }
 }
 
-
-/* =====================================================
-   申請枠生成
-   ===================================================== */
-
-function renderRegistrationSlots(
-    slots
-) {
-
-    const container =
-        document.getElementById(
-            "registration-slots"
-        );
-
-    if (!container) {
-        return;
-    }
-
-    const count =
-        Math.min(
-            Math.max(
-                Number(slots),
-                1
-            ),
-            10
-        );
-
-    container.innerHTML =
-        "";
-
-    clearRegistrationImages();
-
-    for (
-        let i = 1;
-        i <= count;
-        i++
-    ) {
-
-        registrationImages[i] =
-            [];
-
-        const item =
-            document.createElement(
-                "div"
-            );
-
-        item.className =
-            "registration-form-item";
-
-        item.innerHTML = `
-
-            <h4>
-                登録資料 ${i}
-            </h4>
-
-            <div class="registration-form-item">
-
-                <label
-                    for="material-name-${i}"
-                >
-                    資料名称
-                </label>
-
-                <p class="small">
-                    例：サイン色紙
-                </p>
-
-                <input
-                    type="text"
-                    id="material-name-${i}"
-                    maxlength="200"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="related-name-${i}"
-                >
-                    関連資料名称
-                </label>
-
-                <p class="small">
-                    人物名、作品名、イベント名など、
-                    資料に関連する名称を入力してください。
-                    <br>
-                    例：鳥山明
-                </p>
-
-                <input
-                    type="text"
-                    id="related-name-${i}"
-                    maxlength="200"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="acquisition-info-${i}"
-                >
-                    入手経路など
-                </label>
-
-                <p class="small">
-                    資料を入手した経緯、購入先、譲渡、
-                    入手時期など、資料について分かることを
-                    自由に記入してください。
-                </p>
-
-                <textarea
-                    id="acquisition-info-${i}"
-                    rows="7"
-                    maxlength="5000"
-                ></textarea>
-
-            </div>
-
-
-            <div class="registration-form-item">
-
-                <label
-                    for="material-images-${i}"
-                >
-                    資料画像
-                </label>
-
-                <p class="small">
-                    申請者自身が申請時に現物を撮影した画像を
-                    アップロードしてください。
-                </p>
-
-                <p class="small">
-                    最大20枚まで提出できます。
-                    長辺が2,500pxを超える画像は、
-                    自動的に2,500px以内へ縮小します。
-                </p>
-
-                <input
-                    type="file"
-                    id="material-images-${i}"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                >
-
-                <div
-                    id="image-preview-${i}"
-                    class="image-preview"
-                ></div>
-
-            </div>
-        `;
-
-        container.appendChild(
-            item
-        );
-
-        setupRegistrationImageInput(
-            i
-        );
-
-        /*
-         * テキスト入力の変更時にも
-         * 送信可能状態を更新する。
-         */
-
-        const nameInput =
-            document.getElementById(
-                `material-name-${i}`
-            );
-
-        const relatedInput =
-            document.getElementById(
-                `related-name-${i}`
-            );
-
-        const acquisitionInput =
-            document.getElementById(
-                `acquisition-info-${i}`
-            );
-
-        [
-            nameInput,
-            relatedInput,
-            acquisitionInput
-        ].forEach(
-            function(element) {
-
-                if (!element) {
-                    return;
-                }
-
-                element.addEventListener(
-                    "input",
-                    function() {
-
-                        updateRegistrationSubmitState();
-
-                    }
-                );
-
-            }
-        );
-
-    }
-
-    updateRegistrationSubmitState();
-
-}
-
-
-/* =====================================================
-   画像入力設定
-   ===================================================== */
-
-function setupRegistrationImageInput(
-    slot
-) {
-
-    const input =
-        document.getElementById(
-            `material-images-${slot}`
-        );
-
-    if (!input) {
-        return;
-    }
-
-    input.addEventListener(
-        "change",
-        function() {
-
-            handleRegistrationImages(
-                slot,
-                input
-            );
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   画像処理
-   ===================================================== */
-
-async function handleRegistrationImages(
-    slot,
-    input
-) {
-
-    const files =
-        Array.from(
-            input.files || []
-        );
-
-    if (!files.length) {
-        return;
-    }
-
-    const currentCount =
-        registrationImages[slot].length;
-
-    const remaining =
-        MAX_IMAGES -
-        currentCount;
-
-    if (remaining <= 0) {
-
-        alert(
-            `資料 ${slot} の画像は最大${MAX_IMAGES}枚まで提出できます。`
-        );
-
-        input.value =
-            "";
-
-        return;
-    }
-
-    const selectedFiles =
-        files.slice(
-            0,
-            remaining
-        );
-
-    if (
-        files.length >
-        remaining
-    ) {
-
-        alert(
-            `資料 ${slot} の画像は最大${MAX_IMAGES}枚まで提出できます。`
-        );
-
-    }
-
-    for (
-        const file of selectedFiles
-    ) {
-
-        if (
-            !file.type.startsWith(
-                "image/"
-            )
-        ) {
-            continue;
-        }
-
-        try {
-
-            const resized =
-                await resizeRegistrationImage(
-                    file
-                );
-
-            registrationImages[
-                slot
-            ].push(
-                resized
-            );
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-            alert(
-                "画像の処理に失敗しました。"
-            );
-
-        }
-
-    }
-
-    input.value =
-        "";
-
-    renderRegistrationImages(
-        slot
-    );
-
-}
-
-
-/* =====================================================
-   画像縮小
-   ===================================================== */
-
-function resizeRegistrationImage(
-    file
-) {
-
-    return new Promise(
-        function(
-            resolve,
-            reject
-        ) {
-
-            const image =
-                new Image();
-
-            const url =
-                URL.createObjectURL(
-                    file
-                );
-
-            image.onload =
-                function() {
-
-                    URL.revokeObjectURL(
-                        url
-                    );
-
-                    let width =
-                        image.naturalWidth;
-
-                    let height =
-                        image.naturalHeight;
-
-                    const longestSide =
-                        Math.max(
-                            width,
-                            height
-                        );
-
-                    if (
-                        longestSide >
-                        MAX_IMAGE_SIZE
-                    ) {
-
-                        const scale =
-                            MAX_IMAGE_SIZE /
-                            longestSide;
-
-                        width =
-                            Math.round(
-                                width *
-                                scale
-                            );
-
-                        height =
-                            Math.round(
-                                height *
-                                scale
-                            );
-
-                    }
-
-                    const canvas =
-                        document.createElement(
-                            "canvas"
-                        );
-
-                    canvas.width =
-                        width;
-
-                    canvas.height =
-                        height;
-
-                    const context =
-                        canvas.getContext(
-                            "2d"
-                        );
-
-                    if (!context) {
-
-                        reject(
-                            new Error(
-                                "画像処理を開始できませんでした。"
-                            )
-                        );
-
-                        return;
-                    }
-
-                    context.drawImage(
-                        image,
-                        0,
-                        0,
-                        width,
-                        height
-                    );
-
-                    canvas.toBlob(
-                        function(blob) {
-
-                            if (!blob) {
-
-                                reject(
-                                    new Error(
-                                        "画像変換に失敗しました。"
-                                    )
-                                );
-
-                                return;
-                            }
-
-                            resolve({
-
-                                blob:
-                                    blob,
-
-                                width:
-                                    width,
-
-                                height:
-                                    height
-
-                            });
-
-                        },
-                        "image/jpeg",
-                        IMAGE_QUALITY
-                    );
-
-                };
-
-            image.onerror =
-                function() {
-
-                    URL.revokeObjectURL(
-                        url
-                    );
-
-                    reject(
-                        new Error(
-                            "画像を読み込めませんでした。"
-                        )
-                    );
-
-                };
-
-            image.src =
-                url;
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   画像プレビュー
-   ===================================================== */
-
-function renderRegistrationImages(
-    slot
-) {
-
-    const preview =
-        document.getElementById(
-            `image-preview-${slot}`
-        );
-
-    if (!preview) {
-        return;
-    }
-
-    preview.innerHTML =
-        "";
-
-    const images =
-        registrationImages[
-            slot
-        ] || [];
-
-    images.forEach(
-        function(
-            image,
-            index
-        ) {
-
-            const wrapper =
-                document.createElement(
-                    "div"
-                );
-
-            wrapper.className =
-                "image-preview-item";
-
-            const img =
-                document.createElement(
-                    "img"
-                );
-
-            const objectUrl =
-                URL.createObjectURL(
-                    image.blob
-                );
-
-            img.src =
-                objectUrl;
-
-            img.alt =
-                `登録資料 ${slot} 画像 ${index + 1}`;
-
-            img.onload =
-                function() {
-
-                    URL.revokeObjectURL(
-                        objectUrl
-                    );
-
-                };
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.type =
-                "button";
-
-            button.className =
-                "image-preview-remove";
-
-            button.textContent =
-                "削除";
-
-            button.addEventListener(
-                "click",
-                function() {
-
-                    registrationImages[
-                        slot
-                    ].splice(
-                        index,
-                        1
-                    );
-
-                    renderRegistrationImages(
-                        slot
-                    );
-
-                }
-            );
-
-            wrapper.appendChild(
-                img
-            );
-
-            wrapper.appendChild(
-                button
-            );
-
-            preview.appendChild(
-                wrapper
-            );
-
-        }
-    );
-
-    updateRegistrationSubmitState();
-
-}
-
-
-/* =====================================================
-   画像状態クリア
-   ===================================================== */
-
-function clearRegistrationImages() {
-
-    for (
-        let i = 1;
-        i <= 10;
-        i++
-    ) {
-
-        registrationImages[i] =
-            [];
-
-    }
-
-}
-
-
-/* =====================================================
-   登録申請入力内容取得
-   ===================================================== */
-
-function collectRegistrationItems() {
-
-    const slots =
-        Number(
-            activeApplication.slots
-        );
-
-    const items =
-        [];
-
-    if (
-        !slots ||
-        slots < 1 ||
-        slots > 10
-    ) {
-
-        return {
-            ok: false,
-            message:
-                "登録申請枠を確認できません。"
-        };
-
-    }
-
-    for (
-        let i = 1;
-        i <= slots;
-        i++
-    ) {
-
-        const nameInput =
-            document.getElementById(
-                `material-name-${i}`
-            );
-
-        const relatedInput =
-            document.getElementById(
-                `related-name-${i}`
-            );
-
-        const acquisitionInput =
-            document.getElementById(
-                `acquisition-info-${i}`
-            );
-
-        const images =
-            registrationImages[i] ||
-            [];
-
-        const name =
-            nameInput
-                ? nameInput.value.trim()
-                : "";
-
-        const relatedName =
-            relatedInput
-                ? relatedInput.value.trim()
-                : "";
-
-        const acquisition =
-            acquisitionInput
-                ? acquisitionInput.value.trim()
-                : "";
-
-        if (!name) {
-
-            return {
-                ok: false,
-                message:
-                    `資料 ${i} の「資料名称」を入力してください。`
-            };
-
-        }
-
-        if (!images.length) {
-
-            return {
-                ok: false,
-                message:
-                    `資料 ${i} の画像を1枚以上アップロードしてください。`
-            };
-
-        }
-
-        items.push(
-            {
-                item: i,
-
-                name:
-                    name,
-
-                relatedName:
-                    relatedName,
-
-                acquisition:
-                    acquisition
-            }
-        );
-
-    }
-
-    return {
-        ok: true,
-        items: items
-    };
-
-}
-
-
-/* =====================================================
-   登録申請送信ボタン状態
-   ===================================================== */
-
-function updateRegistrationSubmitState() {
-
-    const button =
-        document.getElementById(
-            "registration-submit"
-        );
-
-    if (!button) {
-        return;
-    }
-
-    if (
-        registrationSubmitting ||
-        registrationSubmitted
-    ) {
-
-        button.disabled =
-            true;
-
-        return;
-    }
-
-    const slots =
-        Number(
-            activeApplication.slots
-        );
-
-    const ap =
-        activeApplication.ap;
-
-    if (
-        !ap ||
-        !slots ||
-        slots < 1 ||
-        slots > 10
-    ) {
-
-        button.disabled =
-            true;
-
-        return;
-    }
-
-    /*
-     * すべての資料について
-     *
-     * ・資料名称
-     * ・画像1枚以上
-     *
-     * が揃っている場合のみ送信可能にする。
-     */
-
-    for (
-        let i = 1;
-        i <= slots;
-        i++
-    ) {
-
-        const nameInput =
-            document.getElementById(
-                `material-name-${i}`
-            );
-
-        const name =
-            nameInput
-                ? nameInput.value.trim()
-                : "";
-
-        const images =
-            registrationImages[i] ||
-            [];
-
-        if (
-            !name ||
-            !images.length
-        ) {
-
-            button.disabled =
-                true;
-
-            return;
-        }
-
-    }
-
-    button.disabled =
-        false;
-
-}
-
-
-/* =====================================================
-   画像アップロード
-   ===================================================== */
-
-async function uploadRegistrationImage(
-    ap,
-    item,
-    image,
-    imageIndex
-) {
-
-    const formData =
-        new FormData();
-
-    formData.append(
-        "ap",
-        ap
-    );
-
-    formData.append(
-        "item",
-        String(item).padStart(
-            2,
-            "0"
-        )
-    );
-
-    formData.append(
-        "image",
-        image.blob,
-        `item-${String(item).padStart(2, "0")}-image-${String(imageIndex).padStart(2, "0")}.jpg`
-    );
-
-    const response =
-        await fetch(
-            WORKER_URL +
-            "/image-upload",
-            {
-                method: "POST",
-
-                body:
-                    formData
-            }
-        );
-
-    const result =
-        await readWorkerResponse(
-            response
-        );
-
-    if (
-        response.status === 429
-    ) {
-
-        throw new Error(
-            "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
-        );
-
-    }
-
-    if (!response.ok) {
-
-        if (
-            result.data &&
-            result.data.message
-        ) {
-
-            throw new Error(
-                result.data.message
-            );
-
-        }
-
-        throw new Error(
-            result.text ||
-            "画像のアップロードに失敗しました。"
-        );
-
-    }
-
-    if (
-        result.data &&
-        result.data.ok === false
-    ) {
-
-        throw new Error(
-            result.data.message ||
-            "画像のアップロードに失敗しました。"
-        );
-
-    }
-
-    return result.data;
-
-}
-
-
-/* =====================================================
-   登録申請送信
-   ===================================================== */
-
-async function submitRegistrationApplication() {
-
-    if (
-        registrationSubmitting ||
-        registrationSubmitted
-    ) {
-        return;
-    }
-
-    const message =
-        document.getElementById(
-            "registration-submit-message"
-        );
-
-    const button =
-        document.getElementById(
-            "registration-submit"
-        );
-
-    if (!message || !button) {
-        return;
-    }
-
-    /*
-     * 入力内容を確認。
-     */
-
-    const collected =
-        collectRegistrationItems();
-
-    if (!collected.ok) {
-
-        message.textContent =
-            collected.message;
-
-        return;
-    }
-
-    if (
-        !activeApplication.ap ||
-        !activeApplication.slots
-    ) {
-
-        message.textContent =
-            "抽選結果を確認できません。もう一度AP番号を確認してください。";
-
-        return;
-    }
-
-    /*
-     * 送信開始。
-     */
-
-    registrationSubmitting =
-        true;
-
-    updateRegistrationSubmitState();
-
-    message.textContent =
-        "登録申請の準備をしています……";
-
-    try {
-
-        const items =
-            collected.items;
-
-        /*
-         * 画像を順番にアップロードする。
-         *
-         * 先に全画像をWorkerへ送信し、
-         * すべて成功してから
-         * /registration-submit を呼び出す。
-         */
-
-        let totalImages =
-            0;
-
-        items.forEach(
-            function(item) {
-
-                totalImages +=
-                    (
-                        registrationImages[
-                            item.item
-                        ] || []
-                    ).length;
-
-            }
-        );
-
-        let uploadedImages =
-            0;
-
-        for (
-            const item of items
-        ) {
-
-            const images =
-                registrationImages[
-                    item.item
-                ] || [];
-
-            for (
-                let imageIndex = 0;
-                imageIndex < images.length;
-                imageIndex++
-            ) {
-
-                uploadedImages++;
-
-                message.textContent =
-                    `画像を送信しています…… ${uploadedImages} / ${totalImages}`;
-
-                await uploadRegistrationImage(
-                    activeApplication.ap,
-                    item.item,
-                    images[imageIndex],
-                    imageIndex + 1
-                );
-
-            }
-
-        }
-
-        /*
-         * 画像がすべて送信できたら、
-         * 最終的な申請情報を送信する。
-         */
-
-        message.textContent =
-            "画像の送信が完了しました。登録申請を送信しています……";
-
-        const response =
-            await fetch(
-                WORKER_URL +
-                "/registration-submit",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            ap:
-                                activeApplication.ap,
-
-                            items:
-                                items
-                        })
-                }
-            );
-
-        const result =
-            await readWorkerResponse(
-                response
-            );
-
-        if (
-            response.status === 429
-        ) {
-
-            throw new Error(
-                "現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。"
-            );
-
-        }
-
-        if (!response.ok) {
-
-            if (
-                result.data &&
-                result.data.message
-            ) {
-
-                throw new Error(
-                    result.data.message
-                );
-
-            }
-
-            throw new Error(
-                result.text ||
-                "登録申請の送信に失敗しました。"
-            );
-
-        }
-
-        if (
-            result.data &&
-            result.data.ok === false
-        ) {
-
-            throw new Error(
-                result.data.message ||
-                "登録申請の送信に失敗しました。"
-            );
-
-        }
-
-        /*
-         * 正常終了。
-         */
-
-        registrationSubmitted =
-            true;
-
-        registrationSubmitting =
-            false;
-
-        button.disabled =
-            true;
-
-        message.textContent =
-            (
-                result.data &&
-                result.data.message
-            )
-            ||
-            "登録申請を受け付けました。";
-
-    } catch (error) {
-
-        console.error(
-            error
-        );
-
-        registrationSubmitting =
-            false;
-
-        updateRegistrationSubmitState();
-
-        message.textContent =
-            error.message ||
-            "登録申請を送信できませんでした。しばらく時間をおいて、もう一度お試しください。";
-
-    }
-
-}
-
-
-/* =====================================================
-   申請前チェック
-   ===================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        const checkbox =
-            document.getElementById(
-                "application-agree"
-            );
-
-        const nextButton =
-            document.getElementById(
-                "application-next"
-            );
-
-        if (
-            checkbox &&
-            nextButton
-        ) {
-
-            checkbox.addEventListener(
-                "change",
-                function() {
-
-                    nextButton.disabled =
-                        !checkbox.checked;
-
-                }
-            );
-
-        }
-
-
-        /*
-         * 登録申請送信ボタン。
-         */
-
-        const registrationSubmit =
-            document.getElementById(
-                "registration-submit"
-            );
-
-        if (
-            registrationSubmit
-        ) {
-
-            registrationSubmit.addEventListener(
-                "click",
-                function() {
-
-                    submitRegistrationApplication();
-
-                }
-            );
-
-        }
-
-    }
-);
-
-
-/* =====================================================
-   申請「次へ」
-   ===================================================== */
-
-function applicationNext() {
-
-    const checkbox =
-        document.getElementById(
-            "application-agree"
-        );
-
-    const message =
-        document.getElementById(
-            "application-next-message"
-        );
-
-    if (
-        !checkbox ||
-        !checkbox.checked ||
-        !message
-    ) {
-        return;
-    }
-
-    message.textContent =
-        "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
-
-}
-
-
-/* =====================================================
-   異常アクセス監視
-   ===================================================== */
-
-async function monitorSiteAccess() {
-
-    try {
-
-        const response =
-            await fetch(
-                WORKER_URL +
-                "/site-monitor",
-                {
-                    method: "POST"
-                }
-            );
-
-        /*
-         * 429の場合も、
-         * サイトの表示変更や演出は行わない。
-         */
-
-        if (
-            response.status === 429
-        ) {
-
-            console.warn(
-                "アクセス集中が検出されました。"
-            );
-
-        }
-
-    } catch (error) {
-
-        /*
-         * 監視通信に失敗しても
-         * サイト本体には影響させない。
-         */
-
-        console.warn(
-            "アクセス監視に失敗しました。"
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   初期化
-   ===================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        monitorSiteAccess();
-
-    }
-);
-
+document.addEventListener("DOMContentLoaded",()=>{
+ const checkbox=document.getElementById("application-agree");
+ const nextButton=document.getElementById("application-next");
+ const registrationSubmit=document.getElementById("registration-submit");
+
+ if(checkbox&&nextButton){
+  checkbox.addEventListener("change",()=>{
+   nextButton.disabled=!checkbox.checked;
+  });
+ }
+
+ if(nextButton){
+  nextButton.addEventListener("click",applicationNext);
+ }
+
+ if(registrationSubmit){
+  registrationSubmit.addEventListener("click",submitRegistrationApplication);
+ }
+
+ monitorSiteAccess();
+});
 </script>
 
 </body>
-
 </html>
