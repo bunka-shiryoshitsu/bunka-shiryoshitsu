@@ -2717,7 +2717,7 @@ It means preserving a record of what was determined at that point in time.
 
 <div id="application-result"></div>
 
-<div
+   <div
     id="registration-application"
     class="registration-application"
     style="display:none;"
@@ -2731,26 +2731,23 @@ It means preserving a record of what was determined at that point in time.
         抽選に当選された方は、以下の内容を入力してください。
     </p>
 
+    <div id="registration-slots"></div>
 
-    <div class="registration-form-item">
 
-        <label for="material-name">
-            資料名称
-        </label>
+    <button
+        type="button"
+        id="registration-submit"
+        disabled
+    >
+        登録申請を送信
+    </button>
 
-        <p class="small">
-            例：サイン色紙
-        </p>
 
-        <input
-            type="text"
-            id="material-name"
-            maxlength="200"
-            autocomplete="off"
-        >
+    <div
+        id="registration-submit-message"
+    ></div>
 
-    </div>
-
+</div>
 
     <div class="registration-form-item">
 
