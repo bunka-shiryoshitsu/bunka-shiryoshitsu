@@ -2686,32 +2686,6 @@ It means preserving a record of what was determined at that point in time.
 
 </ol>
 
-
-
-<!-- =====================================================
-     抽選結果確認
-     ===================================================== -->
-
-<div class="application-lookup">
-
-<div class="application-lookup-title">
-    抽選結果の確認
-</div>
-
-<p>
-    抽選申込時に発行された確認番号（AP番号）を入力してください。
-</p>
-
-<input
-    type="text"
-    id="application-number"
-    placeholder="例：AP-K7M4P2Q8"
-    autocomplete="off"
->
-
-<br>
-
-<button onclick="checkApplication()">
 /* =====================================================
    登録申請枠を生成
    ===================================================== */
@@ -2882,149 +2856,12 @@ function renderRegistrationSlots(
     }
 
 }
-   
-    抽選結果を確認
-</button>
 
-<div id="application-result"></div>
-
-   <div
-    id="registration-application"
-    class="registration-application"
-    style="display:none;"
->
-
-    <h3>
-        登録申請
-    </h3>
-
-    <p>
-        抽選に当選された方は、以下の内容を入力してください。
-    </p>
-
-    <div id="registration-slots"></div>
+<!-- =====================================================
+     抽選結果確認
+     ===================================================== -->
 
 
-    <button
-        type="button"
-        id="registration-submit"
-        disabled
-    >
-        登録申請を送信
-    </button>
-
-
-    <div
-        id="registration-submit-message"
-    ></div>
-
-</div>
-
-    <div class="registration-form-item">
-
-        <label for="related-name">
-            関連資料名称
-        </label>
-
-        <p class="small">
-            人物名、作品名、イベント名など、資料に関連する名称を入力してください。
-            <br>
-            例：鳥山明
-        </p>
-
-        <input
-            type="text"
-            id="related-name"
-            maxlength="200"
-            autocomplete="off"
-        >
-
-    </div>
-
-
-    <div class="registration-form-item">
-
-        <label for="acquisition-info">
-            入手経路など
-        </label>
-
-        <p class="small">
-            資料を入手した経緯、購入先、譲渡、入手時期など、
-            資料について分かることを自由に記入してください。
-        </p>
-
-        <textarea
-            id="acquisition-info"
-            rows="7"
-            maxlength="5000"
-        ></textarea>
-
-    </div>
-
-
-    <div class="registration-form-item">
-
-        <label for="material-images">
-            資料画像
-        </label>
-
-        <p class="small">
-            申請者自身が申請時に現物を撮影した画像をアップロードしてください。
-        </p>
-
-        <p class="small">
-            最大20枚まで提出できます。
-            長辺が2,500pxを超える画像は、自動的に2,500px以内へ縮小します。
-        </p>
-
-        <input
-            type="file"
-            id="material-images"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-        >
-
-        <div
-            id="image-preview"
-            class="image-preview"
-        ></div>
-
-    </div>
-
-
-    <button
-        type="button"
-        id="registration-submit"
-        disabled
-    >
-        登録申請を送信
-    </button>
-
-
-    <div
-        id="registration-submit-message"
-    ></div>
-
-</div>
-
-<p class="small">
-    AP：Application（申込み）の略
-</p>
-
-<p class="small">
-    ※英字の大文字・小文字、全角・半角は区別しません。
-</p>
-
-<p class="small">
-    ※抽選結果は、当選者に対するメール通知ではなく、
-    本ページでAP番号を入力して確認する方式です。
-</p>
-
-</div>
-
-
-
-<h3>
     抽選への申し込みについて
 </h3>
 
