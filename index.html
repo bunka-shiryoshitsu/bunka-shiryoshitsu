@@ -2712,6 +2712,177 @@ It means preserving a record of what was determined at that point in time.
 <br>
 
 <button onclick="checkApplication()">
+/* =====================================================
+   登録申請枠を生成
+   ===================================================== */
+
+function renderRegistrationSlots(
+    slots
+) {
+
+    const container =
+        document.getElementById(
+            "registration-slots"
+        );
+
+
+    if (!container) {
+
+        return;
+    }
+
+
+    const count =
+        Math.min(
+            Math.max(
+                Number(slots),
+                1
+            ),
+            10
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    for (
+        let i = 1;
+        i <= count;
+        i++
+    ) {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "registration-form-item";
+
+
+        item.innerHTML = `
+
+            <h4>
+                登録資料 ${i}
+            </h4>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-name-${i}"
+                >
+                    資料名称
+                </label>
+
+                <p class="small">
+                    例：サイン色紙
+                </p>
+
+                <input
+                    type="text"
+                    id="material-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="related-name-${i}"
+                >
+                    関連資料名称
+                </label>
+
+                <p class="small">
+                    人物名、作品名、イベント名など、
+                    資料に関連する名称を入力してください。
+                    <br>
+                    例：鳥山明
+                </p>
+
+                <input
+                    type="text"
+                    id="related-name-${i}"
+                    maxlength="200"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="acquisition-info-${i}"
+                >
+                    入手経路など
+                </label>
+
+                <p class="small">
+                    資料を入手した経緯、購入先、譲渡、
+                    入手時期など、資料について分かることを
+                    自由に記入してください。
+                </p>
+
+                <textarea
+                    id="acquisition-info-${i}"
+                    rows="7"
+                    maxlength="5000"
+                ></textarea>
+
+            </div>
+
+
+            <div class="registration-form-item">
+
+                <label
+                    for="material-images-${i}"
+                >
+                    資料画像
+                </label>
+
+                <p class="small">
+                    申請者自身が申請時に現物を撮影した画像を
+                    アップロードしてください。
+                </p>
+
+                <p class="small">
+                    最大20枚まで提出できます。
+                    長辺が2,500pxを超える画像は、
+                    自動的に2,500px以内へ縮小します。
+                </p>
+
+                <input
+                    type="file"
+                    id="material-images-${i}"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                >
+
+                <div
+                    id="image-preview-${i}"
+                    class="image-preview"
+                ></div>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(
+            item
+        );
+
+    }
+
+}
+   
     抽選結果を確認
 </button>
 
