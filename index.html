@@ -1673,21 +1673,6 @@ function updateRegistrationSubmitState(){
  button.disabled=false;
 }
 
-/*
- * ここを修正しています。
- *
- * Worker側は、
- *   ap
- *   item
- *   image
- *
- * をFormDataではなくURLのクエリパラメータから取得します。
- *
- * そのため、
- * /image-upload?ap=AP-XXXXXXXX&item=01&image=01
- *
- * の形で送信し、FormDataには実際の画像ファイルだけを入れます。
- */
 async function uploadRegistrationImage(ap,item,image,imageIndex){
  const formData=new FormData();
 
@@ -1725,7 +1710,7 @@ async function uploadRegistrationImage(ap,item,image,imageIndex){
   );
  }
 
- if(result.data?.ok===false){
+ if(result.data?.success===false){
   throw new Error(
    result.data.message||
    result.data.error||
@@ -1768,9 +1753,20 @@ async function submitRegistrationApplication(){
  try{
   const items=collected.items;
 
+  /*
+   * 重要：
+   * registrationImages の配列番号は 1,2,3...
+   * Workerへ送る item は "01","02","03"...
+   *
+   * そのため、ここでは必ず Number(item.item) に変換して
+   * registrationImages[1]、registrationImages[2] のように
+   * 正しい配列を取得します。
+   */
+
   const totalImages=items.reduce(
    (total,item)=>{
-    return total+(registrationImages[item.item]||[]).length;
+    const slot=Number(item.item);
+    return total+(registrationImages[slot]||[]).length;
    },
    0
   );
@@ -1778,9 +1774,12 @@ async function submitRegistrationApplication(){
   let uploadedImages=0;
 
   for(const item of items){
-   const images=registrationImages[item.item]||[];
+
+   const slot=Number(item.item);
+   const images=registrationImages[slot]||[];
 
    for(let i=0;i<images.length;i++){
+
     uploadedImages++;
 
     message.textContent=
@@ -1829,7 +1828,7 @@ async function submitRegistrationApplication(){
    );
   }
 
-  if(result.data?.ok===false){
+  if(result.data?.success===false){
    throw new Error(
     result.data.message||
     result.data.error||
