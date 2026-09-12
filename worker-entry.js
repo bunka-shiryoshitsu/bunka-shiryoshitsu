@@ -17,7 +17,9 @@ export default {
     }
 
     if ((request.method === "GET" || request.method === "POST") && path === "/check") {
-      return checkRegistration(request, env);
+      // REGISTRATION_LIST* は管理者自身がカード発行に使う予約番号として保持する。
+      // 公開照会では、従来どおり予約番号も「登録あり」として扱う。
+      return core.fetch(request, env, ctx);
     }
 
     if (request.method === "POST" && path === "/lottery-apply") {
