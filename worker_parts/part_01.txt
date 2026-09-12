@@ -1,0 +1,628 @@
+const ORIGIN = "https://bunka-shiryoshitsu.github.io";
+
+const MAX = 5 * 1024 * 1024;
+
+const AP_CHARS =
+  "ABCDEFGHJKLMNPQRSTUVWXY3456789";
+
+const TYPES = {
+  type1: "第1種登録（基本登録）",
+  type2: "第2種登録",
+  type3: "第3種登録",
+  special: "特別登録"
+};
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: cors()
+      });
+    }
+
+    /*
+     * Workerのルート
+     */
+    if (request.method === "GET" && path === "/") {
+      return html(`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文化資料登録室 Worker</title>
+</head>
+<body style="font-family:system-ui,sans-serif;padding:40px;text-align:center">
+<h1>文化資料登録室</h1>
+<p>Workerは正常に稼働しています。</p>
+</body>
+</html>
+`);
+    }
+
+    /*
+     * サイト監視
+     */
+    if (
+      request.method === "POST" &&
+      path === "/site-monitor"
+    ) {
+      if (
+        await rateLimited(
+          request,
+          env,
+          "SITE"
+        )
+      ) {
+        return rateLimit();
+      }
+
+      return text("OK");
+    }
+
+    /*
+     * 登録番号確認
+     */
+    if (
+      (request.method === "GET" ||
+        request.method === "POST") &&
+      path === "/check"
+    ) {
+      return checkRegistration(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 抽選申込み
+     */
+    if (
+      request.method === "POST" &&
+      path === "/lottery-apply"
+    ) {
+      return lotteryApply(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 抽選結果確認
+     */
+    if (
+      request.method === "POST" &&
+      path === "/check-application"
+    ) {
+      return checkApplication(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 当選情報管理
+     */
+    if (
+      request.method === "GET" &&
+      path === "/admin-winners"
+    ) {
+      return winnerPage();
+    }
+
+    if (
+      request.method === "POST" &&
+      path === "/admin-winners/save"
+    ) {
+      return saveWinner(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 申請画像
+     */
+    if (
+      request.method === "POST" &&
+      path === "/image-upload"
+    ) {
+      return imageUpload(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 登録申請
+     */
+    if (
+      request.method === "POST" &&
+      path === "/registration-submit"
+    ) {
+      return registrationSubmit(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 管理画面
+     */
+    if (
+      request.method === "GET" &&
+      path === "/admin"
+    ) {
+      return adminPage();
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/admin/application"
+    ) {
+      return adminApplication(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/admin/lottery-applications"
+    ) {
+      return adminLotteryApplications(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/admin/applications"
+    ) {
+      return adminApplications(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      path === "/admin/review"
+    ) {
+      return reviewApplication(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      path === "/admin/issued-data-upload"
+    ) {
+      return issuedDataUpload(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      path === "/admin/cancel"
+    ) {
+      return cancelRegistration(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/admin/image"
+    ) {
+      return adminImage(
+        request,
+        env
+      );
+    }
+
+    /*
+     * 発行データ受取
+     */
+    if (
+      request.method === "GET" &&
+      path === "/receive-status"
+    ) {
+      return receiveStatus(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/receive"
+    ) {
+      return receivePage(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      path === "/receive-file"
+    ) {
+      return receiveFile(
+        request,
+        env
+      );
+    }
+
+    return text(
+      "Not Found",
+      404
+    );
+  }
+};
+
+
+/* =========================================================
+   共通
+========================================================= */
+
+function cors() {
+  return {
+    "Access-Control-Allow-Origin": ORIGIN,
+    "Access-Control-Allow-Methods":
+      "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type,X-Admin-Key"
+  };
+}
+
+function text(
+  value,
+  status = 200
+) {
+  return new Response(
+    value,
+    {
+      status,
+      headers: {
+        ...cors(),
+        "Content-Type":
+          "text/plain; charset=UTF-8",
+        "Cache-Control":
+          "no-store"
+      }
+    }
+  );
+}
+
+function json(
+  value,
+  status = 200
+) {
+  return new Response(
+    JSON.stringify(value),
+    {
+      status,
+      headers: {
+        ...cors(),
+        "Content-Type":
+          "application/json; charset=UTF-8",
+        "Cache-Control":
+          "no-store"
+      }
+    }
+  );
+}
+
+function html(
+  value,
+  status = 200
+) {
+  return new Response(
+    value,
+    {
+      status,
+      headers: {
+        ...cors(),
+        "Content-Type":
+          "text/html; charset=UTF-8",
+        "Cache-Control":
+          "no-store"
+      }
+    }
+  );
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function normalizeAP(value) {
+  let v = String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(
+      /[Ａ-Ｚａ-ｚ０-９]/g,
+      c =>
+        String.fromCharCode(
+          c.charCodeAt(0) - 65248
+        )
+    )
+    .replace(/\s/g, "");
+
+  if (!/^AP-[A-Z0-9]{8}$/.test(v)) {
+    return null;
+  }
+
+  if (
+    ![...v.slice(3)].every(c =>
+      AP_CHARS.includes(c)
+    )
+  ) {
+    return null;
+  }
+
+  return v;
+}
+
+function validRegistrationNumber(
+  value
+) {
+  return /^[A-Z0-9]{8}$/.test(
+    String(value ?? "")
+      .trim()
+      .toUpperCase()
+  );
+}
+
+function normalizeRegistrationNumber(
+  value
+) {
+  const number = String(value ?? "")
+    .trim()
+    .toUpperCase();
+
+  return validRegistrationNumber(number)
+    ? number
+    : null;
+}
+
+function isAdmin(
+  request,
+  env
+) {
+  return Boolean(
+    env.ADMIN_KEY &&
+    request.headers.get(
+      "X-Admin-Key"
+    ) === env.ADMIN_KEY
+  );
+}
+
+function unauthorized() {
+  return json(
+    {
+      success: false,
+      message: "Unauthorized."
+    },
+    401
+  );
+}
+
+function generateAP() {
+  let result = "";
+
+  for (let i = 0; i < 8; i++) {
+    result +=
+      AP_CHARS[
+        Math.floor(
+          Math.random() *
+            AP_CHARS.length
+        )
+      ];
+  }
+
+  return "AP-" + result;
+}
+
+function japanDate() {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).format(new Date());
+}
+
+async function sha256(value) {
+  const data =
+    new TextEncoder().encode(value);
+
+  const hash =
+    await crypto.subtle.digest(
+      "SHA-256",
+      data
+    );
+
+  return [...new Uint8Array(hash)]
+    .map(x =>
+      x.toString(16).padStart(2, "0")
+    )
+    .join("");
+}
+
+async function rateLimited(
+  request,
+  env,
+  prefix
+) {
+  const ip =
+    request.headers.get(
+      "CF-Connecting-IP"
+    ) || "unknown";
+
+  const hash =
+    await sha256(ip);
+
+  const keys = [
+    `RATE_${prefix}_M_${hash}`,
+    `RATE_${prefix}_H_${hash}`,
+    `RATE_${prefix}_D_${hash}`
+  ];
+
+  const limits = [
+    10,
+    100,
+    500
+  ];
+
+  const ttl = [
+    60,
+    3600,
+    86400
+  ];
+
+  for (let i = 0; i < 3; i++) {
+    const count =
+      Number(
+        await env.REGISTRATION_KV.get(
+          keys[i]
+        )
+      ) || 0;
+
+    if (count >= limits[i]) {
+      return true;
+    }
+
+    await env.REGISTRATION_KV.put(
+      keys[i],
+      String(count + 1),
+      {
+        expirationTtl:
+          ttl[i]
+      }
+    );
+  }
+
+  return false;
+}
+
+function rateLimit() {
+  return text(
+    "しばらく時間をおいてから、もう一度お試しください。",
+    429
+  );
+}
+
+
+/* =========================================================
+   登録番号確認
+========================================================= */
+
+/*
+ * 公開照会専用。
+ *
+ * 以下の形式をすべて確認する。
+ *
+ * 1. F8ZB225Y
+ * 2. REGISTRATION:F8ZB225Y
+ * 3. REGISTRATION_F8ZB225Y
+ * 4. REGISTRATION-F8ZB225Y
+ *
+ * ここでは「登録番号が存在するか」だけを見る。
+ *
+ * getRegistration()とは分離する。
+ * getNextRegistrationNumber()などの内部処理では
+ * getRegistration()を使用するため。
+ */
+async function registrationExists(
+  env,
+  number
+) {
+  const normalized =
+    normalizeRegistrationNumber(
+      number
+    );
+
+  if (!normalized) {
+    return false;
+  }
+
+  /*
+   * 旧方式の登録番号在庫を先に確認。
+   * KVのlist()は使わず、既知キーを直接読む。
+   */
+  const legacyListKeys = [
+    "REGISTRATION_LIST",
+    "REGISTRATION_LIST1",
+    "REGISTRATION_LIST2",
+    "REGISTRATION_LIST3",
+    "REGISTRATION_LIST4",
+    "REGISTRATION_LIST5",
+    "REGISTRATION_LIST6",
+    "REGISTRATION_LIST7",
+    "REGISTRATION_LIST8",
+    "REGISTRATION_LIST9",
+    "REGISTRATION_LIST10",
+    "REGISTRATION_LIST11",
+    "REGISTRATION_LIST12",
+    "REGISTRATION_LIST13",
+    "REGISTRATION_LIST14",
+    "REGISTRATION_LIST15",
+    "REGISTRATION_LIST16",
+    "REGISTRATION_LIST17",
+    "REGISTRATION_LIST18",
+    "REGISTRATION_LIST19",
+    "REGISTRATION_LIST20"
+  ];
+
+  for (const key of legacyListKeys) {
+    const value =
+      await env.REGISTRATION_KV.get(
+        key
+      );
+
+    if (!value) {
+      continue;
+    }
+
+    let list;
+
+    try {
+      list =
+        JSON.parse(value);
+    } catch {
+      continue;
+    }
+
+    if (!Array.isArray(list)) {
+      continue;
+    }
+
+    for (const raw of list) {
+      const candidate =
+        String(raw || "")
+          .trim()
+          .toUpperCase();
+
+      if (
+        candidate === normalized
+      ) {
+        retur
