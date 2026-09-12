@@ -1,0 +1,32 @@
+name: Add image limit note
+on:
+  push:
+    paths:
+      - '.github/workflows/add-image-limit-note.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add visible 20-image note only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='''   <input type="file" id="material-images-${i}" accept="image/jpeg,image/png,image/webp" multiple>\n   <div id="image-preview-${i}" class="image-preview"></div>'''
+          new='''   <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">\n    <input type="file" id="material-images-${i}" accept="image/jpeg,image/png,image/webp" multiple>\n    <strong style="font-size:18px;color:#111">20枚まで追加できます。</strong>\n   </div>\n   <div id="image-preview-${i}" class="image-preview"></div>'''
+          if old not in s:
+              raise SystemExit('target not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Show 20 image limit beside file selector"
+          git push
