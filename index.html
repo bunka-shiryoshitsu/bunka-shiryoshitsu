@@ -900,6 +900,7 @@ It means preserving a record of what was determined at that point in time.
 <button type="button" id="registration-submit" class="registration-submit" disabled>登録申請を送信</button>
 <div id="registration-submit-message" class="application-next-message"></div>
 </div>
+<p style="margin-top:28px"><a id="receive-page-link" class="application-next" href="#" style="text-decoration:none;display:inline-block">登録書受取ページを開く</a></p>
 
 </div>
 </div>
@@ -1145,26 +1146,29 @@ It means preserving a record of what was determined at that point in time.
 <h2>登録申請</h2>
 
 <div class="application-box">
-<div class="notice">現在、新規登録申請は休止しております。</div>
+<div id="application-status-notice" class="notice">受付状態を確認しています……</div>
 
-<p>登録申請の受付を再開する場合は、本ページにてご案内します。</p>
+<p id="application-status-guidance">抽選申込の受付状況を確認しています。</p>
 
 <h3>登録までの流れ</h3>
 <ol>
 <li>抽選に申し込みます。</li>
-<li>発行された確認番号（AP番号）を保管してください。</li>
+<li>発行された確認番号（AP番号）と受取キーを保管してください。</li>
 <li>抽選結果は、当資料室のWebサイト上でAP番号を入力して確認します。</li>
-<li>当選した方は、案内された期間内に専用の登録申請を行います。</li>
+<li>当選した方は、表示された申請期限までに専用の登録申請を行います。</li>
 <li>申請者自身が申請時に現物を撮影した画像を提出します。</li>
 <li>当資料室が提出された画像、資料関連情報その他必要な事項を確認します。</li>
 <li>必要に応じて、追加画像や追加情報の提出を求める場合があります。</li>
 <li>確認した内容に基づき、登録の可否及び登録区分を判断します。</li>
 <li>登録が決定した資料には登録番号を付与し、登録書を作成します。</li>
+<li>登録書は、AP番号と受取キーを使って専用ページから受け取ります。</li>
 </ol>
 
 <h3>抽選への申し込みについて</h3>
 <ul>
 <li>登録を希望する場合は、まず抽選にお申し込みください。抽選に当選した方のみ、専用の登録申請を行うことができます。</li>
+<li>抽選申込時には、確認番号（AP番号）とは別に受取キーを発行します。受取キーは登録書の受取時に必要となるため、AP番号とともに必ず保存してください。</li>
+<li>受取キーは安全上、発行画面を離れた後に同じものを再表示できません。紛失した場合は新しい受取キーの再発行が必要となり、それまでの受取キーは無効になります。</li>
 <li>抽選への申し込みは、同一人物につき1日1件までです。</li>
 <li>同一人物による同日の複数申込は、重複申込として抽選対象から除外する場合があります。</li>
 <li>複数の方法を使用して申込制限を回避したものと認められる場合、申込又は当選を無効とする場合があります。</li>
@@ -1176,7 +1180,8 @@ It means preserving a record of what was determined at that point in time.
 <h3>抽選結果について</h3>
 <ul>
 <li>抽選結果は、本ページで確認番号（AP番号）を入力して確認してください。</li>
-<li>当選した場合は、画面上に当選及び登録申請枠数が表示されます。</li>
+<li>当選した場合は、画面上に当選、登録申請枠数及び申請期限が表示されます。</li>
+<li>登録申請は、表示された申請期限までに完了してください。期限を過ぎると当選は失効し、その当選による登録申請はできません。</li>
 <li>当選していない場合、又は登録対象となっていない確認番号を入力した場合は、同一の結果を表示します。</li>
 <li>当資料室から、抽選結果をメールで通知することはありません。</li>
 <li>AP番号を紛失した場合、当資料室から個別に抽選結果を通知することはありません。</li>
@@ -1185,6 +1190,8 @@ It means preserving a record of what was determined at that point in time.
 <h3>登録申請について</h3>
 <p>抽選に当選した場合でも、登録が確定したことにはなりません。</p>
 <p>当選者は、案内された方法により登録申請を行い、資料について確認できる情報及び画像を提出してください。</p>
+<p>申請者が入力した資料名称及び関連名称は、申請時の記録として保存します。</p>
+<p>登録書に記載する資料名称及び関連名称は、提出された画像その他の情報を確認した上で、記録として適切な表記に当資料室が整理する場合があります。その場合も、申請者が最初に入力した内容は削除せず、申告内容として保存します。</p>
 <p>申請内容、提出画像及び資料関連情報を確認した上で、当資料室が登録の可否及び登録区分を判断します。</p>
 <p>情報が不足している場合、資料の確認が困難な場合、又は当資料室が登録することが適当でないと判断した場合には、登録しないことがあります。</p>
 
@@ -1210,9 +1217,12 @@ It means preserving a record of what was determined at that point in time.
 <h3>登録後について</h3>
 <p>登録が決定すると、登録番号を付与し、登録書を作成します。</p>
 <p>本登録書は、文化資料登録室が当該資料を登録したことを示す記録です。登録番号により、登録された記録を確認することができます。</p>
-<p>登録書はJPG形式でお送りします。L判サイズに合わせて作成していますので、印刷する際はサイズを変更せず、L判サイズのまま印刷してください。</p>
-<p>最寄りのセブン‐イレブンのマルチコピー機から印刷することもできます。サイズを変更すると、画像のギザつきや文字の見にくさ、QRコードの読み取りに影響する場合があります。</p>
-<p>登録書は、可能な限り登録された資料とともに保管してください。</p>
+<p>登録書は、専用の登録書受取ページでAP番号と受取キーを入力し、本人確認ができた場合に限りJPG形式で受け取ることができます。登録番号だけでは登録書を受け取ることはできません。</p>
+<p>登録書は、写真用L判サイズでの印刷を前提として作成しています。印刷する際は、サイズを変更せずL判のまま印刷してください。セブン‐イレブン等のマルチコピー機では、写真プリントのL判で印刷することができます。</p>
+<p>L判以外への拡大・縮小や縦横比の変更は、画像の粗れ、文字や枠の見え方、QRコードの読み取り等に影響する場合があるため推奨しません。</p>
+<p>登録書には登録対象資料の画像を掲載していません。どの資料に対応する登録書であるか分からなくならないよう、登録書は必ず登録された資料とともに保管してください。</p>
+<p>登録書を長期に保存するため、汚損、破損、折れ、退色等を防ぐラミネート加工その他の保護を行うことを推奨します。</p>
+<p>登録書を紛失し、又は著しく毀損して登録された資料との対応関係を確認できなくなった場合、原則として登録書のみの再発行は行いません。必要な場合は、改めて登録申請を行ってください。</p>
 <p>登録番号の照会では、原則として「登録あり」又は「登録なし」のいずれかを表示します。</p>
 <p>登録番号の照会によって、現在手元にある現物が登録された資料と同一であること、真贋、真正性、作者、制作年代、来歴、所有権その他を当資料室が確認又は保証するものではありません。</p>
 <p>登録後、当資料室が登録時に提出された画像と現在の現物を改めて照合するものではありません。</p>
@@ -1229,10 +1239,10 @@ It means preserving a record of what was determined at that point in time.
 <p class="small">
 ※申請前に、抽選方法、登録申請、提出画像、登録の判断、登録後の取扱い等について、必ず「申請時の注意事項」を確認してください。
 </p>
-<p class="small">※現在は新規登録申請を休止しています。</p>
+<p class="small" id="application-status-note">※受付状態はシステムから自動取得します。</p>
 
 <button type="button" id="application-next" class="application-next" disabled>
-確認して次へ
+抽選申込ページへ進む
 </button>
 
 <div id="application-next-message" class="application-next-message"></div>
@@ -1257,6 +1267,7 @@ const registrationImages=Array.from({length:11},()=>[]);
 let activeApplication={ap:"",slots:0};
 let registrationSubmitting=false;
 let registrationSubmitted=false;
+let applicationsOpen=false;
 
 async function readWorkerResponse(response){
  const text=await response.text();
@@ -1368,6 +1379,7 @@ async function checkApplication(){
    result.innerHTML=`
     <div>今回の抽選に当選しています。</div>
     <div class="application-slots">登録申請：${slots}枠</div>
+    ${data.expiryDate?`<div class="small">申請期限：${data.expiryDate}</div>`:""}
    `;
 
    renderRegistrationSlots(slots);
@@ -1856,14 +1868,42 @@ async function submitRegistrationApplication(){
  }
 }
 
+async function loadApplicationStatus(){
+ const notice=document.getElementById("application-status-notice");
+ const guidance=document.getElementById("application-status-guidance");
+ const note=document.getElementById("application-status-note");
+ const checkbox=document.getElementById("application-agree");
+ const nextButton=document.getElementById("application-next");
+ try{
+  const response=await fetch(WORKER_URL+"/system/application-status",{cache:"no-store"});
+  const data=await response.json();
+  applicationsOpen=data?.applicationsOpen===true;
+  if(applicationsOpen){
+   if(notice)notice.textContent="現在、抽選申込を受け付けています。";
+   if(guidance)guidance.textContent="登録を希望する場合は、注意事項を確認・同意のうえ、抽選申込ページへ進んでください。";
+   if(note)note.textContent="※抽選への当選は登録を保証するものではありません。";
+  }else{
+   if(notice)notice.textContent="現在、新規登録申請は休止しております。";
+   if(guidance)guidance.textContent="受付を再開した場合は、このページから抽選申込へ進むことができます。";
+   if(note)note.textContent="※現在は抽選申込・登録申請ともに受け付けていません。";
+  }
+ }catch(error){
+  applicationsOpen=false;
+  if(notice)notice.textContent="受付状態を確認できませんでした。";
+  if(guidance)guidance.textContent="しばらく時間をおいてから再度お試しください。";
+ }
+ if(nextButton)nextButton.disabled=!(applicationsOpen&&checkbox?.checked);
+}
+
 function applicationNext(){
  const checkbox=document.getElementById("application-agree");
  const message=document.getElementById("application-next-message");
-
  if(!checkbox?.checked||!message)return;
-
- message.textContent=
-  "現在、新規登録申請を休止しております。受付再開時には、このページから申請手続きへ進めるようになります。";
+ if(!applicationsOpen){
+  message.textContent="現在、新規登録申請は休止しております。";
+  return;
+ }
+ window.location.href=WORKER_URL+"/lottery";
 }
 
 async function monitorSiteAccess(){
@@ -1892,6 +1932,11 @@ document.addEventListener("DOMContentLoaded",()=>{
  const applicationCheckButton=document.getElementById("application-check-button");
  const registrationNumberInput=document.getElementById("registration-number");
  const applicationNumberInput=document.getElementById("application-number");
+ const receivePageLink=document.getElementById("receive-page-link");
+
+ if(receivePageLink){
+  receivePageLink.href=WORKER_URL+"/receive";
+ }
 
  if(registrationCheckButton){
   registrationCheckButton.addEventListener("click",checkRegistration);
@@ -1921,7 +1966,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
  if(checkbox&&nextButton){
   checkbox.addEventListener("change",()=>{
-   nextButton.disabled=!checkbox.checked;
+   nextButton.disabled=!(applicationsOpen&&checkbox.checked);
   });
  }
 
@@ -1939,6 +1984,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   );
  }
 
+ loadApplicationStatus();
  monitorSiteAccess();
 });
 </script>
