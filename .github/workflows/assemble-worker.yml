@@ -1,0 +1,57 @@
+name: Assemble Worker source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker_parts/**'
+      - '.github/workflows/assemble-worker.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble worker.js
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            worker_parts/part_01.txt \
+            worker_parts/part_02.txt \
+            worker_parts/part_03.txt \
+            worker_parts/part_04.txt \
+            worker_parts/part_05.txt \
+            worker_parts/part_06.txt \
+            worker_parts/part_07.txt \
+            worker_parts/part_08.txt \
+            worker_parts/part_09.txt \
+            > worker.js
+
+          echo 'db5851869d4349773568af86a1f0e157603b0d40ca58da938d1b5b53f90aba1d  worker.js' | sha256sum -c -
+          node --check worker.js
+
+      - name: Commit assembled Worker and clean temporary parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf worker_parts
+          rm -f .github/workflows/assemble-worker.yml
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+
+          git commit -m 'Assemble Cloudflare Worker source'
+          git push
