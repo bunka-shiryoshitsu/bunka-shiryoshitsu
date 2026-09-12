@@ -1,0 +1,538 @@
+em
+      ) ||
+      ![
+        "type1",
+        "type2",
+        "type3",
+        "special",
+        "additional_check",
+        "rejected"
+      ].includes(result)
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "入力内容が正しくありません。"
+        },
+        400
+      );
+    }
+
+    const applicationKey =
+      "REGISTRATION_APPLICATION:" +
+      ap;
+
+    const value =
+      await env.REGISTRATION_KV.get(
+        applicationKey
+      );
+
+    if (!value) {
+      return json(
+        {
+          success: false,
+          message:
+            "登録申請が見つかりません。"
+        },
+        404
+      );
+    }
+
+    const application =
+      JSON.parse(value);
+
+    const target =
+      application.items?.find(
+        x =>
+          String(x.item) ===
+          item
+      );
+
+    if (!target) {
+      return json(
+        {
+          success: false,
+          message:
+            "指定された資料が見つかりません。"
+        },
+        404
+      );
+    }
+
+    if (
+      target.registrationStatus ===
+      "registered"
+    ) {
+      return json(
+        {
+          success: false,
+          alreadyRegistered: true,
+          message:
+            "この資料はすでに登録済みです。"
+        },
+        409
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    if (
+      result ===
+        "additional_check" ||
+      result ===
+        "rejected"
+    ) {
+      target.reviewResult =
+        result;
+
+      target.reviewedAt =
+        now;
+
+      target.registrationType =
+        null;
+
+      target.registrationTypeLabel =
+        null;
+
+      application.reviewedAt =
+        now;
+
+      application.status =
+        calculateApplicationStatus(
+          application.items
+        );
+
+      await env.REGISTRATION_KV.put(
+        applicationKey,
+        JSON.stringify(
+          application
+        )
+      );
+
+      await env.REGISTRATION_KV.put(
+        "APPLICATION_STATUS:" +
+          ap,
+        application.status
+      );
+
+      return json({
+        success: true,
+        ap,
+        item,
+        result,
+        status:
+          application.status,
+        message:
+          result ===
+          "additional_check"
+            ? "追加確認として保存しました。"
+            : "不承認として保存しました。"
+      });
+    }
+
+    const registrationNumber =
+      await getNextRegistrationNumber(
+        env
+      );
+
+    if (!registrationNumber) {
+      return json(
+        {
+          success: false,
+          message:
+            "登録番号の在庫がありません。"
+        },
+        409
+      );
+    }
+
+    const registrationData = {
+      registrationNumber,
+      ap,
+      item,
+      name:
+        target.name,
+      relatedName:
+        target.relatedName,
+      acquisition:
+        target.acquisition,
+      registrationType:
+        result,
+      registrationTypeLabel:
+        TYPES[result],
+      registeredAt:
+        now,
+      status:
+        "registered",
+      issuedData:
+        false,
+      issuedDataReady:
+        false
+    };
+
+    await env.REGISTRATION_KV.put(
+      "REGISTRATION:" +
+        registrationNumber,
+      JSON.stringify(
+        registrationData
+      )
+    );
+
+    await removeRegistrationNumberFromPool(
+      env,
+      registrationNumber
+    );
+
+    target.reviewResult =
+      result;
+
+    target.registrationType =
+      result;
+
+    target.registrationTypeLabel =
+      TYPES[result];
+
+    target.reviewedAt =
+      now;
+
+    target.registrationNumber =
+      registrationNumber;
+
+    target.registeredAt =
+      now;
+
+    target.registrationStatus =
+      "registered";
+
+    target.issuedData =
+      false;
+
+    target.issuedDataReady =
+      false;
+
+    application.registrationNumbers =
+      Array.isArray(
+        application.registrationNumbers
+      )
+        ? application.registrationNumbers
+        : [];
+
+    application.registrationNumbers.push(
+      {
+        item,
+        registrationNumber,
+        registrationType:
+          result,
+        registrationTypeLabel:
+          TYPES[result]
+      }
+    );
+
+    application.reviewedAt =
+      now;
+
+    application.status =
+      calculateApplicationStatus(
+        application.items
+      );
+
+    await env.REGISTRATION_KV.put(
+      applicationKey,
+      JSON.stringify(
+        application
+      )
+    );
+
+    await env.REGISTRATION_KV.put(
+      "APPLICATION_STATUS:" +
+        ap,
+      application.status
+    );
+
+    await deleteApplicationImages(
+      env,
+      ap,
+      [target]
+    );
+
+    return json({
+      success: true,
+      ap,
+      item,
+      result,
+      registrationType:
+        TYPES[result],
+      registrationNumber,
+      status:
+        application.status,
+      message:
+        "審査に合格し、登録番号を発行しました。登録書完成までしばらくお待ちください。"
+    });
+
+  } catch {
+    return json(
+      {
+        success: false,
+        message:
+          "審査・登録番号発行処理に失敗しました。"
+      },
+      500
+    );
+  }
+}
+
+async function deleteApplicationImages(
+  env,
+  ap,
+  items
+) {
+  for (
+    const item of items
+  ) {
+    for (
+      let i = 1;
+      i <= 20;
+      i++
+    ) {
+      const image =
+        String(i).padStart(
+          2,
+          "0"
+        );
+
+      await env.REGISTRATION_KV.delete(
+        `IMAGE:${ap}:${item.item}:${image}`
+      );
+
+      await env.REGISTRATION_KV.delete(
+        `IMAGE_META:${ap}:${item.item}:${image}`
+      );
+    }
+  }
+}
+
+
+/* =========================================================
+   登録書完成後のJPG
+========================================================= */
+
+async function issuedDataUpload(
+  request,
+  env
+) {
+  if (!isAdmin(request, env)) {
+    return unauthorized();
+  }
+
+  try {
+    const form =
+      await request.formData();
+
+    const number =
+      String(
+        form.get(
+          "registrationNumber"
+        ) || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const file =
+      form.get("file");
+
+    if (
+      !validRegistrationNumber(
+        number
+      )
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "登録番号が正しくありません。"
+        },
+        400
+      );
+    }
+
+    if (!(file instanceof File)) {
+      return json(
+        {
+          success: false,
+          message:
+            "登録書のJPGファイルを選択してください。"
+        },
+        400
+      );
+    }
+
+    if (
+      file.type !==
+      "image/jpeg"
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "JPG形式の画像をアップロードしてください。"
+        },
+        415
+      );
+    }
+
+    if (
+      file.size <= 0 ||
+      file.size > MAX
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "JPGファイルは5MB以下で指定してください。"
+        },
+        413
+      );
+    }
+
+    const registrationKey =
+      "REGISTRATION:" +
+      number;
+
+    let value =
+      await env.REGISTRATION_KV.get(
+        registrationKey
+      );
+
+    let actualKey =
+      registrationKey;
+
+    if (!value) {
+      actualKey =
+        "REGISTRATION_" +
+        number;
+
+      value =
+        await env.REGISTRATION_KV.get(
+          actualKey
+        );
+    }
+
+    if (!value) {
+      return json(
+        {
+          success: false,
+          message:
+            "登録番号が確認できません。"
+        },
+        404
+      );
+    }
+
+    const registration =
+      JSON.parse(value);
+
+    if (
+      registration.status ===
+      "cancelled"
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "この登録番号は取消状態です。"
+        },
+        409
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    await env.REGISTRATION_KV.put(
+      "ISSUED_DATA:" +
+        number,
+      await file.arrayBuffer()
+    );
+
+    await env.REGISTRATION_KV.put(
+      "ISSUED_DATA_META:" +
+        number,
+      JSON.stringify({
+        registrationNumber:
+          number,
+        uploadedAt:
+          now,
+        contentType:
+          "image/jpeg",
+        fileName:
+          file.name ||
+          number + ".jpg"
+      })
+    );
+
+    registration.issuedData =
+      true;
+
+    registration.issuedDataReady =
+      true;
+
+    registration.issuedDataUploadedAt =
+      now;
+
+    await env.REGISTRATION_KV.put(
+      actualKey,
+      JSON.stringify(
+        registration
+      )
+    );
+
+    const applicationKey =
+      "REGISTRATION_APPLICATION:" +
+      registration.ap;
+
+    const applicationValue =
+      await env.REGISTRATION_KV.get(
+        applicationKey
+      );
+
+    if (applicationValue) {
+      const application =
+        JSON.parse(
+          applicationValue
+        );
+
+      const target =
+        application.items?.find(
+          x =>
+            String(x.item) ===
+            String(
+              registration.item
+            )
+        );
+
+      if (target) {
+        target.issuedData =
+          true;
+
+        target.issuedDataReady =
+          true;
+
+        target.issuedDataUploadedAt =
+          now;
+      }
+
+      application.status =
+        calculateApplicationStatus(
+          application.items
+        );
+
+      await env.REGISTRATION_KV.put(
+        applicationKey,
+        JSON.stringify(
+          application
+        )
+      );
+
+      await env.REGISTRATION_KV.
