@@ -875,7 +875,7 @@ It means preserving a record of what was determined at that point in time.
 <p>登録番号を入力してください。</p>
 <input type="text" id="registration-number" placeholder="例：F8ZB225Y" autocomplete="off">
 <br>
-<button type="button" onclick="checkRegistration()">登録番号を照会</button>
+<button type="button" id="registration-check-button">登録番号を照会</button>
 <div id="lookup-result"></div>
 
 <p class="small">
@@ -890,7 +890,7 @@ It means preserving a record of what was determined at that point in time.
 <p>抽選申込時に発行された確認番号（AP番号）を入力してください。</p>
 <input type="text" id="application-number" placeholder="例：AP-E5F6G7H5" maxlength="11" autocomplete="off">
 <br>
-<button type="button" onclick="checkApplication()">抽選結果を確認</button>
+<button type="button" id="application-check-button">抽選結果を確認</button>
 <div id="application-result"></div>
 
 <div id="registration-application" class="registration-application" style="display:none;">
@@ -1994,23 +1994,19 @@ document.addEventListener("DOMContentLoaded",()=>{
  const checkbox=document.getElementById("application-agree");
  const nextButton=document.getElementById("application-next");
  const registrationSubmit=document.getElementById("registration-submit");
+ const registrationCheckButton=document.getElementById("registration-check-button");
+ const applicationCheckButton=document.getElementById("application-check-button");
 
- if(checkbox&&nextButton){
-  checkbox.addEventListener("change",()=>{
-   nextButton.disabled=!checkbox.checked;
-  });
- }
-
- if(nextButton){
-  nextButton.addEventListener(
+ if(registrationCheckButton){
+  registrationCheckButton.addEventListener(
    "click",
-   applicationNext
+   checkRegistration
   );
  }
 
- if(registrationSubmit){
-  registrationSubmit.addEventListener(
+ if(applicationCheckButton){
+  applicationCheckButton.addEventListener(
    "click",
-   submitRegistrationApplication
+   checkApplication
   );
  }
