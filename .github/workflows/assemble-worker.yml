@@ -22,9 +22,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # All four compressed bundle parts are now present.
           cat \
-            worker_bundle/part_01.b64 \
+            worker_bundle/part_01a.b64 \
+            worker_bundle/part_01b.b64 \
             worker_bundle/part_02.b64 \
             worker_bundle/part_03.b64 \
             worker_bundle/part_04.b64 \
