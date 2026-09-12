@@ -172,6 +172,16 @@ export default {
 
     if (
       request.method === "GET" &&
+      path === "/admin/lottery-applications"
+    ) {
+      return adminLotteryApplications(
+        request,
+        env
+      );
+    }
+
+    if (
+      request.method === "GET" &&
       path === "/admin/applications"
     ) {
       return adminApplications(
@@ -892,6 +902,7 @@ async function lotteryApply(
         appliedDate: today,
         appliedAt:
           new Date().toISOString(),
+        applicationIp: ip,
         status: "received"
       })
     );
@@ -1060,6 +1071,102 @@ async function checkApplication(
         message:
           "今回の抽選では、登録申請の対象となっていません。"
       });
+    }
+
+    /*
+     * 抽選申込記録を先に確認する。
+     * 結果公開前のAPを「落選」と誤表示しないための処理。
+     */
+    const lotteryApplicationValue =
+      await env.REGISTRATION_KV.get(
+        "APPLICATION_" + ap
+      );
+
+    if (lotteryApplicationValue) {
+      try {
+        const lotteryApplication =
+          JSON.parse(
+            lotteryApplicationValue
+          );
+
+        const applicationMonth =
+          String(
+            lotteryApplication.applicationMonth ||
+            ""
+          ).trim();
+
+        if (
+          /^(20\d{2})-(0[1-9]|1[0-2])$/.test(
+            applicationMonth
+          )
+        ) {
+          const [
+            yearText,
+            monthText
+          ] =
+            applicationMonth.split("-");
+
+          const resultDateObject =
+            new Date(
+              Date.UTC(
+                Number(yearText),
+                Number(monthText) + 1,
+                1
+              )
+            );
+
+          const resultDate =
+            resultDateObject
+              .toISOString()
+              .slice(0, 10);
+
+          const today =
+            japanDate();
+
+          if (today < resultDate) {
+            const remainingDays =
+              Math.max(
+                0,
+                Math.ceil(
+                  (
+                    Date.parse(
+                      resultDate +
+                      "T00:00:00Z"
+                    ) -
+                    Date.parse(
+                      today +
+                      "T00:00:00Z"
+                    )
+                  ) /
+                  86400000
+                )
+              );
+
+            const resultDateLabel =
+              resultDateObject.getUTCFullYear() +
+              "年" +
+              (
+                resultDateObject.getUTCMonth() +
+                1
+              ) +
+              "月1日";
+
+            return json({
+              winner: false,
+              status: "not_started",
+              applicationMonth,
+              checkStart: resultDate,
+              remainingDays,
+              message:
+                "抽選結果は" +
+                resultDateLabel +
+                "から確認できます。あと" +
+                remainingDays +
+                "日お待ちください。"
+            });
+          }
+        }
+      } catch {}
     }
 
     const winner =
@@ -1698,6 +1805,11 @@ async function registrationSubmit(
       });
     }
 
+    const applicationIp =
+      request.headers.get(
+        "CF-Connecting-IP"
+      ) || "unknown";
+
     const application = {
       ap,
       slots:
@@ -1706,6 +1818,9 @@ async function registrationSubmit(
         winner.applicationMonth,
       submittedAt:
         new Date().toISOString(),
+      applicationDate:
+        japanDate(),
+      applicationIp,
       status:
         "received",
       items
@@ -2696,6 +2811,125 @@ async function issuedDataUpload(
 
 
 /* =========================================================
+   管理：抽選申込一覧
+========================================================= */
+
+async function adminLotteryApplications(
+  request,
+  env
+) {
+  if (!isAdmin(request, env)) {
+    return unauthorized();
+  }
+
+  try {
+    const applications = [];
+    let cursor;
+
+    do {
+      const result =
+        await env.REGISTRATION_KV.list(
+          {
+            prefix: "APPLICATION_",
+            limit: 1000,
+            cursor
+          }
+        );
+
+      for (const key of result.keys) {
+        if (
+          !/^APPLICATION_AP-[A-Z0-9]+$/.test(
+            key.name
+          )
+        ) {
+          continue;
+        }
+
+        const value =
+          await env.REGISTRATION_KV.get(
+            key.name
+          );
+
+        if (!value) continue;
+
+        try {
+          const data =
+            JSON.parse(value);
+
+          if (!data.ap) continue;
+
+          applications.push({
+            ap:
+              String(data.ap || ""),
+            applicationMonth:
+              String(
+                data.applicationMonth ||
+                ""
+              ),
+            appliedDate:
+              String(
+                data.appliedDate ||
+                ""
+              ),
+            appliedAt:
+              String(
+                data.appliedAt ||
+                ""
+              ),
+            applicationIp:
+              String(
+                data.applicationIp ||
+                ""
+              ),
+            status:
+              String(
+                data.status ||
+                "received"
+              )
+          });
+        } catch {}
+      }
+
+      cursor =
+        result.list_complete
+          ? undefined
+          : result.cursor;
+
+    } while (cursor);
+
+    applications.sort(
+      (a, b) =>
+        String(
+          b.appliedAt ||
+          ""
+        ).localeCompare(
+          String(
+            a.appliedAt ||
+            ""
+          )
+        )
+    );
+
+    return json({
+      success: true,
+      applications,
+      listComplete: true
+    });
+
+  } catch {
+    return json(
+      {
+        success: false,
+        message:
+          "抽選申込一覧の取得に失敗しました。"
+      },
+      500
+    );
+  }
+}
+
+
+/* =========================================================
    管理：申請一覧
 ========================================================= */
 
@@ -2740,6 +2974,16 @@ async function adminApplications(
             data.applicationMonth,
           submittedAt:
             data.submittedAt,
+          applicationIp:
+            data.applicationIp ||
+            "",
+          applicationDate:
+            data.applicationDate ||
+            (
+              data.submittedAt
+                ? String(data.submittedAt).slice(0, 10)
+                : ""
+            ),
           status:
             data.status,
           items:
@@ -3708,6 +3952,20 @@ margin:8px 0
 
 <h1>文化資料登録室 管理画面</h1>
 
+<h2>抽選申込一覧</h2>
+
+<button onclick="loadLotteryApplications()">
+抽選申込一覧を更新
+</button>
+
+<div id="lotteryOutput" class="message">
+抽選申込一覧を読み込んでいます……
+</div>
+
+<hr style="margin:28px 0">
+
+<h2>登録申請管理</h2>
+
 <button onclick="loadApplications()">
 申請一覧を更新
 </button>
@@ -3824,6 +4082,180 @@ function message(text){
   return p;
 }
 
+async function loadLotteryApplications(){
+  const output =
+    document.getElementById(
+      "lotteryOutput"
+    );
+
+  if(!output){
+    return;
+  }
+
+  output.textContent =
+    "抽選申込一覧を読み込んでいます……";
+
+  try{
+    const response =
+      await adminFetch(
+        "/admin/lottery-applications"
+      );
+
+    const data =
+      await response.json();
+
+    output.innerHTML = "";
+
+    if(!data.success){
+      output.appendChild(
+        message(
+          data.message ||
+          "抽選申込一覧を取得できませんでした。"
+        )
+      );
+      return;
+    }
+
+    if(!data.applications.length){
+      output.appendChild(
+        message(
+          "現在、抽選申込みはありません。"
+        )
+      );
+      return;
+    }
+
+    const counts = new Map();
+
+    for(
+      const application
+      of data.applications
+    ){
+      const ip =
+        application.applicationIp ||
+        "";
+
+      const day =
+        application.appliedDate ||
+        String(
+          application.appliedAt ||
+          ""
+        ).slice(0,10);
+
+      if(ip && day){
+        const key =
+          day + "|" + ip;
+
+        counts.set(
+          key,
+          (
+            counts.get(key) ||
+            0
+          ) + 1
+        );
+      }
+    }
+
+    for(
+      const application
+      of data.applications
+    ){
+      const box =
+        document.createElement(
+          "div"
+        );
+
+      box.className =
+        "application";
+
+      box.appendChild(
+        message(
+          "AP番号：" +
+          application.ap
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込月：" +
+          (
+            application.applicationMonth ||
+            ""
+          )
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込日時：" +
+          (
+            application.appliedAt ||
+            ""
+          )
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込時IP：" +
+          (
+            application.applicationIp ||
+            "未記録"
+          )
+        )
+      );
+
+      const ip =
+        application.applicationIp ||
+        "";
+
+      const day =
+        application.appliedDate ||
+        String(
+          application.appliedAt ||
+          ""
+        ).slice(0,10);
+
+      if(ip && day){
+        const count =
+          counts.get(
+            day + "|" + ip
+          ) || 0;
+
+        if(count >= 2){
+          const warning =
+            message(
+              "⚠ 同一IP申請あり（同日 " +
+              count +
+              "件）"
+            );
+
+          warning.style.fontWeight =
+            "700";
+
+          box.appendChild(
+            warning
+          );
+        }
+      }
+
+      output.appendChild(
+        box
+      );
+    }
+
+  }catch(error){
+    output.innerHTML = "";
+
+    output.appendChild(
+      message(
+        error.message
+      )
+    );
+  }
+}
+
+
 async function loadApplications(){
 
   const output =
@@ -3899,6 +4331,16 @@ async function loadApplications(){
         message(
           "状態：" +
           application.status
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申請時IP：" +
+          (
+            application.applicationIp ||
+            "未記録"
+          )
         )
       );
 
@@ -4058,6 +4500,16 @@ function renderApplication(
     message(
       "状態：" +
       application.status
+    )
+  );
+
+  box.appendChild(
+    message(
+      "申請時IP：" +
+      (
+        application.applicationIp ||
+        "未記録"
+      )
     )
   );
 
@@ -4562,6 +5014,7 @@ async function uploadIssuedData(
   }
 }
 
+loadLotteryApplications();
 loadApplications();
 
 </script>
