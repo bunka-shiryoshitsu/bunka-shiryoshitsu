@@ -1252,6 +1252,7 @@ const WORKER_URL="https://bunka-shiryoshitsu-checksoft-mountain-b5a9.08084947685
 const MAX_IMAGES=20;
 const MAX_IMAGE_SIZE=2500;
 const IMAGE_QUALITY=.90;
+const MAX_UPLOAD_BYTES=5*1024*1024;
 
 const registrationImages=Array.from({length:11},()=>[]);
 let activeApplication={ap:"",slots:0};
@@ -1293,16 +1294,22 @@ async function checkRegistration(){
    body:JSON.stringify({number})
   });
 
+  const text=await response.text();
+
   if(response.status===429){
    result.textContent="現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
    return;
   }
 
-  result.textContent=await response.text();
+  if(!response.ok){
+   throw new Error(text||("HTTP "+response.status));
+  }
+
+  result.textContent=text||"登録なし";
 
  }catch(error){
   console.error(error);
-  result.textContent="照会できませんでした。";
+  result.textContent="照会できませんでした。しばらく時間をおいて、もう一度お試しください。";
  }
 }
 
@@ -1311,6 +1318,7 @@ async function checkApplication(){
  const result=document.getElementById("application-result");
  const box=document.getElementById("registration-application");
  const container=document.getElementById("registration-slots");
+ const submitMessage=document.getElementById("registration-submit-message");
 
  if(!input||!result)return;
 
@@ -1322,8 +1330,10 @@ async function checkApplication(){
 
  if(box)box.style.display="none";
  if(container)container.innerHTML="";
+ if(submitMessage)submitMessage.textContent="";
 
  clearRegistrationImages();
+ updateRegistrationSubmitState();
 
  if(!ap){
   result.textContent="確認番号（AP番号）を入力してください。";
@@ -1339,24 +1349,29 @@ async function checkApplication(){
    body:JSON.stringify({ap})
   });
 
+  const workerResult=await readWorkerResponse(response);
+  const data=workerResult.data;
+
   if(response.status===429){
    result.textContent="現在アクセスが集中しています。しばらく時間をおいてから、もう一度お試しください。";
    return;
   }
 
-  if(!response.ok){
-   throw new Error("HTTP "+response.status);
+  if(!response.ok||!data){
+   throw new Error(
+    data?.message||
+    workerResult.text||
+    "抽選結果を確認できませんでした。"
+   );
   }
 
-  const data=await response.json();
-
   if(data.status==="not_started"){
-   result.textContent="抽選結果はまだ確認できません。";
+   result.textContent=data.message||"抽選結果はまだ確認できません。";
    return;
   }
 
   if(data.status==="expired"){
-   result.textContent="この当選による登録申請は、有効期限を過ぎています。";
+   result.textContent=data.message||"この当選による登録申請は、有効期限を過ぎています。";
    return;
   }
 
@@ -1366,7 +1381,7 @@ async function checkApplication(){
    activeApplication={ap,slots};
 
    result.innerHTML=`
-    <div>今回の抽選に当選しています。</div>
+    <div>${escapeText(data.message||"今回の抽選に当選しています。")}</div>
     <div class="application-slots">登録申請：${slots}枠</div>
    `;
 
@@ -1377,12 +1392,91 @@ async function checkApplication(){
    return;
   }
 
-  result.textContent="今回の抽選では、登録申請の対象となっていません。";
+  if(data.winner===true){
+   const status=data.status||"received";
+   const message=data.message||"登録申請の状況を確認しました。";
+
+   const numbers=Array.isArray(data.registrationNumbers)
+    ?data.registrationNumbers
+    :[];
+
+   const readyNumbers=Array.isArray(data.readyNumbers)
+    ?data.readyNumbers
+    :[];
+
+   const readySet=new Set(
+    readyNumbers
+     .map(entry=>String(entry?.registrationNumber||"").trim().toUpperCase())
+     .filter(Boolean)
+   );
+
+   let html=`<div>${escapeText(message)}</div>`;
+
+   if(status==="received"||status==="under_review"||status==="partially_reviewed"){
+    html+=`<div class="small" style="margin-top:10px">登録申請は送信済みです。審査結果が反映されるまでお待ちください。</div>`;
+   }
+
+   if(status==="additional_check"){
+    html+=`<div class="small" style="margin-top:10px">現在、追加確認中です。</div>`;
+   }
+
+   if(status==="rejected"){
+    html+=`<div class="small" style="margin-top:10px">このAP番号から新しい登録申請を送信することはできません。</div>`;
+   }
+
+   if(numbers.length){
+    html+=`<div style="margin-top:18px">`;
+
+    for(const entry of numbers){
+     const number=String(entry?.registrationNumber||"").trim().toUpperCase();
+     if(!number)continue;
+
+     const typeLabel=String(entry?.registrationTypeLabel||"").trim();
+     const ready=readySet.has(number);
+
+     html+=`<div style="margin-top:12px;padding:12px;border:1px solid #d8d2c4;background:#fff">`;
+     html+=`<div><strong>登録番号：</strong>${escapeText(number)}</div>`;
+
+     if(typeLabel){
+      html+=`<div class="small">登録区分：${escapeText(typeLabel)}</div>`;
+     }
+
+     if(ready){
+      const receiveUrl=WORKER_URL+"/receive?number="+encodeURIComponent(number);
+      html+=`<div style="margin-top:8px"><a href="${escapeAttribute(receiveUrl)}" target="_blank" rel="noopener">発行データを受け取る</a></div>`;
+     }else{
+      html+=`<div class="small" style="margin-top:8px">登録書は現在準備中です。</div>`;
+     }
+
+     html+=`</div>`;
+    }
+
+    html+=`</div>`;
+   }
+
+   result.innerHTML=html;
+   return;
+  }
+
+  result.textContent=data.message||"今回の抽選では、登録申請の対象となっていません。";
 
  }catch(error){
   console.error(error);
-  result.textContent="確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
+  result.textContent=error.message||"確認できませんでした。しばらく時間をおいて、もう一度お試しください。";
  }
+}
+
+function escapeText(value){
+ return String(value??"")
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#39;");
+}
+
+function escapeAttribute(value){
+ return escapeText(value);
 }
 
 function renderRegistrationSlots(slots){
@@ -1521,19 +1615,31 @@ function resizeRegistrationImage(file){
 
    context.drawImage(image,0,0,width,height);
 
-   canvas.toBlob(blob=>{
-    if(!blob){
-     reject(new Error("画像変換に失敗しました。"));
-     return;
-    }
+   const qualities=[IMAGE_QUALITY,.84,.78,.72,.66];
 
-    resolve({
-     blob,
-     width,
-     height
-    });
+   const makeBlob=index=>{
+    canvas.toBlob(blob=>{
+     if(!blob){
+      reject(new Error("画像変換に失敗しました。"));
+      return;
+     }
 
-   },"image/jpeg",IMAGE_QUALITY);
+     if(blob.size<=MAX_UPLOAD_BYTES){
+      resolve({blob,width,height});
+      return;
+     }
+
+     if(index+1<qualities.length){
+      makeBlob(index+1);
+      return;
+     }
+
+     reject(new Error("画像を5MB以下に変換できませんでした。別の画像をお試しください。"));
+
+    },"image/jpeg",qualities[index]);
+   };
+
+   makeBlob(0);
   };
 
   image.onerror=()=>{
@@ -1908,10 +2014,3 @@ document.addEventListener("DOMContentLoaded",()=>{
    submitRegistrationApplication
   );
  }
-
- monitorSiteAccess();
-});
-</script>
-
-</body>
-</html>
