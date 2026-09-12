@@ -1,0 +1,25 @@
+name: Run philosophy replacement
+on:
+  push:
+    paths:
+      - '.github/workflows/run-philosophy-replacement.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Replace philosophy section
+        run: python3 scripts/replace_philosophy.py
+      - name: Validate unchanged script and commit
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Replace philosophy with completed prologue"
+          git push
