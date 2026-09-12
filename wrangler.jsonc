@@ -1,12 +1,26 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bunka-shiryoshitsu-checksoft-mountain-b5a9",
-  "main": "worker-entry13.js",
+  "main": "worker-entry14.js",
   "compatibility_date": "2026-09-12",
   "kv_namespaces": [
     {
       "binding": "REGISTRATION_KV",
       "id": "7f34de485e7b4b73a450f77fc5959178"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "REGISTRATION_ISSUER",
+        "class_name": "RegistrationIssuer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RegistrationIssuer"]
     }
   ],
   "triggers": {
