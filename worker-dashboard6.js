@@ -7,8 +7,8 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Make lottery applications part of the same admin payload as the rest of the dashboard.
-    // This removes the fragile second request that previously left the lottery tab empty.
+    // 抽選申込を、他の管理情報と同じ /admin/dashboard-data に統合する。
+    // これにより、抽選管理タブだけ別通信になって空になる問題を防ぐ。
     if (request.method === "GET" && url.pathname === "/admin/dashboard-data") {
       const response = await app.fetch(request, env, ctx);
       if (!response.ok) return response;
@@ -29,45 +29,18 @@ export default {
       if (!response.ok) return response;
       let page = await response.text();
 
-      // Use the already-loaded dashboard payload for the lottery tab. This guarantees
-      // the same refresh/login action that fills the other tabs also fills lottery data.
+      // ログイン・再読込時に取得した同一データから抽選管理も描画する。
       page = page.replace(
         "DATA=d;renderAll();$('#syncText').textContent='最終同期 '",
         "DATA=d;LOTTERY=Array.isArray(d.lotteryApplications)?d.lotteryApplications:[];renderAll();renderLottery();$('#syncText').textContent='最終同期 '"
       );
 
-      // Avoid a second fetch when switching to the lottery tab. It is still safe if an
-      // older page calls loadLottery(), because /admin/lottery-data remains available.
-      page = page.replace(";if(v==='lottery')loadLottery() ", ";if(v==='lottery')renderLottery() ");
+      page = page.replace(
+        ";if(v==='lottery')loadLottery() ",
+        ";if(v==='lottery')renderLottery() "
+      );
 
       return html(page);
-    }
-
-    // Temporary verification endpoint used only to prove the public submission is visible
-    // through the admin dataset. It returns booleans only, no application text or secrets.
-    if (request.method === "GET" && url.pathname === "/_dev/lottery-link-check") {
-      const ap = String(url.searchParams.get("ap") || "").trim().toUpperCase();
-      if (!/^AP-[A-Z0-9]{8}$/.test(ap)) return json({ success:false, message:"invalid ap" }, 400);
-
-      const raw = await env.REGISTRATION_KV.get("APPLICATION_" + ap);
-      let stored = false;
-      let overviewPresent = false;
-      if (raw) {
-        stored = true;
-        try {
-          const d = JSON.parse(raw);
-          overviewPresent = Boolean(String(d?.overview || "").trim());
-        } catch {}
-      }
-
-      const list = await readLotteryApplications(env);
-      const listedInAdminDataset = list.some(x => String(x.ap || "").toUpperCase() === ap);
-      return json({
-        success: stored && listedInAdminDataset,
-        stored,
-        overviewPresent,
-        listedInAdminDataset
-      }, stored && listedInAdminDataset ? 200 : 500);
     }
 
     return app.fetch(request, env, ctx);
@@ -92,10 +65,12 @@ async function listAll(env, prefix, max = 10000) {
 async function readLotteryApplications(env) {
   const keys = await listAll(env, "APPLICATION_");
   const applications = [];
+
   for (const k of keys) {
     if (!/^APPLICATION_AP-[A-Z0-9]{8}$/.test(k.name)) continue;
     const raw = await env.REGISTRATION_KV.get(k.name);
     if (!raw) continue;
+
     try {
       const d = JSON.parse(raw);
       const ap = String(d.ap || k.name.slice("APPLICATION_".length)).trim().toUpperCase();
@@ -122,6 +97,7 @@ async function readLotteryApplications(env) {
       });
     } catch {}
   }
+
   applications.sort((a,b) => String(b.appliedAt).localeCompare(String(a.appliedAt)));
   return applications;
 }
@@ -133,15 +109,25 @@ function cors() {
     "Access-Control-Allow-Headers": "Content-Type,X-Admin-Key"
   };
 }
+
 function json(value, status = 200) {
   return new Response(JSON.stringify(value), {
     status,
-    headers: { ...cors(), "Content-Type":"application/json; charset=UTF-8", "Cache-Control":"no-store" }
+    headers: {
+      ...cors(),
+      "Content-Type": "application/json; charset=UTF-8",
+      "Cache-Control": "no-store"
+    }
   });
 }
+
 function html(value, status = 200) {
   return new Response(value, {
     status,
-    headers: { ...cors(), "Content-Type":"text/html; charset=UTF-8", "Cache-Control":"no-store" }
+    headers: {
+      ...cors(),
+      "Content-Type": "text/html; charset=UTF-8",
+      "Cache-Control": "no-store"
+    }
   });
 }
