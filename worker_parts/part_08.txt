@@ -1,0 +1,651 @@
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>文化資料登録室 管理画面</h1>
+
+<h2>抽選申込一覧</h2>
+
+<button onclick="loadLotteryApplications()">
+抽選申込一覧を更新
+</button>
+
+<div id="lotteryOutput" class="message">
+抽選申込一覧を読み込んでいます……
+</div>
+
+<hr style="margin:28px 0">
+
+<h2>登録申請管理</h2>
+
+<button onclick="loadApplications()">
+申請一覧を更新
+</button>
+
+<div class="search">
+
+<input
+id="apSearch"
+placeholder="AP-K7M4P8Q9"
+autocomplete="off">
+
+<button onclick="loadApplication()">
+申請を確認
+</button>
+
+</div>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+const TYPES = {
+  type1:"第1種登録（基本登録）",
+  type2:"第2種登録",
+  type3:"第3種登録",
+  special:"特別登録"
+};
+
+const EXTRA_TYPES = {
+  additional_check:"追加確認",
+  rejected:"不承認"
+};
+
+function getKey(){
+
+  let key =
+    sessionStorage.getItem(
+      "ADMIN_KEY"
+    );
+
+  if(!key){
+
+    key = prompt(
+      "管理者キーを入力してください"
+    );
+
+    if(key){
+
+      sessionStorage.setItem(
+        "ADMIN_KEY",
+        key
+      );
+
+    }
+
+  }
+
+  return key;
+}
+
+async function adminFetch(
+  url,
+  options={}
+){
+
+  const key = getKey();
+
+  if(!key){
+    throw new Error(
+      "管理者キーがありません。"
+    );
+  }
+
+  options.headers = {
+    ...(options.headers || {}),
+    "X-Admin-Key":key
+  };
+
+  const response =
+    await fetch(
+      url,
+      options
+    );
+
+  if(response.status===401){
+
+    sessionStorage.removeItem(
+      "ADMIN_KEY"
+    );
+
+    throw new Error(
+      "管理者認証に失敗しました。"
+    );
+  }
+
+  return response;
+}
+
+function message(text){
+
+  const p =
+    document.createElement(
+      "p"
+    );
+
+  p.className =
+    "message";
+
+  p.textContent =
+    text;
+
+  return p;
+}
+
+async function loadLotteryApplications(){
+  const output =
+    document.getElementById(
+      "lotteryOutput"
+    );
+
+  if(!output){
+    return;
+  }
+
+  output.textContent =
+    "抽選申込一覧を読み込んでいます……";
+
+  try{
+    const response =
+      await adminFetch(
+        "/admin/lottery-applications"
+      );
+
+    const data =
+      await response.json();
+
+    output.innerHTML = "";
+
+    if(!data.success){
+      output.appendChild(
+        message(
+          data.message ||
+          "抽選申込一覧を取得できませんでした。"
+        )
+      );
+      return;
+    }
+
+    if(!data.applications.length){
+      output.appendChild(
+        message(
+          "現在、抽選申込みはありません。"
+        )
+      );
+      return;
+    }
+
+    const counts = new Map();
+
+    for(
+      const application
+      of data.applications
+    ){
+      const ip =
+        application.applicationIp ||
+        "";
+
+      const day =
+        application.appliedDate ||
+        String(
+          application.appliedAt ||
+          ""
+        ).slice(0,10);
+
+      if(ip && day){
+        const key =
+          day + "|" + ip;
+
+        counts.set(
+          key,
+          (
+            counts.get(key) ||
+            0
+          ) + 1
+        );
+      }
+    }
+
+    for(
+      const application
+      of data.applications
+    ){
+      const box =
+        document.createElement(
+          "div"
+        );
+
+      box.className =
+        "application";
+
+      box.appendChild(
+        message(
+          "AP番号：" +
+          application.ap
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込月：" +
+          (
+            application.applicationMonth ||
+            ""
+          )
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込日時：" +
+          (
+            application.appliedAt ||
+            ""
+          )
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申込時IP：" +
+          (
+            application.applicationIp ||
+            "未記録"
+          )
+        )
+      );
+
+      const ip =
+        application.applicationIp ||
+        "";
+
+      const day =
+        application.appliedDate ||
+        String(
+          application.appliedAt ||
+          ""
+        ).slice(0,10);
+
+      if(ip && day){
+        const count =
+          counts.get(
+            day + "|" + ip
+          ) || 0;
+
+        if(count >= 2){
+          const warning =
+            message(
+              "⚠ 同一IP申請あり（同日 " +
+              count +
+              "件）"
+            );
+
+          warning.style.fontWeight =
+            "700";
+
+          box.appendChild(
+            warning
+          );
+        }
+      }
+
+      output.appendChild(
+        box
+      );
+    }
+
+  }catch(error){
+    output.innerHTML = "";
+
+    output.appendChild(
+      message(
+        error.message
+      )
+    );
+  }
+}
+
+
+async function loadApplications(){
+
+  const output =
+    document.getElementById(
+      "output"
+    );
+
+  output.textContent =
+    "申請一覧を読み込んでいます……";
+
+  try{
+
+    const response =
+      await adminFetch(
+        "/admin/applications?limit=100"
+      );
+
+    const data =
+      await response.json();
+
+    output.innerHTML = "";
+
+    if(!data.success){
+
+      output.appendChild(
+        message(
+          data.message ||
+          "申請一覧を取得できませんでした。"
+        )
+      );
+
+      return;
+    }
+
+    if(!data.applications.length){
+
+      output.appendChild(
+        message(
+          "現在、登録申請はありません。"
+        )
+      );
+
+      return;
+    }
+
+    for(
+      const application
+      of data.applications
+    ){
+
+      const box =
+        document.createElement(
+          "div"
+        );
+
+      box.className =
+        "application";
+
+      const title =
+        document.createElement(
+          "h2"
+        );
+
+      title.textContent =
+        "AP番号：" +
+        application.ap;
+
+      box.appendChild(
+        title
+      );
+
+      box.appendChild(
+        message(
+          "状態：" +
+          application.status
+        )
+      );
+
+      box.appendChild(
+        message(
+          "申請時IP：" +
+          (
+            application.applicationIp ||
+            "未記録"
+          )
+        )
+      );
+
+      for(
+        const item
+        of application.items || []
+      ){
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+        row.className =
+          "item";
+
+        row.textContent =
+          "資料 " +
+          item.item +
+          "：" +
+          item.name +
+          " / " +
+          (
+            item.registrationNumber ||
+            TYPES[
+              item.registrationType
+            ] ||
+            EXTRA_TYPES[
+              item.reviewResult
+            ] ||
+            "未審査"
+          );
+
+        row.style.cursor =
+          "pointer";
+
+        row.onclick = () => {
+
+          document.getElementById(
+            "apSearch"
+          ).value =
+            application.ap;
+
+          loadApplication();
+
+        };
+
+        box.appendChild(
+          row
+        );
+      }
+
+      output.appendChild(
+        box
+      );
+    }
+
+  }catch(error){
+
+    output.innerHTML = "";
+
+    output.appendChild(
+      message(
+        error.message
+      )
+    );
+  }
+}
+
+async function loadApplication(){
+
+  const ap =
+    document.getElementById(
+      "apSearch"
+    ).value.trim();
+
+  if(!ap){
+    return;
+  }
+
+  const output =
+    document.getElementById(
+      "output"
+    );
+
+  output.textContent =
+    "申請情報を読み込んでいます……";
+
+  try{
+
+    const response =
+      await adminFetch(
+        "/admin/application?ap=" +
+        encodeURIComponent(ap)
+      );
+
+    const data =
+      await response.json();
+
+    output.innerHTML = "";
+
+    if(!data.success){
+
+      output.appendChild(
+        message(
+          data.message
+        )
+      );
+
+      return;
+    }
+
+    renderApplication(
+      data.application,
+      output
+    );
+
+  }catch(error){
+
+    output.innerHTML = "";
+
+    output.appendChild(
+      message(
+        error.message
+      )
+    );
+  }
+}
+
+function renderApplication(
+  application,
+  output
+){
+
+  const box =
+    document.createElement(
+      "div"
+    );
+
+  box.className =
+    "application";
+
+  const title =
+    document.createElement(
+      "h2"
+    );
+
+  title.textContent =
+    "AP番号：" +
+    application.ap;
+
+  box.appendChild(
+    title
+  );
+
+  box.appendChild(
+    message(
+      "状態：" +
+      application.status
+    )
+  );
+
+  box.appendChild(
+    message(
+      "申請時IP：" +
+      (
+        application.applicationIp ||
+        "未記録"
+      )
+    )
+  );
+
+  for(
+    const item
+    of application.items || []
+  ){
+
+    renderItem(
+      application,
+      item,
+      box
+    );
+  }
+
+  output.appendChild(
+    box
+  );
+}
+
+function renderItem(
+  application,
+  item,
+  parent
+){
+
+  const box =
+    document.createElement(
+      "div"
+    );
+
+  box.className =
+    "item";
+
+  const title =
+    document.createElement(
+      "h3"
+    );
+
+  title.textContent =
+    "資料 " +
+    item.item +
+    "：" +
+    item.name;
+
+  box.appendChild(
+    title
+  );
+
+  box.appendChild(
+    message(
+      "関連資料名称：" +
+      (item.relatedName || "")
+    )
+  );
+
+  box.appendChild(
+    message(
+      "入手経緯など：" +
+      (item.acquisition || "")
+    )
+  );
+
+  if(
+    item.registrationStatus ===
+    "registered"
+  ){
+
+    box.appendChild(
+      message(
+        "登録番号：" +
+        item.registrationNumber
+      )
+    );
+
+    box.appendChild(
+      message(
+        item.issuedDataReady
+          ? "登録書が完成しています。発行データを受け取れる状態です。"
+          : "審査完了です。登録書完成までしばらくお待ちください。"
+      )
+    );
+
+    const issued =
+      document.createE
