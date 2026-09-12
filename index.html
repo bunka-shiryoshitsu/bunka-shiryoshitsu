@@ -1438,7 +1438,10 @@ function renderRegistrationSlots(slots){
    <p class="small">
     最大20枚まで提出できます。長辺が2,500pxを超える画像は、自動的に2,500px以内へ縮小します。
    </p>
-   <input type="file" id="material-images-${i}" accept="image/jpeg,image/png,image/webp" multiple>
+   <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <input type="file" id="material-images-${i}" accept="image/jpeg,image/png,image/webp" multiple>
+    <strong style="font-size:18px;color:#111">20枚まで追加できます。</strong>
+   </div>
    <div id="image-preview-${i}" class="image-preview"></div>
   `;
 
