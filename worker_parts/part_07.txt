@@ -1,0 +1,643 @@
+await rateLimited(
+      request,
+      env,
+      "RECEIVE_STATUS"
+    )
+  ) {
+    return rateLimit();
+  }
+
+  const number =
+    new URL(request.url)
+      .searchParams
+      .get("number")
+      ?.trim()
+      .toUpperCase();
+
+  if (
+    !validRegistrationNumber(
+      number
+    )
+  ) {
+    return json(
+      {
+        ready: false,
+        message:
+          "登録番号が正しくありません。"
+      },
+      400
+    );
+  }
+
+  const registration =
+    await getRegistration(
+      env,
+      number
+    );
+
+  if (!registration) {
+    return json(
+      {
+        ready: false,
+        message:
+          "この登録番号は確認できません。"
+      },
+      404
+    );
+  }
+
+  const ready =
+    Boolean(
+      await env.REGISTRATION_KV.get(
+        "ISSUED_DATA_META:" +
+          number
+      )
+    );
+
+  return json({
+    ready,
+    registrationNumber:
+      number,
+    name:
+      registration.name ||
+      "",
+    registrationType:
+      registration.registrationTypeLabel ||
+      "",
+    message:
+      ready
+        ? "登録書が完成しました。発行データを受け取ることができます。"
+        : "審査完了です。登録書完成までしばらくお待ちください。登録書完成後、登録番号を使って発行データを受け取ることができます。"
+  });
+}
+
+
+/* =========================================================
+   発行データ受取ページ
+========================================================= */
+
+async function receivePage(
+  request,
+  env
+) {
+  const number =
+    new URL(request.url)
+      .searchParams
+      .get("number")
+      ?.trim()
+      .toUpperCase() || "";
+
+  if (!number) {
+    return html(
+      receiveHTML()
+    );
+  }
+
+  if (
+    !validRegistrationNumber(
+      number
+    )
+  ) {
+    return html(
+      receiveHTML(
+        number,
+        null,
+        "登録番号が正しくありません。"
+      )
+    );
+  }
+
+  const registration =
+    await getRegistration(
+      env,
+      number
+    );
+
+  if (!registration) {
+    return html(
+      receiveHTML(
+        number,
+        null,
+        "この登録番号は確認できません。"
+      )
+    );
+  }
+
+  const ready =
+    Boolean(
+      await env.REGISTRATION_KV.get(
+        "ISSUED_DATA_META:" +
+          number
+      )
+    );
+
+  return html(
+    receiveHTML(
+      number,
+      registration,
+      ready
+        ? ""
+        : "審査完了です。登録書完成までしばらくお待ちください。登録書完成後、登録番号を使って発行データを受け取ることができます。",
+      ready
+    )
+  );
+}
+
+
+/* =========================================================
+   発行データJPG取得
+========================================================= */
+
+async function receiveFile(
+  request,
+  env
+) {
+  if (
+    await rateLimited(
+      request,
+      env,
+      "RECEIVE_FILE"
+    )
+  ) {
+    return rateLimit();
+  }
+
+  const number =
+    new URL(request.url)
+      .searchParams
+      .get("number")
+      ?.trim()
+      .toUpperCase();
+
+  if (
+    !validRegistrationNumber(
+      number
+    )
+  ) {
+    return text(
+      "登録番号が正しくありません。",
+      400
+    );
+  }
+
+  const registration =
+    await getRegistration(
+      env,
+      number
+    );
+
+  if (!registration) {
+    return text(
+      "登録番号が確認できません。",
+      404
+    );
+  }
+
+  const data =
+    await env.REGISTRATION_KV.get(
+      "ISSUED_DATA:" +
+        number,
+      {
+        type: "arrayBuffer"
+      }
+    );
+
+  if (!data) {
+    return text(
+      "発行データは準備中です。",
+      404
+    );
+  }
+
+  return new Response(
+    data,
+    {
+      status: 200,
+      headers: {
+        ...cors(),
+        "Content-Type":
+          "image/jpeg",
+        "Content-Disposition":
+          `inline; filename="${number}.jpg"`,
+        "Cache-Control":
+          "no-store"
+      }
+    }
+  );
+}
+
+
+/* =========================================================
+   受取ページHTML
+========================================================= */
+
+function receiveHTML(
+  number = "",
+  registration = null,
+  message = "",
+  ready = false
+) {
+  const name =
+    registration?.name ||
+    "";
+
+  const type =
+    registration?.registrationTypeLabel ||
+    "";
+
+  return `
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>発行データ受け取り</title>
+<style>
+body{
+font-family:system-ui,sans-serif;
+background:#f7f7f7;
+margin:0;
+padding:35px 15px;
+color:#222;
+text-align:center
+}
+.box{
+max-width:620px;
+margin:auto;
+background:#fff;
+padding:28px;
+border:1px solid #ccc;
+border-radius:10px
+}
+input{
+width:100%;
+box-sizing:border-box;
+padding:12px;
+font-size:18px;
+margin:8px 0;
+border:1px solid #999
+}
+button,a{
+display:inline-block;
+padding:12px 18px;
+margin-top:10px;
+font-size:16px;
+text-decoration:none
+}
+button{
+background:#222;
+color:#fff;
+border:0;
+cursor:pointer
+}
+a{
+background:#222;
+color:#fff
+}
+.info{
+background:#f5f5f5;
+padding:12px;
+margin-top:15px;
+text-align:left;
+line-height:1.8
+}
+.ok{color:#064}
+.err{color:#900}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>発行データ受け取り</h1>
+
+<p>
+登録書完成後に発行された登録番号を入力してください。
+</p>
+
+<p>
+発行データの受け取りには、登録番号が必要です。
+</p>
+
+<form method="get" action="/receive">
+<input
+name="number"
+value="${escapeHtml(number)}"
+placeholder="例：F8ZB225Y"
+autocomplete="off">
+<button type="submit">確認する</button>
+</form>
+
+${
+  message
+    ? `
+<p class="${
+        ready ? "ok" : "err"
+      }">
+${escapeHtml(message)}
+</p>
+`
+    : ""
+}
+
+${
+  ready && registration
+    ? `
+<div class="info">
+<strong>登録番号：</strong>
+${escapeHtml(number)}
+<br>
+
+<strong>資料名称：</strong>
+${escapeHtml(name)}
+<br>
+
+<strong>登録区分：</strong>
+${escapeHtml(type)}
+</div>
+
+<p class="ok">
+登録書が完成しました。
+発行データを受け取ることができます。
+</p>
+
+<a href="/receive-file?number=${encodeURIComponent(
+        number
+      )}">
+発行データ（JPG）を受け取る
+</a>
+`
+    : ""
+}
+
+</div>
+</body>
+</html>
+`;
+}
+
+
+/* =========================================================
+   当選番号管理画面
+========================================================= */
+
+function winnerPage() {
+  return html(
+    String.raw`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>Winner Registration</title>
+<style>
+body{
+font-family:system-ui,sans-serif;
+background:#f5f5f5;
+padding:30px
+}
+.box{
+max-width:650px;
+margin:auto;
+background:#fff;
+padding:25px
+}
+input,button{
+width:100%;
+box-sizing:border-box;
+padding:11px;
+margin:7px 0;
+font-size:16px
+}
+button{
+background:#222;
+color:#fff;
+border:0;
+cursor:pointer
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>Winner Registration</h1>
+
+<input
+id="month"
+type="month">
+
+<input
+id="ap"
+placeholder="AP-K7M4P8Q9"
+autocomplete="off">
+
+<input
+id="slots"
+type="number"
+min="1"
+max="10"
+value="1">
+
+<button onclick="saveWinner()">
+Save
+</button>
+
+<p id="message"></p>
+
+</div>
+
+<script>
+function getKey(){
+  let key =
+    sessionStorage.getItem("ADMIN_KEY");
+
+  if(!key){
+    key = prompt(
+      "管理者キーを入力してください"
+    );
+
+    if(key){
+      sessionStorage.setItem(
+        "ADMIN_KEY",
+        key
+      );
+    }
+  }
+
+  return key;
+}
+
+function setCurrentMonth(){
+  const month =
+    new Date()
+      .toISOString()
+      .slice(0,7);
+
+  document.getElementById(
+    "month"
+  ).value = month;
+}
+
+async function saveWinner(){
+  const key = getKey();
+
+  if(!key){
+    return;
+  }
+
+  const response =
+    await fetch(
+      "/admin-winners/save",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "application/json",
+          "X-Admin-Key":key
+        },
+        body:JSON.stringify({
+          applicationMonth:
+            document.getElementById(
+              "month"
+            ).value,
+
+          ap:
+            document.getElementById(
+              "ap"
+            ).value,
+
+          slots:
+            Number(
+              document.getElementById(
+                "slots"
+              ).value
+            )
+        })
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if(response.status===401){
+    sessionStorage.removeItem(
+      "ADMIN_KEY"
+    );
+  }
+
+  document.getElementById(
+    "message"
+  ).textContent =
+    data.message ||
+    "Save failed.";
+}
+
+setCurrentMonth();
+</script>
+
+</body>
+</html>
+`
+  );
+}
+
+
+/* =========================================================
+   管理画面
+========================================================= */
+
+function adminPage() {
+  return html(
+    String.raw`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>文化資料登録室 管理画面</title>
+
+<style>
+
+body{
+font-family:system-ui,sans-serif;
+background:#f3f3f3;
+margin:0;
+padding:20px;
+color:#222
+}
+
+.box{
+max-width:1100px;
+margin:auto;
+background:#fff;
+padding:22px
+}
+
+input,button{
+font-size:16px;
+padding:9px
+}
+
+button{
+cursor:pointer
+}
+
+.search{
+display:flex;
+gap:8px;
+margin:15px 0
+}
+
+.search input{
+flex:1
+}
+
+.application{
+border:1px solid #bbb;
+padding:15px;
+margin:15px 0
+}
+
+.item{
+border-top:1px solid #ddd;
+padding:15px 0
+}
+
+.buttons{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+margin-top:12px
+}
+
+.images{
+display:grid;
+grid-template-columns:
+repeat(auto-fill,minmax(150px,1fr));
+gap:10px;
+margin-top:10px
+}
+
+.images img{
+width:100%;
+height:150px;
+object-fit:contain;
+background:#eee;
+border:1px solid #ccc
+}
+
+.issued{
+background:#f5f5f5;
+padding:12px;
+margin-top:15px
+}
+
+.message{
+white-space:pre-wrap;
+margin:8px 0
+}
+
+</style>
