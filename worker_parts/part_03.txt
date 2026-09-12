@@ -1,0 +1,520 @@
+          ) -
+                    Date.parse(
+                      today +
+                      "T00:00:00Z"
+                    )
+                  ) /
+                  86400000
+                )
+              );
+
+            const resultDateLabel =
+              resultDateObject.getUTCFullYear() +
+              "年" +
+              (
+                resultDateObject.getUTCMonth() +
+                1
+              ) +
+              "月1日";
+
+            return json({
+              winner: false,
+              status: "not_started",
+              applicationMonth,
+              checkStart: resultDate,
+              remainingDays,
+              message:
+                "抽選結果は" +
+                resultDateLabel +
+                "から確認できます。あと" +
+                remainingDays +
+                "日お待ちください。"
+            });
+          }
+        }
+      } catch {}
+    }
+
+    const winner =
+      await getWinner(
+        env,
+        ap
+      );
+
+    if (!winner.active) {
+      return json({
+        winner: false,
+        status:
+          winner.status ||
+          "not_winner",
+        message:
+          winner.status ===
+          "not_started"
+            ? "抽選結果はまだ確認できません。"
+            : winner.status ===
+              "expired"
+            ? "この当選による登録申請は、有効期限を過ぎています。"
+            : "今回の抽選では、登録申請の対象となっていません。"
+      });
+    }
+
+    const value =
+      await env.REGISTRATION_KV.get(
+        "REGISTRATION_APPLICATION:" +
+          ap
+      );
+
+    if (!value) {
+      return json({
+        winner: true,
+        status: "active",
+        slots: winner.slots,
+        message:
+          "今回の抽選に当選しています。"
+      });
+    }
+
+    let application;
+
+    try {
+      application =
+        JSON.parse(value);
+    } catch {
+      return json({
+        winner: true,
+        status: "received",
+        slots: winner.slots,
+        message:
+          "登録申請を受け付けています。"
+      });
+    }
+
+    const numbers =
+      Array.isArray(
+        application.registrationNumbers
+      )
+        ? application.registrationNumbers
+        : [];
+
+    if (!numbers.length) {
+      return json({
+        winner: true,
+        status:
+          application.status ||
+          "received",
+        slots: winner.slots,
+        message:
+          application.status ===
+          "rejected"
+            ? "今回の登録申請は不承認となりました。"
+            : application.status ===
+              "additional_check"
+            ? "現在、追加確認中です。"
+            : "登録申請を受け付けています。"
+      });
+    }
+
+    const readyNumbers = [];
+    const preparingNumbers = [];
+
+    for (
+      const entry of numbers
+    ) {
+      const registrationNumber =
+        String(
+          entry.registrationNumber ||
+            ""
+        )
+          .trim()
+          .toUpperCase();
+
+      if (
+        !validRegistrationNumber(
+          registrationNumber
+        )
+      ) {
+        preparingNumbers.push(
+          entry
+        );
+        continue;
+      }
+
+      const ready =
+        await env.REGISTRATION_KV.get(
+          "ISSUED_DATA_META:" +
+            registrationNumber
+        );
+
+      if (ready) {
+        readyNumbers.push(
+          entry
+        );
+      } else {
+        preparingNumbers.push(
+          entry
+        );
+      }
+    }
+
+    const status =
+      readyNumbers.length ===
+      numbers.length
+        ? "registered"
+        : "document_preparing";
+
+    return json({
+      winner: true,
+      status,
+      slots: winner.slots,
+      registrationNumbers:
+        numbers,
+      readyNumbers,
+      preparingNumbers,
+      message:
+        status === "registered"
+          ? "登録書が完成しました。発行データを受け取ることができます。"
+          : "審査完了です。登録書完成までしばらくお待ちください。登録書完成後、登録番号を使って発行データを受け取ることができます。"
+    });
+
+  } catch {
+    return json({
+      winner: false,
+      message:
+        "今回の抽選では、登録申請の対象となっていません。"
+    });
+  }
+}
+
+
+/* =========================================================
+   当選情報保存
+========================================================= */
+
+async function saveWinner(
+  request,
+  env
+) {
+  if (!isAdmin(request, env)) {
+    return unauthorized();
+  }
+
+  try {
+    const body =
+      await request.json();
+
+    const ap =
+      normalizeAP(body.ap);
+
+    const slots =
+      Number(body.slots);
+
+    const month =
+      String(
+        body.applicationMonth ||
+          ""
+      ).trim();
+
+    if (
+      !ap ||
+      !Number.isInteger(slots) ||
+      slots < 1 ||
+      slots > 10 ||
+      !/^(20\d{2})-(0[1-9]|1[0-2])$/.test(
+        month
+      )
+    ) {
+      return json(
+        {
+          success: false,
+          message:
+            "入力内容が正しくありません。"
+        },
+        400
+      );
+    }
+
+    const savedAt =
+      new Date();
+
+    const checkStart =
+      japanDate();
+
+    const expiry =
+      new Date(
+        savedAt.getTime() +
+          60 * 24 * 60 * 60 * 1000
+      );
+
+    const expiryDate =
+      new Intl.DateTimeFormat(
+        "en-CA",
+        {
+          timeZone:
+            "Asia/Tokyo",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }
+      ).format(expiry);
+
+    await env.REGISTRATION_KV.put(
+      "WINNER_" + ap,
+      JSON.stringify({
+        slots,
+        applicationMonth:
+          month,
+        checkStart,
+        expiryDate,
+        savedAt:
+          savedAt.toISOString()
+      })
+    );
+
+    await env.REGISTRATION_KV.put(
+      "APPLICATION_STATUS:" +
+        ap,
+      "winner"
+    );
+
+    return json({
+      success: true,
+      ap,
+      slots,
+      applicationMonth:
+        month,
+      checkStart,
+      expiryDate,
+      message:
+        "当選情報を保存しました。保存直後から確認できます。"
+    });
+
+  } catch {
+    return json(
+      {
+        success: false,
+        message:
+          "当選情報の保存に失敗しました。"
+      },
+      500
+    );
+  }
+}
+
+
+/* =========================================================
+   申請画像
+========================================================= */
+
+async function imageUpload(
+  request,
+  env
+) {
+  const url =
+    new URL(request.url);
+
+  const ap =
+    normalizeAP(
+      url.searchParams.get("ap")
+    );
+
+  const item =
+    url.searchParams.get("item");
+
+  const image =
+    url.searchParams.get("image");
+
+  if (
+    !ap ||
+    !/^(0[1-9]|10)$/.test(
+      item || ""
+    ) ||
+    !/^(0[1-9]|1[0-9]|20)$/.test(
+      image || ""
+    )
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "入力内容が正しくありません。"
+      },
+      400
+    );
+  }
+
+  const winner =
+    await getWinner(
+      env,
+      ap
+    );
+
+  if (
+    !winner.active ||
+    Number(item) >
+      winner.slots
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "登録申請の対象ではありません。"
+      },
+      403
+    );
+  }
+
+  if (
+    await env.REGISTRATION_KV.get(
+      "REGISTRATION_APPLICATION:" +
+        ap
+    )
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "このAP番号の登録申請はすでに送信されています。"
+      },
+      409
+    );
+  }
+
+  try {
+    const form =
+      await request.formData();
+
+    const file =
+      form.get("image");
+
+    if (!(file instanceof File)) {
+      return json(
+        {
+          success: false,
+          error:
+            "画像データがありません。"
+        },
+        400
+      );
+    }
+
+    if (
+      file.type !==
+      "image/jpeg"
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "JPG形式の画像をアップロードしてください。"
+        },
+        415
+      );
+    }
+
+    if (
+      file.size <= 0 ||
+      file.size > MAX
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "画像は5MB以下で指定してください。"
+        },
+        413
+      );
+    }
+
+    const key =
+      `IMAGE:${ap}:${item}:${image}`;
+
+    if (
+      await env.REGISTRATION_KV.get(
+        `IMAGE_META:${ap}:${item}:${image}`
+      )
+    ) {
+      return json({
+        success: true,
+        duplicate: true,
+        message:
+          "この画像番号はすでに登録されています。"
+      });
+    }
+
+    await env.REGISTRATION_KV.put(
+      key,
+      await file.arrayBuffer()
+    );
+
+    await env.REGISTRATION_KV.put(
+      `IMAGE_META:${ap}:${item}:${image}`,
+      JSON.stringify({
+        ap,
+        item,
+        image,
+        uploadedAt:
+          new Date().toISOString()
+      })
+    );
+
+    return json({
+      success: true,
+      duplicate: false,
+      ap,
+      item,
+      image,
+      message:
+        "画像を保存しました。"
+    });
+
+  } catch {
+    return json(
+      {
+        success: false,
+        error:
+          "画像データを読み取れませんでした。"
+      },
+      400
+    );
+  }
+}
+
+
+/* =========================================================
+   登録申請
+========================================================= */
+
+async function registrationSubmit(
+  request,
+  env
+) {
+  if (
+    await rateLimited(
+      request,
+      env,
+      "SUBMIT"
+    )
+  ) {
+    return json(
+      {
+        success: false,
+        message:
+          "しばらく時間をおいてから、もう一度お試しください。"
+      },
+      429
+    );
+  }
+
+  try {
+    const body =
+      await request.json();
+
+    const ap =
+      normalizeAP(body.ap);
+
+    if (!ap) {
+      return json(
+        {
+          success: false,
+          message:
+            "A
