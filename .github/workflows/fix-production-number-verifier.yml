@@ -1,0 +1,154 @@
+name: Fix production numbering verifier
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch verifier
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p = Path('worker-dashboard10.js')
+          s = p.read_text(encoding='utf-8')
+          old_import = '''  readRegistrationNumberLedgers,\n  getNextPublicRegistrationNumber,\n  markPublicRegistrationNumberIssued\n'''
+          new_import = '''  readRegistrationNumberLedgers,\n  getNextPublicRegistrationNumber,\n  markPublicRegistrationNumberIssued,\n  checkRegistrationNumberCollision\n'''
+          if old_import in s:
+              s = s.replace(old_import, new_import, 1)
+          elif 'checkRegistrationNumberCollision' not in s.split('} from "./registration-number-service.js";')[0]:
+              raise SystemExit('import block not found')
+
+          new_fn = r'''async function runProductionNumberingVerification(env) {
+  const previous = await env.REGISTRATION_KV.get(LIVE_VERIFY_KEY);
+  if (previous) {
+    let record = null;
+    try { record = JSON.parse(previous); } catch {}
+    return json({ success: false, alreadyCompleted: true, record }, 409);
+  }
+
+  const before = await readRegistrationNumberLedgers(env);
+  const issuedNumbers = new Set(before.publicIssued.map(x => x.number));
+  const cutoff = Date.now() - 3 * 60 * 60 * 1000;
+  const recoverable = before.publicPool
+    .filter(x =>
+      x &&
+      x.status === "reserved" &&
+      x.source === "public-random" &&
+      x.isTest !== true &&
+      !issuedNumbers.has(x.number) &&
+      Number.isFinite(Date.parse(x.generatedAt || "")) &&
+      Date.parse(x.generatedAt) >= cutoff
+    )
+    .sort((a, b) => Date.parse(b.generatedAt) - Date.parse(a.generatedAt));
+
+  if (recoverable.length > 1) {
+    return json({
+      success: false,
+      message: "Multiple recent reserved numbers exist; verification stopped safely.",
+      candidates: recoverable.map(x => ({ number: x.number, generatedAt: x.generatedAt }))
+    }, 409);
+  }
+
+  let number;
+  let recoveredReservation = false;
+
+  if (recoverable.length === 1) {
+    number = recoverable[0].number;
+    recoveredReservation = true;
+  } else {
+    number = await getNextPublicRegistrationNumber(env);
+    if (!number) return json({ success: false, message: "Random number generation failed." }, 500);
+  }
+
+  const ownerBefore = before.owner.filter(x => x.number === number).map(x => x.location);
+  if (ownerBefore.length) {
+    return json({ success: false, message: "Owner-pool collision detected before issuance.", number, ownerLocations: ownerBefore }, 500);
+  }
+
+  const now = new Date().toISOString();
+  await markPublicRegistrationNumberIssued(env, number, {
+    ap: "AP-SYSTEM-VERIFY",
+    item: "00",
+    registeredAt: now,
+    source: "production-verification",
+    isTest: true
+  });
+
+  const poolKey = "PUBLIC_REGISTRATION_POOL:" + number;
+  const issuedKey = "PUBLIC_REGISTRATION_ISSUED:" + number;
+  const poolRaw = await env.REGISTRATION_KV.get(poolKey);
+  const issuedRaw = await env.REGISTRATION_KV.get(issuedKey);
+
+  let poolRecord = null;
+  let issuedRecord = null;
+  try { poolRecord = poolRaw ? JSON.parse(poolRaw) : null; } catch {}
+  try { issuedRecord = issuedRaw ? JSON.parse(issuedRaw) : null; } catch {}
+
+  const collision = await checkRegistrationNumberCollision(env, number, {
+    allowOwnPublicReservation: true
+  });
+  const ownerLocations = (collision.locations || []).filter(x => /^REGISTRATION_LIST(?:\d+)?$/.test(String(x)));
+
+  const ok = Boolean(
+    poolRecord &&
+    issuedRecord &&
+    poolRecord.number === number &&
+    issuedRecord.number === number &&
+    poolRecord.status === "issued" &&
+    issuedRecord.status === "issued" &&
+    poolRecord.isTest === true &&
+    issuedRecord.isTest === true &&
+    ownerLocations.length === 0
+  );
+
+  const result = {
+    success: ok,
+    number,
+    checkedAt: now,
+    recoveredReservation,
+    generatedLocation: poolKey,
+    issuedLocation: issuedKey,
+    generatedStatus: poolRecord?.status || null,
+    issuedStatus: issuedRecord?.status || null,
+    testMarked: Boolean(poolRecord?.isTest === true && issuedRecord?.isTest === true),
+    ownerCollision: ownerLocations.length > 0,
+    ownerLocations,
+    countsBefore: {
+      owner: before.owner.length,
+      publicPool: before.publicPool.length,
+      publicIssued: before.publicIssued.length
+    }
+  };
+
+  if (ok) {
+    await env.REGISTRATION_KV.put(LIVE_VERIFY_KEY, JSON.stringify(result));
+  }
+  return json(result, ok ? 200 : 500);
+}
+'''
+          pattern = r'async function runProductionNumberingVerification\(env\) \{.*?\n\}\n\nfunction isAdmin'
+          repl = new_fn + '\nfunction isAdmin'
+          s2, n = re.subn(pattern, repl, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit(f'verifier function replacement count={n}')
+          p.write_text(s2, encoding='utf-8')
+      - name: Syntax check
+        run: node --check worker-dashboard10.js
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worker-dashboard10.js
+          git commit -m "Make production numbering verification KV-consistent"
+          git push
