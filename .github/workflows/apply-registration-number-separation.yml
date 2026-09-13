@@ -1,0 +1,116 @@
+name: Apply registration number separation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch public issuance to use random separated ledger
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('worker-core.js')
+          s = p.read_text(encoding='utf-8')
+          imp = 'import { getNextPublicRegistrationNumber, markPublicRegistrationNumberIssued } from "./registration-number-service.js";\n\n'
+          if not s.startswith(imp):
+              s = imp + s
+
+          old_call = '''const registrationNumber =\n      await getNextRegistrationNumber(\n        env\n      );'''
+          new_call = '''const registrationNumber =\n      await getNextPublicRegistrationNumber(\n        env\n      );'''
+          if old_call not in s and new_call not in s:
+              raise SystemExit('registration number allocation call not found')
+          s = s.replace(old_call, new_call, 1)
+
+          s = s.replace('''message:\n            "登録番号の在庫がありません。"''', '''message:\n            "登録番号の新規発行に失敗しました。"''', 1)
+
+          old_remove = '''await removeRegistrationNumberFromPool(\n      env,\n      registrationNumber\n    );'''
+          new_mark = '''await markPublicRegistrationNumberIssued(\n      env,\n      registrationNumber,\n      {\n        ap,\n        item,\n        registeredAt: now\n      }\n    );'''
+          if old_remove not in s and new_mark not in s:
+              raise SystemExit('pool removal call not found')
+          s = s.replace(old_remove, new_mark, 1)
+
+          marker = 'async function getNextRegistrationNumber(\n  env\n) {'
+          if marker in s and '自己所有品専用プール用。一般申請者への自動発行では使用しない。' not in s:
+              s = s.replace(marker, '// 自己所有品専用プール用。一般申請者への自動発行では使用しない。\n' + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+
+          w = Path('worker.js')
+          ws = w.read_text(encoding='utf-8')
+          ws = ws.replace('./worker-dashboard9.js', './worker-dashboard10.js')
+          w.write_text(ws, encoding='utf-8')
+      - name: Syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check registration-number-service.js
+          for f in worker*.js; do node --check "$f"; done
+          grep -q 'getNextPublicRegistrationNumber' worker-core.js
+          grep -q 'markPublicRegistrationNumberIssued' worker-core.js
+          grep -q 'worker-dashboard10.js' worker.js
+      - name: Numbering collision self-test
+        shell: bash
+        run: |
+          cat > /tmp/test-numbering.mjs <<'EOF'
+          import { webcrypto } from 'node:crypto';
+          globalThis.crypto = webcrypto;
+          import {
+            getNextPublicRegistrationNumber,
+            markPublicRegistrationNumberIssued,
+            checkRegistrationNumberCollision,
+            readRegistrationNumberLedgers
+          } from "$GITHUB_WORKSPACE/registration-number-service.js";
+
+          class MemoryKV {
+            constructor(seed={}) { this.map = new Map(Object.entries(seed)); }
+            async get(k) { return this.map.has(k) ? this.map.get(k) : null; }
+            async put(k,v) { this.map.set(k, String(v)); }
+            async list({prefix='',limit=1000,cursor}={}) {
+              const all=[...this.map.keys()].filter(k=>k.startsWith(prefix)).sort();
+              const start=cursor?Number(cursor):0, part=all.slice(start,start+limit), next=start+part.length;
+              return {keys:part.map(name=>({name})),list_complete:next>=all.length,cursor:String(next)};
+            }
+          }
+          const kv = new MemoryKV({
+            REGISTRATION_LIST: JSON.stringify(['ABCDEFGH','QWERTY34']),
+            'REGISTRATION:ZXCVBNM3': JSON.stringify({registrationNumber:'ZXCVBNM3'})
+          });
+          const env={REGISTRATION_KV:kv};
+          if (!(await checkRegistrationNumberCollision(env,'ABCDEFGH')).duplicate) throw new Error('owner collision missed');
+          if (!(await checkRegistrationNumberCollision(env,'ZXCVBNM3')).duplicate) throw new Error('issued collision missed');
+          const seen=new Set();
+          for(let i=0;i<40;i++){
+            const n=await getNextPublicRegistrationNumber(env);
+            if(!n||seen.has(n)||n==='ABCDEFGH'||n==='QWERTY34'||n==='ZXCVBNM3') throw new Error('random uniqueness failed');
+            seen.add(n);
+          }
+          const first=[...seen][0];
+          await markPublicRegistrationNumberIssued(env, first, {ap:'AP-TESTTEST',item:'01',registeredAt:'2026-09-14T00:00:00.000Z'});
+          const ledgers=await readRegistrationNumberLedgers(env);
+          if(!ledgers.owner.find(x=>x.number==='ABCDEFGH')) throw new Error('owner pool changed');
+          if(!ledgers.publicPool.find(x=>x.number===first&&x.status==='issued')) throw new Error('public pool ledger missing');
+          if(!ledgers.publicIssued.find(x=>x.number===first&&x.status==='issued')) throw new Error('issued ledger missing');
+          console.log('PASS separated numbering collision checks', {generated:seen.size});
+          EOF
+          sed -i "s|\$GITHUB_WORKSPACE|$GITHUB_WORKSPACE|g" /tmp/test-numbering.mjs
+          node /tmp/test-numbering.mjs
+      - name: Commit implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worker-core.js worker.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Separate public registration numbering from owner pool"
+          git push
