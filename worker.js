@@ -1,3 +1,3 @@
-import app from "./worker-dashboard11.js";
-export { RegistrationIssuer } from "./worker-dashboard11.js";
+import app from "./worker-dashboard12.js";
+export { RegistrationIssuer } from "./worker-dashboard12.js";
 export default app;
