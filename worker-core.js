@@ -1,3 +1,5 @@
+import { getNextPublicRegistrationNumber, markPublicRegistrationNumberIssued } from "./registration-number-service.js";
+
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
 
 const MAX = 5 * 1024 * 1024;
@@ -1922,6 +1924,7 @@ async function registrationListKeys(
   });
 }
 
+// 自己所有品専用プール用。一般申請者への自動発行では使用しない。
 async function getNextRegistrationNumber(
   env
 ) {
@@ -2379,7 +2382,7 @@ async function reviewApplication(
     }
 
     const registrationNumber =
-      await getNextRegistrationNumber(
+      await getNextPublicRegistrationNumber(
         env
       );
 
@@ -2388,7 +2391,7 @@ async function reviewApplication(
         {
           success: false,
           message:
-            "登録番号の在庫がありません。"
+            "登録番号の新規発行に失敗しました。"
         },
         409
       );
@@ -2426,9 +2429,14 @@ async function reviewApplication(
       )
     );
 
-    await removeRegistrationNumberFromPool(
+    await markPublicRegistrationNumberIssued(
       env,
-      registrationNumber
+      registrationNumber,
+      {
+        ap,
+        item,
+        registeredAt: now
+      }
     );
 
     target.reviewResult =
