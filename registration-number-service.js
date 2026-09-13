@@ -25,7 +25,8 @@ export async function getNextPublicRegistrationNumber(env) {
         number,
         status: "reserved",
         generatedAt,
-        source: "public-random"
+        source: "public-random",
+        isTest: false
       })
     );
 
@@ -42,7 +43,9 @@ export async function getNextPublicRegistrationNumber(env) {
           status: "collision",
           generatedAt,
           collisionCheckedAt: new Date().toISOString(),
-          collisionLocations: final.locations
+          collisionLocations: final.locations,
+          source: "public-random",
+          isTest: false
         })
       );
       continue;
@@ -74,15 +77,25 @@ export async function markPublicRegistrationNumberIssued(env, number, metadata =
     try { generated = JSON.parse(existingPool) || {}; } catch {}
   }
 
+  const ap = metadata.ap || null;
+  const source = metadata.source || generated.source || "public-random";
+  const isTest = Boolean(
+    metadata.isTest === true ||
+    generated.isTest === true ||
+    /^AP-TEST/i.test(String(ap || "")) ||
+    /(^|[-_])test($|[-_])/i.test(String(source || ""))
+  );
+
   const record = {
     ...generated,
     number: normalized,
     status: "issued",
     generatedAt: generated.generatedAt || issuedAt,
     issuedAt,
-    ap: metadata.ap || null,
+    ap,
     item: metadata.item || null,
-    source: "public-random"
+    source,
+    isTest
   };
 
   await env.REGISTRATION_KV.put(poolKey, JSON.stringify(record));
