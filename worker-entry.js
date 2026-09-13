@@ -1,4 +1,4 @@
-import core from "./worker.js";
+import core from "./worker-core.js";
 
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
 const AP_CHARS = "ABCDEFGHJKLMNPQRSTUVWXY3456789";
