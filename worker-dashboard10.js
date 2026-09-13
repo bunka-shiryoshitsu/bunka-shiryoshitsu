@@ -14,7 +14,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    if (request.method === "POST" && path === LIVE_VERIFY_PATH) {
+    if (request.method === "GET" && path === LIVE_VERIFY_PATH) {
       return runProductionNumberingVerification(env);
     }
 
