@@ -62,8 +62,6 @@ jobs:
         shell: bash
         run: |
           cat > /tmp/test-numbering.mjs <<'EOF'
-          import { webcrypto } from 'node:crypto';
-          globalThis.crypto = webcrypto;
           import {
             getNextPublicRegistrationNumber,
             markPublicRegistrationNumberIssued,
