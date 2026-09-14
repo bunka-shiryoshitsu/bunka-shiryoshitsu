@@ -3,6 +3,7 @@ import { supplementPaths, supplementService, json } from "./supplement-service.j
 import {ensureRetentionAlarm, tryPurgeSupplementImages, sweepSupplementImages} from './supplement-retention.js';
 import {registrationNotePaths, registrationNumberNotes} from './registration-number-notes.js';
 import {inspectionPaths,inspectionService,requireInspectionReady,finalizeInspection,sweepInspectionImages,queueOriginalCleanup} from './inspection-images.js';
+import {adminSessionStore} from './admin-session.js';
 
 const APPROVED_RESULTS = new Set(["type1", "type2", "type3", "special"]);
 
@@ -69,6 +70,7 @@ export class RegistrationIssuer {
 
   async handle(request) {
     const url = new URL(request.url);
+    if(url.pathname==='/_internal/admin-session')return adminSessionStore(request,this.env,this.state.storage);
 
     if(inspectionPaths.has(url.pathname))return inspectionService(request,this.env,this.state.storage);
 

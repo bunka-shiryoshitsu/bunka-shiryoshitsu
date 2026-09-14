@@ -15,7 +15,8 @@ export const registrationNumbersClient = String.raw`
   let previous={};try{previous=JSON.parse(sessionStorage.getItem(viewKey))||{}}catch{}
   const initialRoute=routeFor(location.search,previous);
   if(new URLSearchParams(location.search).has('scope')||new URLSearchParams(location.search).has('number'))previous.scrollY=0;
-  keyInput.value=sessionStorage.getItem('bunkaAdminKey')||'';
+  keyInput.value=window.AdminSession?window.AdminSession.initialKey():sessionStorage.getItem('bunkaAdminKey')||'';
+  const currentKey=()=>window.AdminSession?window.AdminSession.credential():keyInput.value;
   const title=document.querySelector('h1');title.textContent='番号・メモ';title.className='admin-main-title';
   const toolbar=node('div',undefined,byId('summary').parentElement,'toolbar');
   byId('summary').after(toolbar);
@@ -39,7 +40,7 @@ export const registrationNumbersClient = String.raw`
   const turn=delta=>{clearTimeout(searchTimer);page+=delta;filterCards();pager.scrollIntoView({block:'start'})};pagePrev.onclick=()=>turn(-1);pageNext.onclick=()=>turn(1);
   const dirty = () => [...notes.values()].some(note => note.text !== note.savedText);
   const saving = () => activeSaves > 0;
-  const authorized = () => loadedKey && keyInput.value === loadedKey;
+  const authorized = () => loadedKey && currentKey() === loadedKey;
   const formatDate = value => {if(!value)return '';const date=new Date(value);return Number.isNaN(date.getTime())?'日時不明':dateFormatter.format(date)};
   const isTest = r => Boolean(r && (r.isTest === true || /^AP-TEST/i.test(String(r.ap || '')) || /(^|[-_])test($|[-_])/i.test(String(r.source || ''))));
 
@@ -63,6 +64,7 @@ export const registrationNumbersClient = String.raw`
     });
     const data = await response.json();
     if (!response.ok || !data.success) {
+      if(response.status===401)window.AdminSession?.expire();
       const error = new Error(data.message || '読み込み・保存に失敗しました。');
       error.current = response.status === 409 ? data.current : null;
       throw error;
@@ -177,7 +179,8 @@ export const registrationNumbersClient = String.raw`
   loadButton.addEventListener('click', async () => {
     if (loading || saving()) return;
     if(dirty()){const choice=await window.AdminUI.choose('未保存のメモがあります','入力中の変更を破棄して、一覧を読み込み直します。',[['破棄して再読込','reload','danger'],['編集を続ける','stay','secondary']]);if(choice!=='reload')return;}
-    const key = keyInput.value;
+    if(window.AdminSession&&!await window.AdminSession.login())return;
+    const key = currentKey();
     if (!key.trim()) { status.textContent = '管理キーを入力してください。'; status.className = 'note err'; return; }
     loading = true; loadButton.disabled = true; refreshAll();
     const controller=new AbortController();loadController=controller;stopButton.hidden=false;
@@ -193,8 +196,8 @@ export const registrationNumbersClient = String.raw`
       const readers=await Promise.allSettled(Array.from({length:Math.min(3,Math.ceil(numbers.length/100))},()=>reader().catch(error=>{controller.abort();throw error})));
       const failed=readers.find(r=>r.status==='rejected');if(failed)throw failed.reason;
       if(controller.signal.aborted)throw Error('読み込みを中止しました。必要ならもう一度表示してください。');
-      if (keyInput.value !== key) throw new Error('管理キーが変更されました。もう一度一覧を読み込んでください。');
-      notes = saved; loadedKey = key;sessionStorage.setItem('bunkaAdminKey',key);
+      if (currentKey() !== key) throw new Error('管理キーが変更されました。もう一度一覧を読み込んでください。');
+      notes = saved; loadedKey = key;
       byId('summary').replaceChildren();
       for (const [label, count, scope, test] of [['自己所有品プール', data.counts.owner,'owner'], ['一般番号プール', data.counts.publicPool,'pool'], ['発行済み番号', data.counts.publicIssued,'issued'], ['テスト消費', data.counts.testConsumed || 0,'test',true]]) {
         const card = node('a', undefined, byId('summary'), 'card' + (test ? ' test-card' : ''));card.href='/admin/registration-numbers?scope='+scope;
@@ -238,7 +241,7 @@ export const registrationNumbersClient = String.raw`
       else for(const note of notes.values()){note.text=note.savedText;note.conflict=null;note.error='';refresh(note)}
       loadController?.abort();rememberView();return true;
     };
-    if(keyInput.value)loadButton.click();
+    if(currentKey())loadButton.click();
   });
 })();
 `;
