@@ -33,6 +33,7 @@ export const inspectionClient=String.raw`
  const size=n=>n>=1024*1024?(n/1024/1024).toFixed(1)+' MB':Math.ceil(n/1024)+' KB';
  const query=(ap,item,extra={})=>new URLSearchParams({ap,item,...extra});
  let preparing=false,settingsVersion=0;
+ const authMessage='管理キーを確認できませんでした。画面上部の管理キーを入力し直して「管理情報を表示」を押してください。';
  async function request(action,params,body,signal,binary=false){
    const keyValue=key();if(!keyValue)throw Error('管理キーを入力してください。');
    const controller=new AbortController(),abort=()=>controller.abort();if(signal?.aborted)controller.abort();else signal?.addEventListener('abort',abort,{once:true});
@@ -40,7 +41,7 @@ export const inspectionClient=String.raw`
    try{
      const response=await fetch(endpoint+action+(params?'?'+params:''),{method:body===undefined?'GET':'POST',headers:{'X-Admin-Key':keyValue,...(body===undefined?{}:{'Content-Type':body instanceof Blob?'image/jpeg':'application/json'})},body:body===undefined?undefined:body instanceof Blob?body:JSON.stringify(body),signal:controller.signal,cache:'no-store'});
      if(key()!==keyValue)throw Error('管理キーが変更されました。もう一度読み込んでください。');
-     if(!response.ok){let message='点検画像を読み込めませんでした。';try{message=(await response.json()).message||message}catch{}throw Error(message)}
+     if(!response.ok){if(response.status===401){window.dispatchEvent(new Event('admin-auth-required'));const e=Error(authMessage);e.status=401;throw e}let message='点検画像を読み込めませんでした。';try{message=(await response.json()).message||message}catch{}throw Error(message)}
      return binary?await response.blob():await response.json();
    }catch(e){if(controller.signal.aborted)throw Error(signal?.aborted?'点検画像の保存を中止しました。審査は確定していません。':'点検画像の通信が時間切れになりました。再試行してください。');throw e}
    finally{clearTimeout(timer);signal?.removeEventListener('abort',abort)}
@@ -99,28 +100,38 @@ export const inspectionClient=String.raw`
  const settings=node('section',undefined,document.getElementById('view-system'),'inspection-settings');node('h2','点検用画像の保存',settings);
  node('p','管理者だけが閲覧できます。審査確定後180日間、長辺1200px以内・1枚150KB以内で保存します。容量上限に達すると古い確定済み画像から整理します。導入前の確定分は縮小保存日から180日です。',settings,'inspection-muted');
  const controls=node('div',undefined,settings,'inspection-actions'),refresh=node('button','使用容量・削除予定を更新',controls),migrate=node('button','既存の確定済み画像を縮小保存',controls);refresh.type=migrate.type='button';
- const output=node('div',undefined,settings);node('p','管理キーを入力して、使用容量を確認してください。',output);
- let cursor='';
+ const output=node('div',undefined,settings);output.setAttribute('aria-live','polite');
+ const keyInput=document.getElementById('adminKey'),focusKey=()=>{keyInput.scrollIntoView({block:'center'});keyInput.focus()};
+ let cursor='',shown=false,migrationMessage=null;
+ function authNotice(message){output.replaceChildren();node('p',message,output,'inspection-warning');const loginLink=node('button','管理キー入力欄へ',output);loginLink.type='button';loginLink.onclick=focusKey;}
+ authNotice('管理キーを入力して「管理情報を表示」を押すと、使用容量を確認できます。');
+ window.addEventListener('admin-auth-required',()=>{settingsVersion++;shown=false;keyInput.setAttribute('aria-invalid','true');authNotice(key()?authMessage:'管理キーを入力して「管理情報を表示」を押してください。')});
+ keyInput.addEventListener('input',()=>{settingsVersion++;shown=false;cursor='';keyInput.removeAttribute('aria-invalid');migrationMessage?.remove();authNotice('管理キーを入力したら「管理情報を表示」を押してください。')});
  async function loadSettings(next=''){
    const version=++settingsVersion;output.replaceChildren();node('p','使用容量を確認しています…',output);
    try{const data=await request('status',next?new URLSearchParams({cursor:next}):null);if(version!==settingsVersion)return;cursor=next;output.replaceChildren();const s=data.stats;node('p','点検画像：'+s.count+'枚 ／ '+size(s.bytes)+' / 上限 '+size(s.budgetBytes),output,'inspection-summary');const bar=node('progress',undefined,output);bar.max=s.budgetBytes;bar.value=s.bytes;bar.setAttribute('aria-label','点検画像の使用容量');if(s.warning)node('p','保存容量が上限に近づいています。新しい点検画像を保存すると、期限が近い確定済み画像から整理されます。',output,'inspection-warning');node('p','現在の追加保存余地：約'+size(s.availableBytes)+'。申請の追加画像などに必要な空きを確保して保存します。',output,'inspection-muted');if(s.removedCount)node('p','これまでに自動整理した点検画像：'+s.removedCount+'枚 ／ 最終整理：'+date(s.lastRemovedAt),output);
      const limitRow=node('div',undefined,output,'inspection-actions'),label=node('label','点検画像の容量上限',limitRow),select=node('select',undefined,label);for(const mb of [50,100,150,200]){const option=node('option',mb+' MB',select);option.value=mb}select.value=s.budgetBytes/1024/1024;const save=node('button','容量上限を保存',limitRow);save.type='button';save.onclick=async()=>{save.disabled=true;try{await request('budget',null,{megabytes:Number(select.value),revision:s.revision});await loadSettings(cursor)}catch(e){node('p',e.message,output,'inspection-warning')}finally{save.disabled=false}};
      node('h3','保存期限・削除予定',output);if(!data.records.length)node('p','点検画像の保存記録はまだありません。審査確定時に自動保存します。',output);
      for(const r of data.records){const row=node('div',undefined,output,'inspection-record'),a=node('a',r.ap+' ／ 資料 '+r.item+' ／ '+(r.name||'名称未入力'),row);a.href='/admin?'+new URLSearchParams({view:'applications',ap:r.ap,item:r.item});node('p',r.images.length?r.images.length+'枚 ／ '+(r.finalizedAt?'削除予定：':'準備用コピーの期限：')+date(r.expiresAt):'削除済み：'+date(r.deletedAt)+'（'+(r.deleteReason==='capacity'?'容量上限':'保存期限')+'）',row);}
-     const pager=node('div',undefined,output,'inspection-actions');if(cursor){const first=node('button','最初の30件',pager);first.onclick=()=>void loadSettings('')}if(data.nextCursor){const more=node('button','次の30件',pager);more.onclick=()=>void loadSettings(data.nextCursor)}
-   }catch(e){if(version===settingsVersion){output.replaceChildren();node('p',e.message,output,'inspection-warning')}}
+     const pager=node('div',undefined,output,'inspection-actions');if(cursor){const first=node('button','最初の30件',pager);first.onclick=()=>void loadSettings('')}if(data.nextCursor){const more=node('button','次の30件',pager);more.onclick=()=>void loadSettings(data.nextCursor)}keyInput.removeAttribute('aria-invalid');shown=true;return true;
+   }catch(e){if(version===settingsVersion){output.replaceChildren();if(!key())authNotice('管理キーを入力して「管理情報を表示」を押してください。');else node('p',e.message,output,'inspection-warning')}return false}
  }
  refresh.onclick=()=>void loadSettings(cursor);
  migrate.onclick=async()=>{
-   if(preparing)return;const choice=await window.AdminUI.choose('既存画像を点検用に保存','確定済み資料に残っている画像を縮小保存します。保存が済んだ資料の元画像は整理します。すでに削除済みの画像は復元できません。',[['縮小保存を開始','save'],['戻る','stay','secondary']]);if(choice!=='save')return;
-   migrate.disabled=true;window.AdminUI.setBusy('inspection-migration',true);const message=node('p','対象の資料を確認しています…',settings,'inspection-progress');let saved=0,failed=0;
+   if(preparing||migrate.disabled)return;migrate.disabled=true;migrationMessage?.remove();
+   if(!await loadSettings('')){migrate.disabled=false;if(!key()||keyInput.getAttribute('aria-invalid')==='true')focusKey();return}
+   const migrationKey=key(),choice=await window.AdminUI.choose('既存画像を点検用に保存','確定済み資料に残っている画像を縮小保存します。保存が済んだ資料の元画像は整理します。すでに削除済みの画像は復元できません。',[['縮小保存を開始','save'],['戻る','stay','secondary']]);if(choice!=='save'){migrate.disabled=false;return}
+   window.AdminUI.setBusy('inspection-migration',true);const message=migrationMessage=node('p','対象の資料を確認しています…',settings,'inspection-progress');message.setAttribute('role','status');let saved=0;
    try{
+     if(key()!==migrationKey)throw Error('管理キーが変更されました。もう一度「管理情報を表示」を押してください。');
      const data=await api('/admin/dashboard-data',{headers:H(false)});const materials=data.applications.flatMap(a=>(a.items||[]).filter(i=>i.registrationNumber||['type1','type2','type3','special','rejected'].includes(i.reviewResult)||i.registrationStatus==='cancelled').map(i=>({ap:a.ap,item:i.item})));
-     for(const [index,m]of materials.entries()){message.textContent='既存画像を確認中：'+(index+1)+' / '+materials.length+'資料（保存 '+saved+'枚）';try{const r=await prepare(m.ap,m.item,settings,{migration:true});saved+=r.saved}catch(e){failed++;message.textContent=e.message;break}}
-     message.textContent='既存画像の確認が終わりました。縮小保存：'+saved+'枚'+(failed?'。保存できなかった資料があります。元画像は残しています。再試行してください。':'。');await loadSettings('');
-   }catch(e){message.textContent=e.message}finally{migrate.disabled=false;window.AdminUI.setBusy('inspection-migration',false)}
+     for(const [index,m]of materials.entries()){if(key()!==migrationKey)throw Error('管理キーが変更されました。もう一度「管理情報を表示」を押してください。');message.textContent='既存画像を確認中：'+(index+1)+' / '+materials.length+'資料（保存 '+saved+'枚）';const r=await prepare(m.ap,m.item,settings,{migration:true});saved+=r.saved}
+     message.textContent='既存画像の確認が終わりました。縮小保存：'+saved+'枚。';await loadSettings('');
+   }catch(e){if(e.status===401)window.dispatchEvent(new Event('admin-auth-required'));message.className='inspection-warning';message.setAttribute('role','alert');message.textContent='縮小保存を中断しました（保存済み：'+saved+'枚）。'+e.message}finally{migrate.disabled=false;window.AdminUI.setBusy('inspection-migration',false)}
  };
- let shown=false;const visibility=new MutationObserver(()=>{if(!document.getElementById('view-system').classList.contains('hidden')&&key()&&!shown){shown=true;void loadSettings('')}});visibility.observe(document.getElementById('view-system'),{attributes:true,attributeFilter:['class']});
- window.addEventListener('DOMContentLoaded',()=>{if(!document.getElementById('view-system').classList.contains('hidden')&&key()){shown=true;void loadSettings('')}});
+ const showSettings=()=>{if(!document.getElementById('view-system').classList.contains('hidden')&&key()&&!shown){shown=true;void loadSettings('')}};
+ const visibility=new MutationObserver(showSettings);visibility.observe(document.getElementById('view-system'),{attributes:true,attributeFilter:['class']});
+ window.addEventListener('DOMContentLoaded',showSettings);
+ window.addEventListener('admin-authenticated',()=>{shown=false;migrationMessage?.remove();showSettings()});
 })();
 `;
