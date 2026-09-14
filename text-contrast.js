@@ -9,5 +9,5 @@ function textColours(css) {
   });
 }
 export function improveTextContrast(html) {
-  return html.replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi,(_,attrs,css)=>'<style'+attrs+'>'+textColours(css)+'\ninput::placeholder,textarea::placeholder{color:#111;opacity:1}\n</style>');
+  return html.replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi,(_,attrs,css)=>'<style'+attrs+'>'+textColours(css).replace(/font-size\s*:\s*(\d+(?:\.\d+)?)px/gi,(rule,size)=>Number(size)<16?'font-size:16px':rule)+'\ninput::placeholder,textarea::placeholder{color:#111;opacity:1}\n</style>');
 }
