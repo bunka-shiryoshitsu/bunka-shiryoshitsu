@@ -10,6 +10,7 @@ export const adminDestinations = [
 ];
 
 const styles = String.raw`
+.number-pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:16px 0}.number-pagination[hidden]{display:none}
 :root{--ink:#20251f;--muted:#526051;--paper:#f3f4ee;--line:#cdd3c7;--accent:#325b3b;--danger:#8c3131;--focus:#a96500;--shell-height:170px}
 *{box-sizing:border-box}html{scroll-padding-top:calc(var(--shell-height) + 18px)}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,'Yu Gothic',sans-serif;font-size:16px;line-height:1.65}
 body input,body select,body textarea,body button,body th,body td,body .note,body .muted,body .memo-status,body .pill{font-size:16px!important}input,select,textarea,button{font-family:inherit}button,input:not([type=checkbox]):not([type=radio]),select{min-height:44px}button,.button-link{padding:9px 15px;border-radius:7px;cursor:pointer}input:not([type=checkbox]):not([type=radio]),select,textarea{padding:10px 12px;border:1px solid #899583;background:white;color:var(--ink)}input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:8px;vertical-align:middle}

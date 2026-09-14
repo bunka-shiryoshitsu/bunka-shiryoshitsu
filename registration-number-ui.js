@@ -1,9 +1,15 @@
+import {numberRecords,numberPage} from './registration-number-view.js';
+
 export const registrationNumbersClient = String.raw`
 (() => {
+  const makeRecords = ${numberRecords.toString()};
+  const selectPage = ${numberPage.toString()};
   const byId = id => document.getElementById(id);
   const keyInput = byId('adminKey'), loadButton = byId('load'), status = byId('status');
   const sections = ['owner', 'publicPool', 'publicIssued'];
   let notes = new Map(), loadedKey = '', loading = false, records = [], cards = [];
+  let page = 0, loadController = null, activeSaves = 0, searchTimer;
+  const dateFormatter = new Intl.DateTimeFormat('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'});
   const viewKey='bunkaNumberView';
   let previous={};try{previous=JSON.parse(sessionStorage.getItem(viewKey))||{}}catch{}
   keyInput.value=sessionStorage.getItem('bunkaAdminKey')||'';
@@ -19,11 +25,17 @@ export const registrationNumbersClient = String.raw`
   const countLabel=node('p','管理情報を読み込むと一覧が表示されます。',toolbar,'result-count');countLabel.setAttribute('role','status');
   const ledger=node('div',undefined,toolbar.parentElement);toolbar.after(ledger);
   for(const section of sections)byId(section).closest('section').hidden=true;
-  search.addEventListener('input',filterCards);filter.addEventListener('change',filterCards);
+  const pager=node('nav',undefined,ledger.parentElement,'number-pagination');pager.hidden=true;pager.setAttribute('aria-label','番号一覧のページ移動');ledger.before(pager);
+  const pagePrev=node('button','前の50件',pager),pageStatus=node('span','',pager),pageNext=node('button','次の50件',pager);
+  const stopButton=node('button','読み込みを中止',status.parentElement);stopButton.type='button';stopButton.hidden=true;stopButton.onclick=()=>loadController?.abort();
+  page=new URLSearchParams(location.search).has('number')?0:previous.page||0;
+  const searchNow=()=>{clearTimeout(searchTimer);page=0;filterCards()};
+  search.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchNow,120)});filter.addEventListener('change',searchNow);
+  const turn=delta=>{clearTimeout(searchTimer);page+=delta;filterCards();pager.scrollIntoView({block:'start'})};pagePrev.onclick=()=>turn(-1);pageNext.onclick=()=>turn(1);
   const dirty = () => [...notes.values()].some(note => note.text !== note.savedText);
-  const saving = () => [...notes.values()].some(note => note.saving);
+  const saving = () => activeSaves > 0;
   const authorized = () => loadedKey && keyInput.value === loadedKey;
-  const formatDate = value => value ? new Date(value).toLocaleString('ja-JP', {timeZone: 'Asia/Tokyo'}) : '';
+  const formatDate = value => {if(!value)return '';const date=new Date(value);return Number.isNaN(date.getTime())?'日時不明':dateFormatter.format(date)};
   const isTest = r => Boolean(r && (r.isTest === true || /^AP-TEST/i.test(String(r.ap || '')) || /(^|[-_])test($|[-_])/i.test(String(r.source || ''))));
 
   function node(tag, text, parent, className) {
@@ -34,9 +46,13 @@ export const registrationNumbersClient = String.raw`
     return el;
   }
 
-  async function api(path, key, body) {
+  async function api(path, key, body, parentSignal) {
+    const controller=new AbortController(),abort=()=>controller.abort();
+    if(parentSignal?.aborted)controller.abort();else parentSignal?.addEventListener('abort',abort,{once:true});
+    const timeout=setTimeout(abort,15000);
+    try {
     const response = await fetch(path, {
-      method: body === undefined ? 'GET' : 'POST', cache: 'no-store',
+      method: body === undefined ? 'GET' : 'POST', cache: 'no-store', signal:controller.signal,
       headers: {'X-Admin-Key': key, ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
       ...(body === undefined ? {} : {body: JSON.stringify(body)})
     });
@@ -47,6 +63,10 @@ export const registrationNumbersClient = String.raw`
       throw error;
     }
     return data;
+    } catch(error) {
+      if(controller.signal.aborted)throw new Error(parentSignal?.aborted?'読み込みを中止しました。必要ならもう一度表示してください。':'通信が時間内に完了しませんでした。入力は残っています。もう一度お試しください。');
+      throw error;
+    } finally {clearTimeout(timeout);parentSignal?.removeEventListener('abort',abort)}
   }
 
   function refresh(note) {
@@ -63,16 +83,15 @@ export const registrationNumbersClient = String.raw`
       view.restore.disabled = loading || !authorized() || note.saving;
     }
     loadButton.disabled = loading || saving();
-    filterCards();
   }
 
-  function refreshAll() { for (const note of notes.values()) refresh(note); }
+  function refreshAll() { for (const {record} of cards) {const note=notes.get(record.number);if(note)refresh(note)}loadButton.disabled=loading||saving(); }
 
   async function save(number) {
     const note = notes.get(number);
     if (!note || note.saving || loading || !authorized() || note.conflict || note.text === note.savedText) return;
     const text = note.text, revision = note.revision;
-    note.saving = true; note.error = ''; refresh(note);
+    note.saving = true; activeSaves++; note.error = ''; refresh(note);
     try {
       const data = await api('/admin/registration-numbers/notes', loadedKey, {number, text, revision});
       note.savedText = data.note.text;
@@ -82,7 +101,7 @@ export const registrationNumbersClient = String.raw`
     } catch (error) {
       note.error = error.message;
       note.conflict = error.current || null;
-    } finally { note.saving = false; refresh(note); }
+    } finally { note.saving = false; activeSaves--; refresh(note); }
   }
 
   function editor(cell, number) {
@@ -106,8 +125,10 @@ export const registrationNumbersClient = String.raw`
     note.views.push({input, save: button, message, conflict, latest, restore});
     input.addEventListener('input', () => { note.text = input.value; if (!note.conflict) note.error = ''; refresh(note); });
     button.addEventListener('click', () => { void save(number); });
-    restore.addEventListener('click', () => {
-      if (!note.conflict || !confirm('入力中の内容を、表示されている最新のメモに置き換えますか？必要な内容は先に控えてください。')) return;
+    restore.addEventListener('click', async () => {
+      if (!note.conflict) return;
+      const choice=await window.AdminUI.choose('最新のメモに置き換えます',number+' の入力中の内容を最新のメモに置き換えます。',[['最新のメモを取り込む','replace'],['編集を続ける','stay','secondary']]);
+      if(choice!=='replace')return;
       const current = note.conflict;
       note.text = note.savedText = current.text;
       note.revision = current.revision; note.updatedAt = current.updatedAt;
@@ -117,14 +138,19 @@ export const registrationNumbersClient = String.raw`
   }
 
   const statusNames={issued:'発行済み',reserved:'番号予約済み',available:'未使用',collision:'重複のため使用不可',cancelled:'取消済み'};
-  function rememberView(){try{sessionStorage.setItem(viewKey,JSON.stringify({search:search.value,filter:filter.value,scrollY}))}catch{}}
-  function filterCards(){if(!cards)return;const q=search.value.trim().toLocaleLowerCase('ja-JP');let visible=0;for(const {el,record}of cards){const issued=record.rows.some(r=>r.scope==='publicIssued'||r.status==='issued'),test=record.rows.some(isTest),owner=record.rows.some(r=>r.scope==='owner');const matchType=filter.value==='all'||filter.value==='owner'&&owner||filter.value==='public'&&!owner||filter.value==='issued'&&issued||filter.value==='unused'&&!issued||filter.value==='test'&&test;const haystack=[record.number,notes.get(record.number)?.text,...record.rows.map(r=>r.ap||'')].join(' ').toLocaleLowerCase('ja-JP');const editing=el.contains(document.activeElement)&&notes.get(record.number)?.text!==notes.get(record.number)?.savedText;el.hidden=!(editing||matchType&&(!q||haystack.includes(q)));if(!el.hidden)visible++}if(loadedKey)countLabel.textContent=visible+'件を表示 ／ 異なる番号 '+cards.length+'件';rememberView()}
-  function renderLedger(data){
-    ledger.replaceChildren();cards=[];const unique=new Map();
-    for(const scope of sections)for(const r of data[scope]){if(!notes.has(r.number))continue;if(!unique.has(r.number))unique.set(r.number,{number:r.number,rows:[]});unique.get(r.number).rows.push({...r,scope});}
-    records=[...unique.values()];
-    for(const record of records){
-      const card=node('article',undefined,ledger,'ledger-card');card.id='number-'+record.number;
+  function rememberView(){try{sessionStorage.setItem(viewKey,JSON.stringify({search:search.value,filter:filter.value,page,scrollY}))}catch{}}
+  function filterCards(){
+    if(!loadedKey)return;
+    pager.hidden=false;
+    const result=selectPage(records,notes,search.value,filter.value,page);page=result.page;
+    for(const {record}of cards){const note=notes.get(record.number);if(note)note.views=[];}
+    ledger.replaceChildren();cards=[];
+    countLabel.textContent=result.start+'〜'+result.end+'件を表示 ／ 検索結果 '+result.total+'件（全 '+records.length+'番号）';
+    pageStatus.textContent=(page+1)+' / '+result.pageCount+'ページ';pagePrev.disabled=page===0;pageNext.disabled=page+1>=result.pageCount;
+    const fragment=document.createDocumentFragment();
+    for(const record of result.rows){
+
+      const card=node('article',undefined,fragment,'ledger-card');card.id='number-'+record.number;
       const head=node('div',undefined,card,'ledger-card-header'),h=node('h2',undefined,head);node('code',record.number,h,'record-number');
       const owner=record.rows.some(r=>r.scope==='owner'),issued=record.rows.some(r=>r.scope==='publicIssued'||r.status==='issued');
       node('span',owner?'自己所有品':issued?'一般申請・発行済み':'一般申請・未発行',head,'queue-status');
@@ -136,24 +162,31 @@ export const registrationNumbersClient = String.raw`
       for(const r of record.rows){node('h3',{owner:'自己所有品の番号',publicPool:'番号の生成履歴',publicIssued:'番号の発行履歴'}[r.scope],details);const dl=node('dl',undefined,details);for(const [label,text]of [['状態',owner?'自己所有品':statusNames[r.status]||r.status||'未設定'],['生成日時',formatDate(r.generatedAt)],['発行日時',formatDate(r.issuedAt)],['AP番号',r.ap],['資料番号',r.item],['保存情報',r.location]])if(text){node('dt',label,dl);node('dd',text,dl);}}
       cards.push({el:card,record});
     }
-    filterCards();if(!records.length)node('p','登録番号はありません。',ledger,'empty-state');
+    ledger.append(fragment);
+    if(!result.total)node('p','該当する登録番号はありません。',ledger,'empty-state');
+    rememberView();
   }
+  function renderLedger(data){records=makeRecords(data);filterCards();}
 
   loadButton.addEventListener('click', async () => {
     if (loading || saving()) return;
-    if (dirty() && !confirm('未保存のメモがあります。入力中の変更を破棄して一覧を読み込み直しますか？')) return;
+    if(dirty()){const choice=await window.AdminUI.choose('未保存のメモがあります','入力中の変更を破棄して、一覧を読み込み直します。',[['破棄して再読込','reload','danger'],['編集を続ける','stay','secondary']]);if(choice!=='reload')return;}
     const key = keyInput.value;
     if (!key.trim()) { status.textContent = '管理キーを入力してください。'; status.className = 'note err'; return; }
     loading = true; loadButton.disabled = true; refreshAll();
+    const controller=new AbortController();loadController=controller;stopButton.hidden=false;
+    const overallTimeout=setTimeout(()=>controller.abort(),60000);
     status.textContent = '番号とメモを読み込み中…'; status.className = 'note';
     try {
-      const data = await api('/admin/registration-numbers/data', key);
+      const data = await api('/admin/registration-numbers/data', key,undefined,controller.signal);
       const numbers = [...new Set(sections.flatMap(section => data[section].map(r => r.number)))].filter(n => typeof n === 'string' && /^[A-Z0-9]{8}$/.test(n));
       const saved = new Map();
-      for (let i = 0; i < numbers.length; i += 100) {
-        const result = await api('/admin/registration-numbers/notes/read', key, {numbers: numbers.slice(i, i + 100)});
-        for (const [number, note] of Object.entries(result.notes)) saved.set(number, {...note, savedText: note.text, saving: false, error: '', conflict: null, views: []});
-      }
+      let next=0,completed=0;
+      status.textContent='番号 '+numbers.length+'件のメモを読み込み中… 0 / '+numbers.length+'件';
+      const reader=async()=>{while(next<numbers.length){if(controller.signal.aborted)throw Error('読み込みを中止しました。必要ならもう一度表示してください。');const batch=numbers.slice(next,next+100);next+=100;const result=await api('/admin/registration-numbers/notes/read',key,{numbers:batch},controller.signal);for(const number of batch){const note=result.notes[number];if(!note)throw Error('一部のメモを確認できませんでした。もう一度読み込んでください。');saved.set(number,{...note,savedText:note.text,saving:false,error:'',conflict:null,views:[]});}completed+=batch.length;status.textContent='メモを読み込み中… '+completed+' / '+numbers.length+'件';}};
+      const readers=await Promise.allSettled(Array.from({length:Math.min(3,Math.ceil(numbers.length/100))},()=>reader().catch(error=>{controller.abort();throw error})));
+      const failed=readers.find(r=>r.status==='rejected');if(failed)throw failed.reason;
+      if(controller.signal.aborted)throw Error('読み込みを中止しました。必要ならもう一度表示してください。');
       if (keyInput.value !== key) throw new Error('管理キーが変更されました。もう一度一覧を読み込んでください。');
       notes = saved; loadedKey = key;sessionStorage.setItem('bunkaAdminKey',key);
       byId('summary').replaceChildren();
@@ -166,10 +199,11 @@ export const registrationNumbersClient = String.raw`
       const target=new URLSearchParams(location.search).get('number');if(target&&/^[A-Z0-9]{8}$/.test(target)){const el=byId('number-'+target);if(el){el.classList.add('is-target');requestAnimationFrame(()=>el.scrollIntoView({block:'start'}))}else status.textContent='指定された番号は見つかりませんでした。検索条件を確認してください。'}else if(previous.scrollY){requestAnimationFrame(()=>scrollTo(0,previous.scrollY));previous.scrollY=0;}
     } catch (error) {
       status.textContent = '確認できませんでした: ' + error.message; status.className = 'note err';
-    } finally { loading = false; loadButton.disabled = false; refreshAll(); }
+    } finally {clearTimeout(overallTimeout);loadController=null;stopButton.hidden=true;loading = false; loadButton.disabled = false; refreshAll(); }
   });
 
   keyInput.addEventListener('input', () => {
+    loadController?.abort();
     refreshAll();
     if (loadedKey && !authorized()) { status.textContent = '管理キーが変更されました。一覧を読み込み直してください。'; status.className = 'note'; }
   });
@@ -177,15 +211,16 @@ export const registrationNumbersClient = String.raw`
     rememberView();
     if (dirty() || saving()) { event.preventDefault(); event.returnValue = ''; }
   });
+  window.addEventListener('pagehide',()=>loadController?.abort());
   window.addEventListener('DOMContentLoaded',()=>{
     if(window.AdminUI)window.AdminUI.beforeLeave=async()=>{
       if(saving()){window.AdminUI.say('メモの保存が終わるまでお待ちください。');return false}
-      if(!dirty()){rememberView();return true;}
+      if(!dirty()){loadController?.abort();rememberView();return true;}
       const choice=await window.AdminUI.choose('未保存のメモがあります','移動する前にメモを保存できます。',[['すべて保存して移動','save'],['変更を破棄して移動','discard','danger'],['編集を続ける','stay','secondary']]);
       if(choice==='stay')return false;
       if(choice==='save'){for(const [number,note]of notes)if(note.text!==note.savedText)await save(number);if(dirty()){window.AdminUI.say('保存できていないメモがあります。内容を確認してください。');return false}}
       else for(const note of notes.values()){note.text=note.savedText;note.conflict=null;note.error='';refresh(note)}
-      rememberView();return true;
+      loadController?.abort();rememberView();return true;
     };
     if(keyInput.value)loadButton.click();
   });
