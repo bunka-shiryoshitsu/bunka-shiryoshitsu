@@ -1,9 +1,10 @@
-import {numberRecords,numberPage} from './registration-number-view.js';
+import {numberRecords,numberPage,numberRoute} from './registration-number-view.js';
 
 export const registrationNumbersClient = String.raw`
 (() => {
   const makeRecords = ${numberRecords.toString()};
   const selectPage = ${numberPage.toString()};
+  const routeFor = ${numberRoute.toString()};
   const byId = id => document.getElementById(id);
   const keyInput = byId('adminKey'), loadButton = byId('load'), status = byId('status');
   const sections = ['owner', 'publicPool', 'publicIssued'];
@@ -12,23 +13,27 @@ export const registrationNumbersClient = String.raw`
   const dateFormatter = new Intl.DateTimeFormat('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'});
   const viewKey='bunkaNumberView';
   let previous={};try{previous=JSON.parse(sessionStorage.getItem(viewKey))||{}}catch{}
+  const initialRoute=routeFor(location.search,previous);
+  if(new URLSearchParams(location.search).has('scope')||new URLSearchParams(location.search).has('number'))previous.scrollY=0;
   keyInput.value=sessionStorage.getItem('bunkaAdminKey')||'';
   const title=document.querySelector('h1');title.textContent='番号・メモ';title.className='admin-main-title';
   const toolbar=node('div',undefined,byId('summary').parentElement,'toolbar');
   byId('summary').after(toolbar);
   const searchLabel=node('label','番号・AP番号・メモを検索',toolbar),search=node('input',undefined,searchLabel);
   search.type='search';search.placeholder='番号、AP番号、メモの内容';
-  search.value=new URLSearchParams(location.search).get('number')||previous.search||'';
+  search.value=initialRoute.search;
   const filterLabel=node('label','表示する番号',toolbar),filter=node('select',undefined,filterLabel);
-  for(const [value,text]of [['all','すべて'],['owner','自己所有品'],['public','一般申請'],['issued','発行済み'],['unused','未発行'],['test','テスト消費']]){const option=node('option',text,filter);option.value=value}
-  filter.value=new URLSearchParams(location.search).has('number')?'all':previous.filter||'all';
+  for(const [value,text]of [['all','すべて'],['owner','自己所有品'],['public','一般申請'],['pool','一般番号プール'],['issued','発行済み'],['unused','未発行'],['test','テスト消費']]){const option=node('option',text,filter);option.value=value}
+  filter.value=initialRoute.filter;
   const countLabel=node('p','管理情報を読み込むと一覧が表示されます。',toolbar,'result-count');countLabel.setAttribute('role','status');
   const ledger=node('div',undefined,toolbar.parentElement);toolbar.after(ledger);
   for(const section of sections)byId(section).closest('section').hidden=true;
   const pager=node('nav',undefined,ledger.parentElement,'number-pagination');pager.hidden=true;pager.setAttribute('aria-label','番号一覧のページ移動');ledger.before(pager);
   const pagePrev=node('button','前の50件',pager),pageStatus=node('span','',pager),pageNext=node('button','次の50件',pager);
   const stopButton=node('button','読み込みを中止',status.parentElement);stopButton.type='button';stopButton.hidden=true;stopButton.onclick=()=>loadController?.abort();
-  page=new URLSearchParams(location.search).has('number')?0:previous.page||0;
+  page=initialRoute.page;
+  const scopeNames={all:'全番号・メモ',owner:'自己所有品プール',pool:'一般番号プール',public:'一般申請の番号',issued:'発行済み番号',unused:'未発行の番号',test:'テスト消費番号'};
+  function showScope(){title.textContent=scopeNames[filter.value]||'番号・メモ';window.AdminUI?.setNumberScope?.(filter.value)}
   const searchNow=()=>{clearTimeout(searchTimer);page=0;filterCards()};
   search.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchNow,120)});filter.addEventListener('change',searchNow);
   const turn=delta=>{clearTimeout(searchTimer);page+=delta;filterCards();pager.scrollIntoView({block:'start'})};pagePrev.onclick=()=>turn(-1);pageNext.onclick=()=>turn(1);
@@ -138,8 +143,9 @@ export const registrationNumbersClient = String.raw`
   }
 
   const statusNames={issued:'発行済み',reserved:'番号予約済み',available:'未使用',collision:'重複のため使用不可',cancelled:'取消済み'};
-  function rememberView(){try{sessionStorage.setItem(viewKey,JSON.stringify({search:search.value,filter:filter.value,page,scrollY}))}catch{}}
+  function rememberView(){const view={search:search.value,filter:filter.value,page,scrollY};try{sessionStorage.setItem(viewKey,JSON.stringify(view));history.replaceState({...history.state,numberView:view},'',location.href)}catch{}}
   function filterCards(){
+    showScope();
     if(!loadedKey)return;
     pager.hidden=false;
     const result=selectPage(records,notes,search.value,filter.value,page);page=result.page;
@@ -190,8 +196,8 @@ export const registrationNumbersClient = String.raw`
       if (keyInput.value !== key) throw new Error('管理キーが変更されました。もう一度一覧を読み込んでください。');
       notes = saved; loadedKey = key;sessionStorage.setItem('bunkaAdminKey',key);
       byId('summary').replaceChildren();
-      for (const [label, count, test] of [['自己所有品専用', data.counts.owner], ['一般・生成台帳', data.counts.publicPool], ['一般・発行済み', data.counts.publicIssued], ['テスト消費', data.counts.testConsumed || 0, true]]) {
-        const card = node('div', undefined, byId('summary'), 'card' + (test ? ' test-card' : ''));
+      for (const [label, count, scope, test] of [['自己所有品プール', data.counts.owner,'owner'], ['一般番号プール', data.counts.publicPool,'pool'], ['発行済み番号', data.counts.publicIssued,'issued'], ['テスト消費', data.counts.testConsumed || 0,'test',true]]) {
+        const card = node('a', undefined, byId('summary'), 'card' + (test ? ' test-card' : ''));card.href='/admin/registration-numbers?scope='+scope;
         node('div', label, card); node('strong', count + '件', card);
       }
       renderLedger(data);
@@ -212,7 +218,17 @@ export const registrationNumbersClient = String.raw`
     if (dirty() || saving()) { event.preventDefault(); event.returnValue = ''; }
   });
   window.addEventListener('pagehide',()=>loadController?.abort());
+  function navigateNumbers(url,push=false,restore){
+    clearTimeout(searchTimer);if(push)rememberView();
+    const view=restore||routeFor(url.search,{filter:filter.value,search:search.value,page});
+    if(push)history.pushState({},'',url.pathname+url.search);
+    search.value=view.search||'';filter.value=view.filter||'all';page=view.page||0;
+    previous.scrollY=0;showScope();filterCards();rememberView();
+    requestAnimationFrame(()=>scrollTo(0,restore?.scrollY||0));
+  }
+  window.addEventListener('popstate',event=>navigateNumbers(new URL(location.href),false,event.state?.numberView));
   window.addEventListener('DOMContentLoaded',()=>{
+    window.AdminUI.navigateNumbers=navigateNumbers;showScope();
     if(window.AdminUI)window.AdminUI.beforeLeave=async()=>{
       if(saving()){window.AdminUI.say('メモの保存が終わるまでお待ちください。');return false}
       if(!dirty()){loadController?.abort();rememberView();return true;}

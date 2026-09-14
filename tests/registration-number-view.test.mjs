@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
-import {numberRecords,numberPage} from '../registration-number-view.js';
+import {numberRecords,numberPage,numberRoute} from '../registration-number-view.js';
 import {registrationNumbersClient} from '../registration-number-ui.js';
 import app from '../worker.js';
 
@@ -31,6 +31,8 @@ async function fixture(count=10000,{stall=false}={}){
  let requests=0,concurrent=0,maxConcurrent=0,abortCount=0,stalled=stall;
  const ui={beforeLeave:async()=>true,say:text=>{document.querySelector('#admin-feedback').textContent=text},choose:async()=> 'stay'};
  const window={AdminUI:ui,addEventListener:(name,fn)=>events.set(name,fn)};
+ const location={search:'',href:'https://local.test/admin/registration-numbers'};
+ const history={state:null,replaceState(state,unused,url){this.state=state;location.href=new URL(url,location.href).href;location.search=new URL(location.href).search},pushState(state,unused,url){this.replaceState(state,unused,url)}};
  const fetch=async(path,options)=>{
    requests++;
    if(stalled)return new Promise((resolve,reject)=>{const abort=()=>{abortCount++;reject(new Error('aborted'))};if(options.signal.aborted)abort();else options.signal.addEventListener('abort',abort,{once:true})});
@@ -39,11 +41,38 @@ async function fixture(count=10000,{stall=false}={}){
    if(path.endsWith('/read')){concurrent++;maxConcurrent=Math.max(maxConcurrent,concurrent);await new Promise(setImmediate);concurrent--;return Response.json({success:true,notes:Object.fromEntries(body.numbers.map(n=>[n,saved.get(n)||{text:n===number(count-1)?'最後の番号のメモ':'',revision:0,updatedAt:null}]))});}
    const note={text:body.text,revision:body.revision+1,updatedAt:new Date().toISOString()};saved.set(body.number,note);return Response.json({success:true,note});
  };
- vm.runInNewContext(registrationNumbersClient,{document,window,URLSearchParams,location:{search:''},sessionStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},fetch,AbortController,Intl,Date,scrollY:0,scrollTo(){},requestAnimationFrame:fn=>fn(),setTimeout:(fn,ms)=>{const id=setTimeout(fn,ms);timers.set(id,{fn,ms});return id},clearTimeout:id=>{clearTimeout(id);timers.delete(id)}});
+ vm.runInNewContext(registrationNumbersClient,{document,window,URL,URLSearchParams,location,history,sessionStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},fetch,AbortController,Intl,Date,scrollY:0,scrollTo(){},requestAnimationFrame:fn=>fn(),setTimeout:(fn,ms)=>{const id=setTimeout(fn,ms);timers.set(id,{fn,ms});return id},clearTimeout:id=>{clearTimeout(id);timers.delete(id)}});
  const click=el=>el.dispatchEvent(new Event('click'));
  events.get('DOMContentLoaded')();
- return {document,Event,ui,store,saved,click,stats:()=>({requests,maxConcurrent,abortCount}),unstall(){stalled=false},timeout(){[...timers.values()].find(t=>t.ms===15000).fn()},close(){for(const id of timers.keys())clearTimeout(id)}};
+ return {document,Event,ui,store,saved,click,history,location,events,stats:()=>({requests,maxConcurrent,abortCount}),unstall(){stalled=false},timeout(){[...timers.values()].find(t=>t.ms===15000).fn()},close(){for(const id of timers.keys())clearTimeout(id)}};
 }
+
+test('direct pool links clear stale searches and distinguish generated from issued numbers',()=>{
+ const stale={filter:'issued',search:'an unrelated memo',page:7};
+ assert.deepEqual(numberRoute('?scope=owner',stale),{filter:'owner',search:'',page:0});
+ assert.deepEqual(numberRoute('?scope=pool',stale),{filter:'pool',search:'',page:0});
+ assert.deepEqual(numberRoute('?scope=owner&number=PUBLIC01',stale),{filter:'all',search:'PUBLIC01',page:0});
+ const data=dataFor(10);data.publicPool.push({number:'UNUSED01',status:'reserved'});
+ const records=numberRecords(data);
+ assert.equal(numberPage(records,new Map(),'','pool').total,2);
+ assert.equal(numberPage(records,new Map(),'','issued').total,1);
+});
+
+test('switching pool lists retains unsaved memos and reuses the loaded data',async()=>{
+ const f=await fixture(100);try{
+  await waitFor(()=>f.document.querySelector('#status').textContent.startsWith('読み込みました'));
+  const requests=f.stats().requests,input=f.document.querySelector('.memo-input');
+  input.value='プール間を移動しても保持';input.dispatchEvent(new f.Event('input'));
+  f.ui.navigateNumbers(new URL('https://local.test/admin/registration-numbers?scope=pool'),true);
+  assert.equal(f.document.querySelector('.record-number').textContent,'PUBLIC01');
+  assert.equal(f.document.querySelector('h1').textContent,'一般番号プール');
+  f.ui.navigateNumbers(new URL('https://local.test/admin/registration-numbers?scope=owner'),true);
+  assert.equal(f.document.querySelector('.memo-input').value,'プール間を移動しても保持');
+  assert.equal(f.document.querySelectorAll('.ledger-card').length,50);
+  assert.equal(f.stats().requests,requests);
+  assert.equal(new URL(f.location.href).searchParams.get('scope'),'owner');
+ }finally{f.close()}
+});
 
 test('10000-number client creates only 50 editors and keeps a draft across pages',async()=>{
  const f=await fixture();try{

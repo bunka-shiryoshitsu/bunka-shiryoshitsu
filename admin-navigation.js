@@ -9,7 +9,10 @@ export const adminDestinations = [
   ['system', '設定', '/admin?view=system']
 ];
 
+export const adminNumberDestinations = [['all','全番号・メモ'],['owner','自己所有品プール'],['pool','一般番号プール'],['issued','発行済み番号']];
+
 const styles = String.raw`
+.admin-number-index{max-width:1440px;margin:0 auto;padding:12px 20px;background:#edf1e7;border-bottom:1px solid var(--line)}.admin-number-index strong{display:block;margin-bottom:7px}.admin-number-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.admin-number-links a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px;border:1px solid #aab6a2;border-radius:7px;background:#fff;color:#253820;text-decoration:none;font-size:16px;font-weight:600}.admin-number-links a[aria-current=page]{background:#325b3b;color:#fff;border-color:#325b3b}.summary a.card{color:inherit;text-decoration:none}.summary a.card:hover{border-color:#325b3b}@media(max-width:650px){.admin-number-index{padding:10px 12px}.admin-number-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}}
 .number-pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:16px 0}.number-pagination[hidden]{display:none}
 :root{--ink:#20251f;--muted:#526051;--paper:#f3f4ee;--line:#cdd3c7;--accent:#325b3b;--danger:#8c3131;--focus:#a96500;--shell-height:170px}
 *{box-sizing:border-box}html{scroll-padding-top:calc(var(--shell-height) + 18px)}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,'Yu Gothic',sans-serif;font-size:16px;line-height:1.65}
@@ -33,9 +36,10 @@ const commonClient = String.raw`
  const oldBrand=document.querySelector('body>.top');if(oldBrand)oldBrand.remove();
  const resize=()=>document.documentElement.style.setProperty('--shell-height',document.querySelector('.admin-shell').getBoundingClientRect().height+'px');new ResizeObserver(resize).observe(document.querySelector('.admin-shell'));resize();
  document.querySelector('main.wrap,body>.wrap')?.setAttribute('id','admin-content');
- document.addEventListener('click',async e=>{const a=e.target.closest('a[href]');if(!a||a.classList.contains('skip-link')||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.target==='_blank')return;const u=new URL(a.href,location.href);if(u.origin!==location.origin||!u.pathname.startsWith('/admin'))return;e.preventDefault();if(!await ui.beforeLeave())return;if(u.pathname==='/admin'&&ui.navigate){await ui.navigate(u,true)}else{location.assign(u.href)}});
+ document.addEventListener('click',async e=>{const a=e.target.closest('a[href]');if(!a||a.classList.contains('skip-link')||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.target==='_blank')return;const u=new URL(a.href,location.href);if(u.origin!==location.origin||!u.pathname.startsWith('/admin'))return;e.preventDefault();if(u.pathname==='/admin/registration-numbers'&&ui.navigateNumbers){ui.navigateNumbers(u,true);return}if(!await ui.beforeLeave())return;if(u.pathname==='/admin'&&ui.navigate){await ui.navigate(u,true)}else{location.assign(u.href)}});
  ui.decorateTables=()=>{for(const table of document.querySelectorAll('.tablewrap table')){const labels=[...table.querySelectorAll('thead th')].map(x=>x.textContent);for(const row of table.querySelectorAll('tbody tr'))[...row.children].forEach((cell,i)=>cell.dataset.label=labels[i]||'情報')}};
- ui.setCurrent=view=>{for(const a of document.querySelectorAll('.admin-nav a')){if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}const a=document.querySelector('.admin-nav a[aria-current]');document.getElementById('admin-current').textContent='現在の画面：'+(a?.dataset.title||'管理画面')};
+ ui.setNumberScope=scope=>{for(const a of document.querySelectorAll('.admin-number-links a')){if(a.dataset.numberScope===scope)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}};
+ ui.setCurrent=view=>{if(view!=='numbers')ui.setNumberScope(null);for(const a of document.querySelectorAll('.admin-nav a')){if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}const a=document.querySelector('.admin-nav a[aria-current]');document.getElementById('admin-current').textContent='現在の画面：'+(a?.dataset.title||'管理画面')};
  ui.setCurrent(location.pathname.endsWith('registration-numbers')?'numbers':new URLSearchParams(location.search).get('view')||'dashboard');
 })();
 `;
@@ -43,7 +47,8 @@ const commonClient = String.raw`
 export function enhanceAdminPage(html, path) {
   const isMain = path === '/admin';
   const nav = adminDestinations.map(([view,title,href],i)=>'<a href="'+href+'" data-view="'+view+'" data-title="'+title+'"><span class="step">'+(i+1)+'</span>'+title+'</a>').join('');
-  const shell='<a class="skip-link" href="#admin-content">本文へ移動</a><div class="admin-shell"><div class="admin-shell-inner"><div class="admin-brandline"><div class="admin-brand">文化資料登録室<small>管理ワークスペース</small></div><div id="admin-auth-slot"></div></div><nav class="admin-nav" aria-label="管理画面の移動">'+nav+'</nav><div id="admin-current" class="admin-current"></div></div></div><div id="admin-feedback" class="admin-feedback" role="status" aria-live="polite"></div>';
+  const numberNav='<nav class="admin-number-index" aria-label="番号・プール一覧"><strong>番号・プール一覧</strong><div class="admin-number-links">'+adminNumberDestinations.map(([scope,label])=>'<a href="/admin/registration-numbers?scope='+scope+'" data-number-scope="'+scope+'">'+label+'</a>').join('')+'</div></nav>';
+  const shell='<a class="skip-link" href="#admin-content">本文へ移動</a><div class="admin-shell"><div class="admin-shell-inner"><div class="admin-brandline"><div class="admin-brand">文化資料登録室<small>管理ワークスペース</small></div><div id="admin-auth-slot"></div></div><nav class="admin-nav" aria-label="管理画面の移動">'+nav+'</nav><div id="admin-current" class="admin-current"></div></div></div>'+numberNav+'<div id="admin-feedback" class="admin-feedback" role="status" aria-live="polite"></div>';
   if(isMain) html=html.replace('if(key())loadAll();','/* Admin workspace initializes after all extensions. */');
   return html.replace('</head>','<style id="admin-workspace-style">'+styles+'</style></head>')
     .replace(/<body([^>]*)>/,'<body$1>'+shell)
