@@ -1,4 +1,5 @@
 import app from "./worker-dashboard7.js";
+import { initialWindow } from './supplement-service.js';
 export { RegistrationIssuer } from "./worker-dashboard7.js";
 
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
@@ -30,12 +31,12 @@ export default {
       catch { return json({success:false,message:"抽選申込データを読み取れません。"},500); }
 
       const savedAt = new Date();
-      const checkStart = japanDate();
-      const expiry = new Date(savedAt.getTime() + 60 * 24 * 60 * 60 * 1000);
-      const expiryDate = new Intl.DateTimeFormat("en-CA", {
-        timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit"
-      }).format(expiry);
-      const month = String(rec.applicationMonth || rec.appliedDate || checkStart).slice(0,7);
+      const month = String(rec.applicationMonth || rec.appliedDate || japanDate()).slice(0,7);
+      // Existing awards retain the dates already communicated to the applicant.
+      const existingRaw = await env.REGISTRATION_KV.get('WINNER_'+ap);
+      if(existingRaw){const existing=JSON.parse(existingRaw);return json({success:true,ap,...existing,message:'保存済みの当選情報を維持しました。'});}
+      let dates;try{dates=initialWindow(month);}catch{return json({success:false,message:'申込み月を確認してください。'},400);}
+      const {checkStart,expiryDate}=dates;
 
       await env.REGISTRATION_KV.put("WINNER_" + ap, JSON.stringify({
         slots,

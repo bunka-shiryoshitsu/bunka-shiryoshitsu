@@ -1,3 +1,3 @@
-import app from "./worker-dashboard15.js";
-export { RegistrationIssuer } from "./worker-dashboard15.js";
+import app from "./worker-supplement.js";
+export { RegistrationIssuer } from "./worker-supplement.js";
 export default app;

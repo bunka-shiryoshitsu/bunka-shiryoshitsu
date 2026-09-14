@@ -1,4 +1,5 @@
 import app from "./worker-entry5.js";
+import { supplementPaths, supplementService, json } from "./supplement-service.js";
 
 const APPROVED_RESULTS = new Set(["type1", "type2", "type3", "special"]);
 
@@ -49,6 +50,8 @@ export class RegistrationIssuer {
   async handle(request) {
     const url = new URL(request.url);
 
+    if (supplementPaths.has(url.pathname)) return supplementService(request, this.env, this.state.storage);
+
     if (request.method !== "POST" || url.pathname !== "/admin/review") {
       return new Response(JSON.stringify({ success: false, message: "Not Found" }), {
         status: 404,
@@ -56,6 +59,17 @@ export class RegistrationIssuer {
       });
     }
 
-    return app.fetch(request, this.env, { waitUntil() {} });
+    if (!this.env.ADMIN_KEY || request.headers.get('X-Admin-Key') !== this.env.ADMIN_KEY) return json({success:false,message:'Unauthorized.'},401);
+    let body;try{body=await request.clone().json();}catch{return json({success:false,message:'入力内容を確認してください。'},400);}
+    if(body.result==='additional_check')return json({success:false,message:'追加依頼欄に必要な内容を記入し、依頼を掲載してください。'},400);
+    const recordKey='supplement:'+body.ap+':'+body.item;
+    const record=await this.state.storage?.get(recordKey);
+    if(record?.rounds.at(-1)?.status==='closed')return json({success:false,message:'未提出による手続終了済みです。'},409);
+    const response=await app.fetch(request, this.env, { waitUntil() {} });
+    if(response.ok&&this.state.storage&&(APPROVED_RESULTS.has(body.result)||body.result==='rejected')) {
+      await this.state.storage.put('supplement-final:'+body.ap+':'+body.item,{result:body.result,at:new Date().toISOString()});
+      if(record){for(const round of record.rounds)if(round.status!=='closed')round.status='resolved';record.revision++;await this.state.storage.put(recordKey,record);}
+    }
+    return response;
   }
 }

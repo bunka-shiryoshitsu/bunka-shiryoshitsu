@@ -855,7 +855,8 @@ We look closely at the traces they carry and preserve a record for the future.
 <button type="button" id="registration-submit" class="registration-submit" disabled>登録申請を送信 / SUBMIT REGISTRATION</button>
 <div id="registration-submit-message" class="application-next-message"></div>
 </div>
-<p style="margin-top:28px"><a id="receive-page-link" class="application-next" href="#" style="text-decoration:none;display:inline-block">登録書受取ページを開く / OPEN REGISTRATION DOCUMENT</a></p>
+<p style="margin-top:28px"><a id="receive-page-link" class="application-next" href="#" style="text-decoration:none;display:inline-block">申請状況の確認・追加提出・登録書の受取り</a></p>
+<p class="small">初回の登録申請後は、週に一度、上の確認画面をご確認ください。AP番号と受取キーを入力すると、資料ごとの確認状況、追加提出の依頼内容・期限、登録結果が表示されます。追加画像や文章も同じ画面から提出できます。メールでの通知は行いません。</p>
 
 </div>
 </div>
@@ -1122,12 +1123,15 @@ We look closely at the traces they carry and preserve a record for the future.
 </li>
 <li>
 <strong>当選後の登録申請</strong><br>
-当選した場合は、<strong>抽選発表日から60日以内</strong>に登録申請を行ってください。<br>
+当選した場合は、<strong>抽選発表日を含む60日間</strong>に登録申請を行ってください。画面に表示される締切日の23:59（日本時間）までに提出してください。既に当選情報が発行されている場合は、案内済みの期限を維持します。<br>
 申請期限を過ぎると、その当選による登録申請はできません。
 </li>
 <li>
 <strong>資料の登録</strong><br>
 提出された画像、資料関連情報その他必要な事項を確認し、登録の可否及び登録区分を判断します。必要に応じて、追加画像や追加情報の提出をお願いする場合があります。追加提出のご案内は、登録の内定や承認を意味するものではなく、ご提出いただいた場合でも、登録を見送ることがあります。個別の判断理由や審査過程についての説明、これらに関するお問い合わせへの回答は行っておりません。
+<br>初回申請後は、週に一度、このHPの「申請状況の確認・追加提出・登録書の受取り」から、AP番号と受取キーを入力してご確認ください。追加提出の依頼はメールでは通知されません。
+<br>追加提出の期限は、依頼掲載日の翌日から30日間です。確認画面に表示される締切日の23:59（日本時間）までに、指定された画像・情報を同じ画面から提出してください。期限内に初回申請を済ませた資料は、初回申請の期限を過ぎても追加提出できます。
+<br>追加提出の期限を過ぎた場合は「追加提出期限切れ」と表示し、管理者が期限延長又は未提出による手続終了を判断します。期限切れだけを理由に、自動で不承認とすることはありません。
 </li>
 <li>
 <strong>登録番号・登録書</strong><br>
@@ -1135,7 +1139,7 @@ We look closely at the traces they carry and preserve a record for the future.
 </li>
 <li>
 <strong>登録書の受取り</strong><br>
-登録完了後、<strong>このHPにある登録書の受取り口</strong>から登録書を受け取ることができます。<br>
+登録完了後、<strong>このHPの「申請状況の確認・追加提出・登録書の受取り」</strong>から登録書を受け取ることができます。<br>
 受取りには、申込み時に発行されたAP番号と受取キーを使用します。
 </li>
 </ol>
@@ -1839,6 +1843,12 @@ async function submitRegistrationApplication(){
   message.textContent=
    result.data?.message||
    "登録申請を受け付けました。";
+  const guidance=document.createElement('p');
+  guidance.textContent='初回申請後は週に一度、下の確認画面をご確認ください。追加提出の依頼・期限や登録結果を表示します。メール通知は行いません。';
+  const portalLink=document.createElement('a');
+  portalLink.href=WORKER_URL+'/receive';
+  portalLink.textContent='申請状況の確認・追加提出・登録書の受取り';
+  guidance.appendChild(document.createElement('br'));guidance.appendChild(portalLink);message.appendChild(guidance);
 
  }catch(error){
   console.error(error);

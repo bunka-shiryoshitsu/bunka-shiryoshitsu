@@ -24,6 +24,7 @@ test('lottery, winner, upload, submission, review, private receipt and cancellat
  const {call,entries}=setup();
  let r=await call('/lottery-apply',{overview:'テスト用資料・本番には送信しません'});assert.equal(r.status,200);const lottery=await r.json();assert.match(lottery.ap,/^AP-[A-Z0-9]{8}$/);assert.match(lottery.receiveKey,/^[A-Z0-9]{4}$/);const {ap,receiveKey}=lottery;
  assert.equal(JSON.parse(entries.get('APPLICATION_'+ap)).overview,'テスト用資料・本番には送信しません');
+ const applied=JSON.parse(entries.get('APPLICATION_'+ap));const fixtureMonth=new Date();fixtureMonth.setUTCDate(1);fixtureMonth.setUTCMonth(fixtureMonth.getUTCMonth()-2);applied.applicationMonth=fixtureMonth.toISOString().slice(0,7);entries.set('APPLICATION_'+ap,JSON.stringify(applied));
  r=await call('/admin/lottery-winner',{ap,slots:1},true);assert.equal(r.status,200,await r.clone().text());
  const jpg=new Uint8Array([255,216,255,224,1,2,3,255,217]);
  let form=new FormData();form.append('image',new File([jpg],'test.jpg',{type:'image/jpeg'}));
