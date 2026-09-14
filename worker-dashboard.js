@@ -61,7 +61,7 @@ async function dashboardData(env){
       try{const d=JSON.parse(raw);applications.push({
         ap:d.ap||k.name.slice("REGISTRATION_APPLICATION:".length),slots:d.slots||0,applicationMonth:d.applicationMonth||"",
         submittedAt:d.submittedAt||"",status:d.status||"received",
-        items:(d.items||[]).map(x=>({item:x.item,name:x.finalName||x.name||"",reviewResult:x.reviewResult||null,registrationNumber:x.registrationNumber||null,issuedDataReady:x.issuedDataReady===true,registrationStatus:x.registrationStatus||null}))
+        items:(d.items||[]).map(x=>({item:x.item,name:x.finalName||x.name||"",relatedName:x.finalRelatedName||x.relatedName||"",reviewResult:x.reviewResult||null,registrationNumber:x.registrationNumber||null,issuedDataReady:x.issuedDataReady===true,registrationStatus:x.registrationStatus||null}))
       });}catch{}
     }
     applications.sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));

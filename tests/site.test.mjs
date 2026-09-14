@@ -47,3 +47,23 @@ test('lottery, winner, upload, submission, review, private receipt and cancellat
  assert.ok(entries.has('PUBLIC_REGISTRATION_ISSUED:'+number));
 });
 test('closed intake and missing overview are rejected',async()=>{const {call,entries}=setup();assert.equal((await call('/lottery-apply',{})).status,400);entries.set('SYSTEM:APPLICATIONS_OPEN','false');assert.equal((await call('/lottery-apply',{overview:'test'})).status,503);});
+
+test('legacy winner URL moves to the shared workspace without modifying data',async()=>{
+ const {call,entries}=setup(),before=[...entries];
+ const response=await call('/admin-winners');
+ assert.equal(response.status,302);
+ assert.equal(response.headers.get('Location'),'/admin?view=lottery');
+ assert.equal(response.headers.get('Cache-Control'),'no-store');
+ assert.deepEqual([...entries],before);
+});
+
+test('administrator application search receives the saved related name',async()=>{
+ const {call,entries}=setup();
+ entries.set('REGISTRATION_APPLICATION:AP-ABCDEFGH',JSON.stringify({ap:'AP-ABCDEFGH',status:'under_review',submittedAt:'2026-09-01T00:00:00Z',items:[{item:'01',name:'原名称',relatedName:'原関連名',finalName:'保存済名称',finalRelatedName:'保存済関連名'}]}));
+ const response=await call('/admin/dashboard-data',undefined,true);
+ assert.equal(response.status,200);
+ const data=await response.json(),item=data.applications.find(a=>a.ap==='AP-ABCDEFGH')?.items[0];
+ assert.ok(item,'申請が検索用の一覧に含まれる');
+ assert.equal(item.name,'保存済名称');
+ assert.equal(item.relatedName,'保存済関連名');
+});
