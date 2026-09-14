@@ -1,5 +1,6 @@
 import app from "./worker-entry5.js";
 import { supplementPaths, supplementService, json } from "./supplement-service.js";
+import {ensureRetentionAlarm, tryPurgeSupplementImages, sweepSupplementImages} from './supplement-retention.js';
 
 const APPROVED_RESULTS = new Set(["type1", "type2", "type3", "special"]);
 
@@ -47,8 +48,27 @@ export class RegistrationIssuer {
     return run;
   }
 
+  alarm() {
+    const run = this.tail.then(() => this.runRetention());
+    this.tail = run.catch(() => {});
+    return run;
+  }
+
+  async runRetention() {
+    // Set the next attempt first, so failures and interrupted passes remain retryable.
+    await this.state.storage.setAlarm(Date.now() + 60_000);
+    const result = await sweepSupplementImages(this.state.storage, this.env);
+    if (!result.more) await this.state.storage.deleteAlarm();
+    return result;
+  }
+
   async handle(request) {
     const url = new URL(request.url);
+
+    // Reachable only through the existing DO binding, never through public routing.
+    if (request.method === 'POST' && url.pathname === '/_internal/supplement-retention') {
+      return json({success: true, ...await this.runRetention()});
+    }
 
     if (supplementPaths.has(url.pathname)) return supplementService(request, this.env, this.state.storage);
 
@@ -65,10 +85,12 @@ export class RegistrationIssuer {
     const recordKey='supplement:'+body.ap+':'+body.item;
     const record=await this.state.storage?.get(recordKey);
     if(record?.rounds.at(-1)?.status==='closed')return json({success:false,message:'未提出による手続終了済みです。'},409);
+    if(record&&(APPROVED_RESULTS.has(body.result)||body.result==='rejected'))await ensureRetentionAlarm(this.state.storage);
     const response=await app.fetch(request, this.env, { waitUntil() {} });
     if(response.ok&&this.state.storage&&(APPROVED_RESULTS.has(body.result)||body.result==='rejected')) {
       await this.state.storage.put('supplement-final:'+body.ap+':'+body.item,{result:body.result,at:new Date().toISOString()});
       if(record){for(const round of record.rounds)if(round.status!=='closed')round.status='resolved';record.revision++;await this.state.storage.put(recordKey,record);}
+      if(record)await tryPurgeSupplementImages(this.state.storage,body.ap,body.item,record);
     }
     return response;
   }

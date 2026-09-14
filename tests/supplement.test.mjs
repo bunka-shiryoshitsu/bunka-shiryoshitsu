@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import app,{RegistrationIssuer} from '../worker.js';
 import {supplementService,deadlineAfter,deadlineLabel,initialWindow} from '../supplement-service.js';
+import {sweepSupplementImages} from '../supplement-retention.js';
 
 const AP='AP-ABCDEFGH';
 async function fixture(){
  const original={ap:AP,status:'received',submittedAt:'2026-01-01T00:00:00Z',items:[{item:'01',name:'資料A',acquisition:'元の説明'},{item:'02',name:'資料B'}]};
  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ABCD')))].map(x=>x.toString(16).padStart(2,'0')).join('');
  const kv=new Map([['REGISTRATION_APPLICATION:'+AP,JSON.stringify(original)],['RECEIVE_AUTH:'+AP,JSON.stringify({hash})]]),records=new Map();
- const storage={get:async k=>structuredClone(records.get(k)),put:async(k,v)=>records.set(k,structuredClone(v)),delete:async k=>records.delete(k),list:async({prefix='',startAfter='',limit=100})=>new Map([...records].filter(([k])=>k.startsWith(prefix)&&k>startAfter).sort(([a],[b])=>a.localeCompare(b)).slice(0,limit).map(([k,v])=>[k,structuredClone(v)]))};
+ let alarm=null;
+ const storage={getAlarm:async()=>alarm,setAlarm:async value=>{alarm=value},deleteAlarm:async()=>{alarm=null},get:async k=>structuredClone(records.get(k)),put:async(k,v)=>records.set(k,structuredClone(v)),delete:async k=>Array.isArray(k)?k.reduce((n,key)=>n+Number(records.delete(key)),0):records.delete(k),list:async({prefix='',startAfter='',limit=100})=>new Map([...records].filter(([k])=>k.startsWith(prefix)&&k>startAfter).sort(([a],[b])=>a<b?-1:a>b?1:0).slice(0,limit).map(([k,v])=>[k,structuredClone(v)]))};
  const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{const v=kv.get(k);return opt?.type==='json'&&v?JSON.parse(v):v??null;},put:async(k,v)=>kv.set(k,v),delete:async k=>kv.delete(k),list:async({prefix=''})=>({keys:[...kv.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})}};
  const issuer=new RegistrationIssuer({storage},env);env.REGISTRATION_ISSUER={idFromName:()=>'',get:()=>issuer};
  function request(path,body,admin=false,query={},receiveKey='ABCD'){
@@ -17,7 +19,7 @@ async function fixture(){
  }
  const call=(...args)=>app.fetch(request(...args),env,{waitUntil(){}});
  const direct=(now,...args)=>supplementService(request(...args),env,storage,now);
- return {call,direct,records,kv,original};
+ return {call,direct,records,kv,original,storage,issuer,env};
 }
 test('JST deadline includes 30 whole days after publication, including year/leap transitions',()=>{
  assert.deepEqual(initialWindow('2026-09'),{checkStart:'2026-11-01',expiryDate:'2026-12-30'});
@@ -71,4 +73,80 @@ test('authentication, read-only methods, upload limits and removable staging',as
  assert.equal((await f.call('/supplement/submit',{round:round.id,token:crypto.randomUUID()})).status,400);
  assert.equal((await f.call('/supplement/image',undefined,false,{id})).status,404);
  const queue=await (await f.call('/admin/supplement/queue',undefined,true)).json();assert.equal(queue.rows.length,1);
+});
+
+async function uploadSupplement(f,item='01'){
+ const response=await f.call('/admin/supplement/request',{revision:0,instruction:'裏面を提出',needText:true,needImages:true},true,{item});
+ assert.equal(response.status,200);const round=(await response.json()).round,id=crypto.randomUUID();
+ assert.equal((await f.call('/supplement/upload',new Uint8Array([255,216,255,1,2,3]),false,{item,round:round.id,id})).status,200);
+ assert.equal((await f.call('/supplement/submit',{round:round.id,token:crypto.randomUUID(),text:'提出した説明'},false,{item})).status,200);
+ return {round,id};
+}
+
+test('every final review deletes supplemental bytes but preserves the submission history and other items',async()=>{
+ for(const result of ['type1','type2','type3','special','rejected']){
+  const f=await fixture(),{id}=await uploadSupplement(f);const other=await uploadSupplement(f,'02');
+  const response=await f.call('/admin/review',{ap:AP,item:'01',result},true);
+  assert.equal(response.status,200,await response.clone().text());
+  assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:'+AP+':01:')).length,0);
+  const status=await (await f.call('/supplement/status')).json(),round=status.items[0].rounds[0];
+  assert.equal(round.submission.text,'提出した説明');assert.equal(round.instruction,'裏面を提出');
+  assert.equal(round.uploads[0].id,id);assert.equal(round.imagesUnavailable,true);assert.ok(round.imagesDeletedAt);
+  assert.equal(status.items[1].rounds[0].imagesUnavailable,false);
+  for(const admin of [false,true])assert.equal((await f.call((admin?'/admin':'')+'/supplement/image',undefined,admin,{id})).status,410);
+  assert.equal((await f.call('/supplement/image',undefined,false,{item:'02',id:other.id})).status,200);
+ }
+});
+
+test('closing an expired unsubmitted request removes staged images and interrupted-upload chunks',async()=>{
+ const f=await fixture(),now=Date.parse('2026-01-01T00:00:00Z');
+ const created=await f.direct(now,'/admin/supplement/request',{revision:0,instruction:'画像',needImages:true},true);
+ const round=(await created.json()).round,id=crypto.randomUUID();
+ assert.equal((await f.direct(now,'/supplement/upload',new Uint8Array([255,216,255]),false,{round:round.id,id})).status,200);
+ f.records.set('supplement-image:'+AP+':01:orphan:0',new ArrayBuffer(3));
+ const closed=await f.direct(round.deadline,'/admin/supplement/close',{round:round.id,revision:1},true);
+ assert.equal(closed.status,200);assert.ok((await closed.json()).round.imagesDeletedAt);
+ assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:')).length,0);
+ assert.deepEqual(JSON.parse(f.kv.get('REGISTRATION_APPLICATION:'+AP)),f.original);
+});
+
+test('deletion failure blocks image reads immediately and a persisted alarm retries after restart',async()=>{
+ const f=await fixture(),{id}=await uploadSupplement(f);const realDelete=f.storage.delete;
+ f.storage.delete=async keys=>{if(Array.isArray(keys))throw Error('simulated storage outage');return realDelete(keys)};
+ assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected'},true)).status,200);
+ assert.ok(await f.storage.getAlarm());
+ assert.equal(f.records.get('supplement:'+AP+':01').imageCleanup.status,'pending');
+ assert.equal((await f.call('/supplement/image',undefined,false,{id})).status,410);
+ f.storage.delete=realDelete;
+ const restarted=new RegistrationIssuer({storage:f.storage},f.env);await restarted.alarm();
+ assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:')).length,0);
+ assert.equal(f.records.get('supplement:'+AP+':01').imageCleanup.status,'deleted');
+ assert.equal(await f.storage.getAlarm(),null);
+ await restarted.alarm(); // Idempotent duplicate alarm delivery.
+ assert.equal(f.records.get('supplement:'+AP+':01').rounds[0].submission.text,'提出した説明');
+});
+
+test('daily sweep handles legacy finalized records, skips open work and bounds large deletions',async()=>{
+ const f=await fixture();await uploadSupplement(f);const ongoing=await uploadSupplement(f,'02');
+ const a=JSON.parse(f.kv.get('REGISTRATION_APPLICATION:'+AP));a.items[0].reviewResult='rejected';f.kv.set('REGISTRATION_APPLICATION:'+AP,JSON.stringify(a));
+ for(let n=0;n<300;n++)f.records.set('supplement-image:'+AP+':01:orphan:'+n,new ArrayBuffer(1));
+ const first=await sweepSupplementImages(f.storage,f.env);assert.equal(first.more,true);assert.ok(await f.storage.getAlarm());
+ await f.issuer.alarm();
+ assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:'+AP+':01:')).length,0);
+ assert.equal((await f.call('/supplement/image',undefined,false,{item:'02',id:ongoing.id})).status,200);
+ const pending=[];await app.scheduled({},f.env,{waitUntil(p){pending.push(p)}});await Promise.all(pending);
+ assert.equal(await f.storage.getAlarm(),null);
+ assert.equal((await app.fetch(new Request('https://local.test/_internal/supplement-retention',{method:'POST'}),f.env,{})).status,404);
+});
+
+test('a newly finished item before the sweep cursor is retried without waiting for another daily run',async()=>{
+ const f=await fixture();await uploadSupplement(f);
+ f.records.set('supplement-cleanup:cursor','supplement:AP-ZZZZZZZZ:10');
+ for(let n=0;n<300;n++)f.records.set('supplement-image:'+AP+':01:interrupted:'+n,new ArrayBuffer(1));
+ assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected'},true)).status,200);
+ assert.equal(f.records.has('supplement-cleanup:cursor'),false);
+ assert.ok([...f.records.keys()].some(k=>k.startsWith('supplement-image:')));
+ await f.issuer.alarm();
+ assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:')).length,0);
+ assert.equal(await f.storage.getAlarm(),null);
 });

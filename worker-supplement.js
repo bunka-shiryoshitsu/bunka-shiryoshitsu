@@ -47,5 +47,12 @@ export default {
     }
     return response;
   },
-  async scheduled(controller,env,ctx){if(app.scheduled)return app.scheduled(controller,env,ctx);}
+  async scheduled(controller,env,ctx){
+    if(app.scheduled)await app.scheduled(controller,env,ctx);
+    if(env.REGISTRATION_ISSUER)ctx.waitUntil((async()=>{
+      const stub=env.REGISTRATION_ISSUER.get(env.REGISTRATION_ISSUER.idFromName('registration-number-issuer'));
+      const response=await stub.fetch(new Request('https://internal.invalid/_internal/supplement-retention',{method:'POST'}));
+      if(!response.ok)throw new Error('Supplement image cleanup could not start.');
+    })());
+  }
 };

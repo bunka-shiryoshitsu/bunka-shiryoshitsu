@@ -40,7 +40,8 @@ async function loadPortal(){
     if(r.submission){node('p','提出完了：'+showDate(r.submission.at),section);const answer=node('p',r.submission.text||'文章の追加なし',section);answer.style.whiteSpace='pre-wrap';}
     if(r.closedAt)node('p','終了：'+showDate(r.closedAt),section);
     const imageArea=node('div',undefined,section);
-    for(const image of r.uploads){const box=node('div',undefined,imageArea);const view=node('button','追加画像 '+(r.uploads.indexOf(image)+1)+' を確認',box);view.type='button';view.onclick=async()=>{view.disabled=true;try{await showSupplementImage(ap,receiveKey,item.item,image,box);}catch(e){node('p',e.message,box);view.disabled=false;}};
+    if(r.imagesUnavailable&&r.uploads.length)node('p',r.imagesDeletedAt?'追加提出画像は、確認・手続終了に伴い削除しました。':'確認・手続終了のため、追加提出画像は閲覧できません。',imageArea);
+    for(const image of (r.imagesUnavailable?[]:r.uploads)){const box=node('div',undefined,imageArea);const view=node('button','追加画像 '+(r.uploads.indexOf(image)+1)+' を確認',box);view.type='button';view.onclick=async()=>{view.disabled=true;try{await showSupplementImage(ap,receiveKey,item.item,image,box);}catch(e){node('p',e.message,box);view.disabled=false;}};
      if(r===round&&r.status==='pending'&&!final){const remove=node('button','この添付を取り消す',box);remove.type='button';remove.onclick=async()=>{if(!confirm('この添付を取り消して画面を読み直します。未送信の入力は消えます。よろしいですか？'))return;remove.disabled=true;try{await supplementCall(ap,receiveKey,'/supplement/remove',item.item,{round:r.id,id:image.id});await loadPortal();}catch(e){node('p',e.message,box);remove.disabled=false;}};}
     }
     if(r!==round||r.status!=='pending'||final)continue;
@@ -94,7 +95,8 @@ async function loadSupplementAdmin(ap,item,wrap){
    supplementNode('p','依頼掲載：'+supplementDate(r.requestedAt),box);const instruction=supplementNode('p',r.instruction,box);instruction.style.whiteSpace='pre-wrap';
    supplementNode('p','提出期限：'+r.deadlineLabel,box);
    if(r.submission){supplementNode('p','提出日時：'+supplementDate(r.submission.at),box);const answer=supplementNode('p',r.submission.text||'文章の追加なし',box);answer.style.whiteSpace='pre-wrap';}
-   for(const image of r.uploads){
+   if(r.imagesUnavailable&&r.uploads.length)supplementNode('p',r.imagesDeletedAt?'追加提出画像は、確認・手続終了に伴い削除しました。':'確認・手続終了のため、追加提出画像は閲覧できません。',box);
+   for(const image of (r.imagesUnavailable?[]:r.uploads)){
     const slot=supplementNode('div',undefined,box);const view=supplementNode('button','追加画像 '+(r.uploads.indexOf(image)+1)+' を表示',slot);view.onclick=async()=>{view.disabled=true;try{const response=await fetch('/admin/supplement/image?'+new URLSearchParams({ap,item,id:image.id}),{headers:H(false),cache:'no-store'});if(!response.ok)throw Error('画像を読み込めませんでした。');const blob=await response.blob();if(!slot.isConnected)return;const url=URL.createObjectURL(blob),img=supplementNode('img',undefined,slot);img.src=url;img.alt='追加提出画像';img.style.cssText='max-width:100%;max-height:600px;object-fit:contain';const observer=new MutationObserver(()=>{if(!img.isConnected){URL.revokeObjectURL(url);observer.disconnect();}});observer.observe(document.body,{childList:true,subtree:true});}catch(e){msg.textContent=e.message;view.disabled=false;}};
    }
   }
