@@ -1,9 +1,15 @@
 import app from "./worker-supplement.js";
 import {enhanceAdminPage} from './admin-navigation.js';
+import {inspectionPaths} from './inspection-images.js';
 export { RegistrationIssuer } from "./worker-supplement.js";
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+    if(inspectionPaths.has(url.pathname)){
+      if(!env.ADMIN_KEY||request.headers.get('X-Admin-Key')!==env.ADMIN_KEY)return Response.json({success:false,message:'Unauthorized.'},{status:401,headers:{'Cache-Control':'no-store'}});
+      if(!env.REGISTRATION_ISSUER)return Response.json({success:false,message:'点検画像の保存先を利用できません。'},{status:503,headers:{'Cache-Control':'no-store'}});
+      return env.REGISTRATION_ISSUER.get(env.REGISTRATION_ISSUER.idFromName('registration-number-issuer')).fetch(request);
+    }
     if(request.method==='GET'&&url.pathname==='/admin-winners')return new Response(null,{status:302,headers:{Location:'/admin?view=lottery','Cache-Control':'no-store'}});
     const response=await app.fetch(request,env,ctx);
     if(request.method==='GET'&&response.ok&&['/admin','/admin/registration-numbers'].includes(url.pathname)){

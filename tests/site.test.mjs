@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs/promises';
 import app, {RegistrationIssuer} from '../worker.js';
+import {memoryStorage,jpeg} from './inspection-fixture.js';
 function setup(){
  const entries=new Map([['SYSTEM:APPLICATIONS_OPEN','true'],['REGISTRATION_LIST',JSON.stringify(['ABCDEFGH'])]]);
  const kv={get:async(k,opt)=>{const v=entries.get(k);if(v===undefined)return null;if(v instanceof ArrayBuffer)return opt?.type==='arrayBuffer'?v:new TextDecoder().decode(v);return opt?.type==='json'?JSON.parse(v):v},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix=''})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})};
- const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only'};const issuer=new RegistrationIssuer({},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
+ const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only'};const issuer=new RegistrationIssuer({storage:memoryStorage()},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
  const call=(path,body,admin=false)=>app.fetch(new Request('https://local.test'+path,{method:body===undefined?'GET':'POST',headers:{...(body instanceof FormData?{}:{'Content-Type':'application/json'}),...(admin?{'X-Admin-Key':'test-only'}:{}),'CF-Connecting-IP':'192.0.2.1'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}),env,{waitUntil(p){return p}});
  return {entries,call,env};
 }
@@ -21,7 +22,7 @@ test('private endpoints reject missing administrator credentials',async()=>{
  for(const path of ['/admin/review','/admin/lottery-winner','/admin/cancel'])assert.equal((await call(path,{ap:'AP-ABCDEFGH',item:'01',result:'type1'})).status,401,path);
 });
 test('lottery, winner, upload, submission, review, private receipt and cancellation',async()=>{
- const {call,entries}=setup();
+ const {call,entries,env}=setup();
  let r=await call('/lottery-apply',{overview:'テスト用資料・本番には送信しません'});assert.equal(r.status,200);const lottery=await r.json();assert.match(lottery.ap,/^AP-[A-Z0-9]{8}$/);assert.match(lottery.receiveKey,/^[A-Z0-9]{4}$/);const {ap,receiveKey}=lottery;
  assert.equal(JSON.parse(entries.get('APPLICATION_'+ap)).overview,'テスト用資料・本番には送信しません');
  const applied=JSON.parse(entries.get('APPLICATION_'+ap));const fixtureMonth=new Date();fixtureMonth.setUTCDate(1);fixtureMonth.setUTCMonth(fixtureMonth.getUTCMonth()-2);applied.applicationMonth=fixtureMonth.toISOString().slice(0,7);entries.set('APPLICATION_'+ap,JSON.stringify(applied));
@@ -33,7 +34,9 @@ test('lottery, winner, upload, submission, review, private receipt and cancellat
  const submission={ap,items:[{item:'01',name:'資料A',relatedName:'関連名',acquisition:'試験用'}]};
  r=await call('/registration-submit',submission);assert.equal(r.status,200,await r.clone().text());
  assert.equal((await call('/registration-submit',submission)).status,409);
- r=await call('/admin/review',{ap,item:'01',result:'type1',finalName:'整理後の資料A',finalRelatedName:'関連名'},true);assert.equal(r.status,200,await r.clone().text());const reviewed=await r.json();const number=reviewed.registrationNumber;assert.match(number,/^[A-Z0-9]{8}$/);assert.notEqual(number,'ABCDEFGH');
+ const inspectionUpload=await app.fetch(new Request('https://local.test/admin/inspection-images/upload?'+new URLSearchParams({ap,item:'01',id:'original-01'}),{method:'POST',headers:{'X-Admin-Key':'test-only'},body:jpeg()}),env,{});assert.equal(inspectionUpload.status,200,await inspectionUpload.clone().text());
+ const inspectionRevision=(await inspectionUpload.json()).record.revision;
+ r=await call('/admin/review',{ap,item:'01',result:'type1',inspectionRevision,finalName:'整理後の資料A',finalRelatedName:'関連名'},true);assert.equal(r.status,200,await r.clone().text());const reviewed=await r.json();const number=reviewed.registrationNumber;assert.match(number,/^[A-Z0-9]{8}$/);assert.notEqual(number,'ABCDEFGH');
  assert.equal((await call('/admin/review',{ap,item:'01',result:'type1'},true)).status,409);
  assert.equal(await (await call('/check',{number})).text(),'登録あり');
  form=new FormData();form.append('registrationNumber',number);form.append('file',new File([jpg],'document.jpg',{type:'image/jpeg'}));

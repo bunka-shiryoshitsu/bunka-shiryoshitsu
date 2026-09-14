@@ -2,6 +2,7 @@ import app from "./worker-entry5.js";
 import { supplementPaths, supplementService, json } from "./supplement-service.js";
 import {ensureRetentionAlarm, tryPurgeSupplementImages, sweepSupplementImages} from './supplement-retention.js';
 import {registrationNotePaths, registrationNumberNotes} from './registration-number-notes.js';
+import {inspectionPaths,inspectionService,requireInspectionReady,finalizeInspection,sweepInspectionImages,queueOriginalCleanup} from './inspection-images.js';
 
 const APPROVED_RESULTS = new Set(["type1", "type2", "type3", "special"]);
 
@@ -59,12 +60,17 @@ export class RegistrationIssuer {
     // Set the next attempt first, so failures and interrupted passes remain retryable.
     await this.state.storage.setAlarm(Date.now() + 60_000);
     const result = await sweepSupplementImages(this.state.storage, this.env);
-    if (!result.more) await this.state.storage.deleteAlarm();
+    const inspection = await sweepInspectionImages(this.state.storage, this.env);
+    if(result.more||inspection.more)await this.state.storage.setAlarm(Date.now()+60_000);
+    else if(inspection.nextAt!==null)await this.state.storage.setAlarm(Math.max(Date.now()+60_000,inspection.nextAt));
+    else await this.state.storage.deleteAlarm();
     return result;
   }
 
   async handle(request) {
     const url = new URL(request.url);
+
+    if(inspectionPaths.has(url.pathname))return inspectionService(request,this.env,this.state.storage);
 
     if (registrationNotePaths.has(url.pathname)) return registrationNumberNotes(request, this.env, this.state.storage);
 
@@ -88,12 +94,17 @@ export class RegistrationIssuer {
     const recordKey='supplement:'+body.ap+':'+body.item;
     const record=await this.state.storage?.get(recordKey);
     if(record?.rounds.at(-1)?.status==='closed')return json({success:false,message:'未提出による手続終了済みです。'},409);
+    if(APPROVED_RESULTS.has(body.result)||body.result==='rejected'){
+      try{await requireInspectionReady(this.env,this.state.storage,body.ap,body.item,body.inspectionRevision)}catch(e){return json({success:false,message:e.status?e.message:'点検用画像の保存状態を確認できませんでした。'},e.status||503)}
+    }
     if(record&&(APPROVED_RESULTS.has(body.result)||body.result==='rejected'))await ensureRetentionAlarm(this.state.storage);
     const response=await app.fetch(request, this.env, { waitUntil() {} });
     if(response.ok&&this.state.storage&&(APPROVED_RESULTS.has(body.result)||body.result==='rejected')) {
       await this.state.storage.put('supplement-final:'+body.ap+':'+body.item,{result:body.result,at:new Date().toISOString()});
       if(record){for(const round of record.rounds)if(round.status!=='closed')round.status='resolved';record.revision++;await this.state.storage.put(recordKey,record);}
       if(record)await tryPurgeSupplementImages(this.state.storage,body.ap,body.item,record);
+      await queueOriginalCleanup(this.state.storage,body.ap,body.item);
+      await finalizeInspection(this.state.storage,body.ap,body.item);
     }
     return response;
   }

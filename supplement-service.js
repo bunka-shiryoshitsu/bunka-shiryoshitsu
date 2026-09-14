@@ -1,6 +1,7 @@
 // Supplement records and image chunks live in the existing SQLite Durable Object.
 // They never overwrite the original application or its images.
 import {supplementFinished, ensureRetentionAlarm, tryPurgeSupplementImages} from './supplement-retention.js';
+import {requireInspectionReady,finalizeInspection,queueOriginalCleanup} from './inspection-images.js';
 export const supplementPaths = new Set(['/supplement/status','/supplement/upload','/supplement/remove','/supplement/submit','/supplement/image','/admin/supplement/request','/admin/supplement/status','/admin/supplement/queue','/admin/supplement/extend','/admin/supplement/close','/admin/supplement/image']);
 const DAY = 86400000;
 const CHUNK = 120000;
@@ -135,12 +136,13 @@ export async function supplementService(request,env,storage,now=Date.now()) {
         round.extensions.push({at:new Date(now).toISOString(),previousDeadline:round.deadline,deadline});round.deadline=deadline;record.revision++;
       } else if(path.endsWith('/close')) {
         if(record.revision!==body.revision||currentStatus(round,now)!=='expired')fail('期限切れの未提出依頼だけ手続終了にできます。',409);
+        await requireInspectionReady(env,storage,ap,itemNo,body.inspectionRevision,now);
         await ensureRetentionAlarm(storage,now);
         round.status='closed';round.closedAt=new Date(now).toISOString();record.revision++;
       } else fail('Not Found',404);
     }
     await storage.put(key,record);
-    if(round.status==='closed')await tryPurgeSupplementImages(storage,ap,itemNo,record,now);
+    if(round.status==='closed'){await queueOriginalCleanup(storage,ap,itemNo,now);await finalizeInspection(storage,ap,itemNo,now);await tryPurgeSupplementImages(storage,ap,itemNo,record,now);}
     return json({success:true,message:round.status==='submitted'?'追加資料を受け付けました。週に一度、この画面をご確認ください。':'保存しました。',round:publicRound(round,now,round.status==='closed',record.imageCleanup)});
   } catch(e){return json({success:false,message:e.status?e.message:'保存・読込に失敗しました。再試行してください。'},e.status||500);}
 }

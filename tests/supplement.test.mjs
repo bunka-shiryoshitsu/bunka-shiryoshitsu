@@ -3,14 +3,15 @@ import assert from 'node:assert/strict';
 import app,{RegistrationIssuer} from '../worker.js';
 import {supplementService,deadlineAfter,deadlineLabel,initialWindow} from '../supplement-service.js';
 import {sweepSupplementImages} from '../supplement-retention.js';
+import {memoryStorage,jpeg} from './inspection-fixture.js';
+import {inspectionService} from '../inspection-images.js';
 
 const AP='AP-ABCDEFGH';
 async function fixture(){
  const original={ap:AP,status:'received',submittedAt:'2026-01-01T00:00:00Z',items:[{item:'01',name:'資料A',acquisition:'元の説明'},{item:'02',name:'資料B'}]};
  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ABCD')))].map(x=>x.toString(16).padStart(2,'0')).join('');
  const kv=new Map([['REGISTRATION_APPLICATION:'+AP,JSON.stringify(original)],['RECEIVE_AUTH:'+AP,JSON.stringify({hash})]]),records=new Map();
- let alarm=null;
- const storage={getAlarm:async()=>alarm,setAlarm:async value=>{alarm=value},deleteAlarm:async()=>{alarm=null},get:async k=>structuredClone(records.get(k)),put:async(k,v)=>records.set(k,structuredClone(v)),delete:async k=>Array.isArray(k)?k.reduce((n,key)=>n+Number(records.delete(key)),0):records.delete(k),list:async({prefix='',startAfter='',limit=100})=>new Map([...records].filter(([k])=>k.startsWith(prefix)&&k>startAfter).sort(([a],[b])=>a<b?-1:a>b?1:0).slice(0,limit).map(([k,v])=>[k,structuredClone(v)]))};
+ const storage=memoryStorage(records);
  const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{const v=kv.get(k);return opt?.type==='json'&&v?JSON.parse(v):v??null;},put:async(k,v)=>kv.set(k,v),delete:async k=>kv.delete(k),list:async({prefix=''})=>({keys:[...kv.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})}};
  const issuer=new RegistrationIssuer({storage},env);env.REGISTRATION_ISSUER={idFromName:()=>'',get:()=>issuer};
  function request(path,body,admin=false,query={},receiveKey='ABCD'){
@@ -19,7 +20,12 @@ async function fixture(){
  }
  const call=(...args)=>app.fetch(request(...args),env,{waitUntil(){}});
  const direct=(now,...args)=>supplementService(request(...args),env,storage,now);
- return {call,direct,records,kv,original,storage,issuer,env};
+ async function prepareInspection(){
+  const q=new URLSearchParams({ap:AP,item:'01'}),status=await (await inspectionService(new Request('https://local.test/admin/inspection-images/status?'+q,{headers:{'X-Admin-Key':'test-only'}}),env,storage)).json();
+  for(const source of status.sources){q.set('id',source.id);const r=await inspectionService(new Request('https://local.test/admin/inspection-images/upload?'+q,{method:'POST',headers:{'X-Admin-Key':'test-only'},body:jpeg()}),env,storage);assert.equal(r.status,200,await r.clone().text());}
+  return records.get('inspection:record:'+AP+':01')?.revision||0;
+ }
+ return {call,direct,records,kv,original,storage,issuer,env,prepareInspection};
 }
 test('JST deadline includes 30 whole days after publication, including year/leap transitions',()=>{
  assert.deepEqual(initialWindow('2026-09'),{checkStart:'2026-11-01',expiryDate:'2026-12-30'});
@@ -44,7 +50,7 @@ test('authenticated request, immutable images, required fields, duplicate submis
  r=await f.call('/supplement/status');const d=await r.json();assert.equal(d.items[0].rounds[0].submission.text,body.text);assert.equal(d.items[0].rounds[0].uploads.length,1);assert.equal(d.items[1].rounds.length,0);
  assert.deepEqual(JSON.parse(f.kv.get('REGISTRATION_APPLICATION:'+AP)),f.original);
  r=await f.call('/admin/supplement/request',{revision:2,instruction:'表面の撮り直し',needImages:true},true);assert.equal(r.status,200);assert.equal((await (await f.call('/supplement/status')).json()).items[0].rounds.length,2);
- r=await f.call('/admin/review',{ap:AP,item:'01',result:'rejected'},true);assert.equal(r.status,200);
+ r=await f.call('/admin/review',{ap:AP,item:'01',result:'rejected',inspectionRevision:await f.prepareInspection()},true);assert.equal(r.status,200);
  const decided=await (await f.call('/supplement/status')).json();assert.equal(decided.items[0].reviewResult,'rejected');assert.equal(decided.items[0].rounds.at(-1).status,'resolved');
  assert.equal((await f.call('/admin/supplement/request',{revision:4,instruction:'終了後の依頼',needText:true},true)).status,409);
 });
@@ -86,7 +92,7 @@ async function uploadSupplement(f,item='01'){
 test('every final review deletes supplemental bytes but preserves the submission history and other items',async()=>{
  for(const result of ['type1','type2','type3','special','rejected']){
   const f=await fixture(),{id}=await uploadSupplement(f);const other=await uploadSupplement(f,'02');
-  const response=await f.call('/admin/review',{ap:AP,item:'01',result},true);
+  const response=await f.call('/admin/review',{ap:AP,item:'01',result,inspectionRevision:await f.prepareInspection()},true);
   assert.equal(response.status,200,await response.clone().text());
   assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:'+AP+':01:')).length,0);
   const status=await (await f.call('/supplement/status')).json(),round=status.items[0].rounds[0];
@@ -113,7 +119,7 @@ test('closing an expired unsubmitted request removes staged images and interrupt
 test('deletion failure blocks image reads immediately and a persisted alarm retries after restart',async()=>{
  const f=await fixture(),{id}=await uploadSupplement(f);const realDelete=f.storage.delete;
  f.storage.delete=async keys=>{if(Array.isArray(keys))throw Error('simulated storage outage');return realDelete(keys)};
- assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected'},true)).status,200);
+ assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected',inspectionRevision:await f.prepareInspection()},true)).status,200);
  assert.ok(await f.storage.getAlarm());
  assert.equal(f.records.get('supplement:'+AP+':01').imageCleanup.status,'pending');
  assert.equal((await f.call('/supplement/image',undefined,false,{id})).status,410);
@@ -121,7 +127,7 @@ test('deletion failure blocks image reads immediately and a persisted alarm retr
  const restarted=new RegistrationIssuer({storage:f.storage},f.env);await restarted.alarm();
  assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:')).length,0);
  assert.equal(f.records.get('supplement:'+AP+':01').imageCleanup.status,'deleted');
- assert.equal(await f.storage.getAlarm(),null);
+ assert.equal(await f.storage.getAlarm(),f.records.get('inspection:record:'+AP+':01').expiresAt);
  await restarted.alarm(); // Idempotent duplicate alarm delivery.
  assert.equal(f.records.get('supplement:'+AP+':01').rounds[0].submission.text,'提出した説明');
 });
@@ -143,10 +149,10 @@ test('a newly finished item before the sweep cursor is retried without waiting f
  const f=await fixture();await uploadSupplement(f);
  f.records.set('supplement-cleanup:cursor','supplement:AP-ZZZZZZZZ:10');
  for(let n=0;n<300;n++)f.records.set('supplement-image:'+AP+':01:interrupted:'+n,new ArrayBuffer(1));
- assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected'},true)).status,200);
+ assert.equal((await f.call('/admin/review',{ap:AP,item:'01',result:'rejected',inspectionRevision:await f.prepareInspection()},true)).status,200);
  assert.equal(f.records.has('supplement-cleanup:cursor'),false);
  assert.ok([...f.records.keys()].some(k=>k.startsWith('supplement-image:')));
  await f.issuer.alarm();
  assert.equal([...f.records.keys()].filter(k=>k.startsWith('supplement-image:')).length,0);
- assert.equal(await f.storage.getAlarm(),null);
+ assert.equal(await f.storage.getAlarm(),f.records.get('inspection:record:'+AP+':01').expiresAt);
 });

@@ -1,4 +1,5 @@
 import {adminWorkspaceClient} from './admin-workspace.js';
+import {inspectionClient,inspectionStyles} from './inspection-ui.js';
 
 export const adminDestinations = [
   ['dashboard', '要対応', '/admin?view=dashboard'],
@@ -50,7 +51,7 @@ export function enhanceAdminPage(html, path) {
   const numberNav='<nav class="admin-number-index" aria-label="番号・プール一覧"><strong>番号・プール一覧</strong><div class="admin-number-links">'+adminNumberDestinations.map(([scope,label])=>'<a href="/admin/registration-numbers?scope='+scope+'" data-number-scope="'+scope+'">'+label+'</a>').join('')+'</div></nav>';
   const shell='<a class="skip-link" href="#admin-content">本文へ移動</a><div class="admin-shell"><div class="admin-shell-inner"><div class="admin-brandline"><div class="admin-brand">文化資料登録室<small>管理ワークスペース</small></div><div id="admin-auth-slot"></div></div><nav class="admin-nav" aria-label="管理画面の移動">'+nav+'</nav><div id="admin-current" class="admin-current"></div></div></div>'+numberNav+'<div id="admin-feedback" class="admin-feedback" role="status" aria-live="polite"></div>';
   if(isMain) html=html.replace('if(key())loadAll();','/* Admin workspace initializes after all extensions. */');
-  return html.replace('</head>','<style id="admin-workspace-style">'+styles+'</style></head>')
+  return html.replace('</head>','<style id="admin-workspace-style">'+styles+(isMain?inspectionStyles:'')+'</style></head>')
     .replace(/<body([^>]*)>/,'<body$1>'+shell)
-    .replace('</body>','<script>'+commonClient+'</script>'+(isMain?'<script>'+adminWorkspaceClient+'</script>':'')+'</body>');
+    .replace('</body>','<script>'+commonClient+'</script>'+(isMain?'<script>'+inspectionClient+'</script><script>'+adminWorkspaceClient+'</script>':'')+'</body>');
 }
