@@ -1,6 +1,7 @@
 import app from "./worker-entry5.js";
 import { supplementPaths, supplementService, json } from "./supplement-service.js";
 import {ensureRetentionAlarm, tryPurgeSupplementImages, sweepSupplementImages} from './supplement-retention.js';
+import {registrationNotePaths, registrationNumberNotes} from './registration-number-notes.js';
 
 const APPROVED_RESULTS = new Set(["type1", "type2", "type3", "special"]);
 
@@ -64,6 +65,8 @@ export class RegistrationIssuer {
 
   async handle(request) {
     const url = new URL(request.url);
+
+    if (registrationNotePaths.has(url.pathname)) return registrationNumberNotes(request, this.env, this.state.storage);
 
     // Reachable only through the existing DO binding, never through public routing.
     if (request.method === 'POST' && url.pathname === '/_internal/supplement-retention') {

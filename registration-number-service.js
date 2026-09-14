@@ -187,6 +187,15 @@ export async function readRegistrationNumberLedgers(env) {
   };
 }
 
+export async function hasRegistrationNumberInLedgers(env, number) {
+  const normalized = normalizeRegistrationNumber(number);
+  if (!normalized) return false;
+  for (const prefix of [PUBLIC_POOL_PREFIX, PUBLIC_ISSUED_PREFIX]) {
+    if (await env.REGISTRATION_KV.get(prefix + normalized)) return true;
+  }
+  return (await findInOwnerPool(env, normalized)).length > 0;
+}
+
 function generateRegistrationNumber() {
   const bytes = new Uint32Array(8);
   crypto.getRandomValues(bytes);
