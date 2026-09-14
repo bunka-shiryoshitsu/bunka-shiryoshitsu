@@ -1,22 +1,13 @@
 import app from "./worker-dashboard9.js";
-import {
-  readRegistrationNumberLedgers,
-  getNextPublicRegistrationNumber,
-  markPublicRegistrationNumberIssued
-} from "./registration-number-service.js";
+import { readRegistrationNumberLedgers } from "./registration-number-service.js";
 export { RegistrationIssuer } from "./worker-dashboard9.js";
 
-const LIVE_VERIFY_PATH = "/_cutover/f819da5705a7e816404a324eeeff45f414376fce14b9179a";
-const LIVE_VERIFY_KEY = "SYSTEM:NUMBERING_PRODUCTION_VERIFIED";
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    if (request.method === "GET" && path === LIVE_VERIFY_PATH) {
-      return runProductionNumberingVerification(env);
-    }
 
     if (request.method === "GET" && path === "/admin/registration-numbers") {
       return registrationNumbersPage();
@@ -54,70 +45,6 @@ export default {
     if (typeof app.scheduled === "function") return app.scheduled(controller, env, ctx);
   }
 };
-
-async function runProductionNumberingVerification(env) {
-  const previous = await env.REGISTRATION_KV.get(LIVE_VERIFY_KEY);
-  if (previous) {
-    let record = null;
-    try { record = JSON.parse(previous); } catch {}
-    return json({ success: false, alreadyCompleted: true, record }, 409);
-  }
-
-  const before = await readRegistrationNumberLedgers(env);
-  const number = await getNextPublicRegistrationNumber(env);
-  if (!number) return json({ success: false, message: "Random number generation failed." }, 500);
-
-  const generated = (await readRegistrationNumberLedgers(env)).publicPool.find(x => x.number === number);
-  const ownerCollision = before.owner.some(x => x.number === number);
-  if (!generated || ownerCollision) {
-    return json({ success: false, message: "Pre-issuance verification failed.", number, generated: Boolean(generated), ownerCollision }, 500);
-  }
-
-  const now = new Date().toISOString();
-  await markPublicRegistrationNumberIssued(env, number, {
-    ap: "AP-SYSTEM-VERIFY",
-    item: "00",
-    registeredAt: now,
-    source: "production-verification",
-    isTest: true
-  });
-
-  const after = await readRegistrationNumberLedgers(env);
-  const poolRecord = after.publicPool.find(x => x.number === number) || null;
-  const issuedRecord = after.publicIssued.find(x => x.number === number) || null;
-  const inOwnerPool = after.owner.some(x => x.number === number);
-  const ok = Boolean(
-    poolRecord &&
-    issuedRecord &&
-    poolRecord.status === "issued" &&
-    issuedRecord.status === "issued" &&
-    !inOwnerPool
-  );
-
-  const result = {
-    success: ok,
-    number,
-    checkedAt: now,
-    generatedLocation: poolRecord?.location || null,
-    issuedLocation: issuedRecord?.location || null,
-    generatedStatus: poolRecord?.status || null,
-    issuedStatus: issuedRecord?.status || null,
-    inOwnerPool,
-    countsBefore: {
-      owner: before.owner.length,
-      publicPool: before.publicPool.length,
-      publicIssued: before.publicIssued.length
-    },
-    countsAfter: {
-      owner: after.owner.length,
-      publicPool: after.publicPool.length,
-      publicIssued: after.publicIssued.length
-    }
-  };
-
-  await env.REGISTRATION_KV.put(LIVE_VERIFY_KEY, JSON.stringify(result));
-  return json(result, ok ? 200 : 500);
-}
 
 function isAdmin(request, env) {
   return Boolean(env.ADMIN_KEY && request.headers.get("X-Admin-Key") === env.ADMIN_KEY);

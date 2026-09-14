@@ -1,3 +1,4 @@
+import { randomCode } from "./secure-random.js";
 import app from "./worker-dashboard6.js";
 export { RegistrationIssuer } from "./worker-dashboard6.js";
 
@@ -128,7 +129,7 @@ export default {
 function isAdmin(request, env){return Boolean(env.ADMIN_KEY && request.headers.get("X-Admin-Key") === env.ADMIN_KEY)}
 function normalizeAP(v){const ap=String(v??"").trim().toUpperCase();return /^AP-[A-Z0-9]{8}$/.test(ap)?ap:null}
 function normalizeNumber(v){const n=String(v??"").trim().toUpperCase();return /^[A-Z0-9]{8}$/.test(n)?n:null}
-function generateShortKey(){let s="";for(let i=0;i<4;i++)s+=KEY_CHARS[Math.floor(Math.random()*KEY_CHARS.length)];return s}
+function generateShortKey(){return randomCode(KEY_CHARS,4)}
 async function sha256(v){const b=new TextEncoder().encode(String(v));const d=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function saveReceiveKey(env,ap,key){await env.REGISTRATION_KV.put("RECEIVE_AUTH:"+ap,JSON.stringify({hash:await sha256(key),format:"short4",createdAt:new Date().toISOString()}))}
 async function verifyShortKey(env,ap,key){const raw=await env.REGISTRATION_KV.get("RECEIVE_AUTH:"+ap);if(!raw)return false;try{return JSON.parse(raw)?.hash===await sha256(key)}catch{return false}}

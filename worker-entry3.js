@@ -59,7 +59,7 @@ strong{color:#332d20}
 <label for="key">受取キー</label>
 <input id="key" autocomplete="off" placeholder="受取キー">
 <button id="check" type="button">登録書を確認</button>
-<div id="result"></div>
+<div id="result" role="status" aria-live="polite"></div><p><a href="https://bunka-shiryoshitsu.github.io/bunka-shiryoshitsu/">文化資料登録室へ戻る</a></p>
 <div class="notice small">
 <strong>印刷・保管について</strong><br>
 登録書は写真のL判サイズで作成しています。セブン‐イレブンのマルチコピー機等で写真プリントする場合も、L判を選び、サイズや縦横比を変更せずに印刷してください。L判以外への拡大・縮小や縦横比の変更は、画像の粗れ、文字の見にくさ、枠の比率、QRコードの読み取り等に影響する場合があります。<br><br>
@@ -104,7 +104,7 @@ button.addEventListener('click', async () => {
       const wrap = document.createElement('div');
       wrap.className = 'item';
       const title = document.createElement('div');
-      title.textContent = (item.finalName || item.name || '登録資料') + (item.registrationTypeLabel ? ' / ' + item.registrationTypeLabel : '');
+      title.textContent = (item.finalName || item.name || '登録資料') + ((item.registrationTypeLabel || item.registrationType) ? ' / ' + (item.registrationTypeLabel || item.registrationType) : '');
       wrap.appendChild(title);
       if (item.ready) {
         const dl = document.createElement('button');
@@ -128,6 +128,7 @@ button.addEventListener('click', async () => {
 });
 
 async function downloadFile(ap, receiveKey, registrationNumber) {
+  try {
   const response = await fetch(WORKER_URL + '/receive-file', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -147,6 +148,9 @@ async function downloadFile(ap, receiveKey, registrationNumber) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    result.textContent = '通信に失敗しました。もう一度ダウンロードしてください。';
+  }
 }
 </script>
 </body>

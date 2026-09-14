@@ -7,6 +7,12 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "POST" && url.pathname === "/admin/review") {
+      if (!env.ADMIN_KEY || request.headers.get("X-Admin-Key") !== env.ADMIN_KEY) {
+        return new Response(JSON.stringify({ success: false, message: "Unauthorized." }), {
+          status: 401,
+          headers: { "Content-Type": "application/json; charset=UTF-8", "Cache-Control": "no-store" }
+        });
+      }
       let body = null;
       try { body = await request.clone().json(); } catch {}
 

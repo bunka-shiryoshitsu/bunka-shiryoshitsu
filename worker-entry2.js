@@ -1,3 +1,4 @@
+import { randomCode } from "./secure-random.js";
 import app from "./worker-entry.js";
 
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
@@ -115,17 +116,7 @@ function unauthorized() {
   return json({ success: false, message: "Unauthorized." }, 401);
 }
 
-function generateReceiveKey() {
-  const groups = [];
-  for (let g = 0; g < 4; g++) {
-    let group = "";
-    for (let i = 0; i < 4; i++) {
-      group += RECEIVE_KEY_CHARS[Math.floor(Math.random() * RECEIVE_KEY_CHARS.length)];
-    }
-    groups.push(group);
-  }
-  return groups.join("-");
-}
+function generateReceiveKey() { return Array.from({length:4}, () => randomCode(RECEIVE_KEY_CHARS,4)).join("-"); }
 
 async function sha256(value) {
   const bytes = new TextEncoder().encode(String(value));

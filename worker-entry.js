@@ -1,3 +1,4 @@
+import { randomCode } from "./secure-random.js";
 import core from "./worker-core.js";
 
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
@@ -120,13 +121,7 @@ function japanDate() {
   }).format(new Date());
 }
 
-function generateAP() {
-  let result = "";
-  for (let i = 0; i < 8; i++) {
-    result += AP_CHARS[Math.floor(Math.random() * AP_CHARS.length)];
-  }
-  return "AP-" + result;
-}
+function generateAP() { return "AP-" + randomCode(AP_CHARS, 8); }
 
 async function sha256(value) {
   const data = new TextEncoder().encode(value);

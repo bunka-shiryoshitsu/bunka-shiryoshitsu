@@ -1,5 +1,5 @@
-import app from "./worker-dashboard14.js";
-export { RegistrationIssuer } from "./worker-dashboard14.js";
+import app from "./worker-dashboard10.js";
+export { RegistrationIssuer } from "./worker-dashboard10.js";
 
 export default {
   async fetch(request, env, ctx) {
