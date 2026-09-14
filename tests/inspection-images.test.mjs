@@ -42,6 +42,14 @@ test('atomic image writes roll back on failure and retries never double count',a
   assert.equal(f.records.get('inspection:state').count,1);assert.equal(f.records.get('inspection:state').bytes,140000);
   const response=await f.call('image',undefined,{id:'original-01'});assert.equal(response.headers.get('Cache-Control'),'no-store, private');assert.deepEqual(new Uint8Array(await response.arrayBuffer()),bytes);
 });
+test('an original with a missing metadata record is still preserved for inspection',async()=>{
+  const f=fixture();f.entries.delete('IMAGE_META:'+AP+':01:01');
+  const data=await (await f.call('status')).json();assert.deepEqual(data.sources.map(s=>s.id),['original-01']);
+  await assert.rejects(()=>requireInspectionReady(f.env,f.storage,AP,'01',undefined,NOW),e=>e.status===409);
+  assert.equal((await f.call('upload',jpeg(),{id:'original-01'})).status,200);
+  const ready=await (await f.call('ready',{})).json();await requireInspectionReady(f.env,f.storage,AP,'01',ready.revision,NOW);
+  assert.ok(f.entries.has('IMAGE:'+AP+':01:01'));
+});
 test('expiry deletes only inspection bytes and is enforced even before an alarm runs',async()=>{
   const f=fixture();f.finish('01');await f.call('upload',jpeg(),{id:'original-01'});const record=f.records.get('inspection:record:'+AP+':01');
   assert.equal((await f.call('image',undefined,{id:'original-01'},record.expiresAt-1)).status,200);

@@ -44,7 +44,8 @@ export async function inspectionContext(env,storage,ap,item){
   const application=JSON.parse(raw),material=application.items?.find(x=>String(x.item)===item);if(!material)fail('資料が見つかりません。',404);
   const supplement=await storage.get('supplement:'+ap+':'+item),final=await storage.get('supplement-final:'+ap+':'+item);
   const finished=Boolean(final||material.registrationNumber||material.registrationStatus==='cancelled'||['type1','type2','type3','special','rejected'].includes(material.reviewResult)||supplement?.rounds?.at(-1)?.status==='closed');
-  const keys=await env.REGISTRATION_KV.list({prefix:'IMAGE_META:'+ap+':'+item+':',limit:30});
+  // Discover stored bytes, including an upload whose metadata write was interrupted.
+  const keys=await env.REGISTRATION_KV.list({prefix:'IMAGE:'+ap+':'+item+':',limit:30});
   const sources=keys.keys.map(k=>k.name.split(':').at(-1)).filter(n=>/^(0[1-9]|1[0-9]|20)$/.test(n)).sort().map(n=>({id:'original-'+n,label:'申請画像 '+Number(n),source:'original',image:n}));
   for(const [roundIndex,round] of (supplement?.imageCleanup?.status==='deleted'?[]:supplement?.rounds||[]).entries())for(const image of round.uploads||[]){
     // Unsubmitted/withdrawn attachments are never retained for inspection.
