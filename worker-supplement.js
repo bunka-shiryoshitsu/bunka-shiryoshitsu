@@ -1,6 +1,7 @@
 import app from './worker-dashboard15.js';
 import {supplementPaths,json} from './supplement-service.js';
 import {portalScript,adminSupplementScript} from './supplement-ui.js';
+import {improveTextContrast} from './text-contrast.js';
 export {RegistrationIssuer} from './worker-dashboard15.js';
 
 export default {
@@ -38,7 +39,11 @@ export default {
           .replace("['追加確認','additional_check','warn'],",'')
           .replace('</script>',adminSupplementScript+'\n</script>');
       }
-      const headers=new Headers(response.headers);headers.delete('Content-Length');headers.set('Cache-Control','no-store');return new Response(page,{status:response.status,headers});
+      const headers=new Headers(response.headers);headers.delete('Content-Length');headers.set('Cache-Control','no-store');return new Response(improveTextContrast(page),{status:response.status,headers});
+    }
+    if(response.headers.get('Content-Type')?.includes('text/html')){
+      const headers=new Headers(response.headers);headers.delete('Content-Length');
+      return new Response(improveTextContrast(await response.text()),{status:response.status,headers});
     }
     return response;
   },
