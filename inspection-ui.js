@@ -43,27 +43,27 @@ export const inspectionClient=String.raw`
      if(key()!==keyValue)throw Error('管理キーが変更されました。もう一度読み込んでください。');
      if(!response.ok){if(response.status===401){window.dispatchEvent(new Event('admin-auth-required'));const e=Error(authMessage);e.status=401;throw e}let message='点検画像を読み込めませんでした。';try{message=(await response.json()).message||message}catch{}throw Error(message)}
      return binary?await response.blob():await response.json();
-   }catch(e){if(controller.signal.aborted)throw Error(signal?.aborted?'点検画像の保存を中止しました。審査は確定していません。':'点検画像の通信が時間切れになりました。再試行してください。');throw e}
+   }catch(e){if(controller.signal.aborted)throw Error(signal?.aborted?'点検画像の保存を中止しました。保存済みの画像は残ります。同じ保存操作で続きから再開できます。':'点検画像の通信が時間切れになりました。再試行してください。');throw e}
    finally{clearTimeout(timer);signal?.removeEventListener('abort',abort)}
  }
  async function prepare(ap,item,wrap,options={}){
    if(preparing)throw Error('点検画像を保存中です。完了をお待ちください。');preparing=true;
    const controller=new AbortController(),progress=node('div',undefined,wrap,'inspection-progress');progress.setAttribute('role','status');const message=node('p','点検用画像の保存状態を確認しています…',progress),cancel=node('button','画像保存を中止',progress);cancel.type='button';cancel.onclick=()=>controller.abort();
+   let completed=0;
    try{
      const current=await request('status',query(ap,item),undefined,controller.signal),missing=current.sources.filter(s=>!current.record?.images?.some(i=>i.id===s.id));
-     let completed=0;
      for(const source of missing){
-       if(controller.signal.aborted)throw Error('点検画像の保存を中止しました。審査は確定していません。');
+       if(controller.signal.aborted)throw Error('点検画像の保存を中止しました。保存済みの画像は残ります。同じ保存操作で続きから再開できます。');
        message.textContent='点検用の縮小画像を保存中：'+(completed+1)+' / '+missing.length+'枚\n'+source.label;
        const original=await request('source',query(ap,item,{id:source.id}),undefined,controller.signal,true);
-       const copy=await copyImage(original);if(controller.signal.aborted)throw Error('点検画像の保存を中止しました。審査は確定していません。');
+       const copy=await copyImage(original);if(controller.signal.aborted)throw Error('点検画像の保存を中止しました。保存済みの画像は残ります。同じ保存操作で続きから再開できます。');
        await request('upload',query(ap,item,{id:source.id}),copy,controller.signal);completed++;
        await new Promise(resolve=>setTimeout(resolve,0));
      }
      const ready=await request('ready',query(ap,item),{},controller.signal);
      if(current.sources.length===0&&!current.record?.images?.length&&options.migration)return {revision:0,saved:0};
      return {revision:ready.revision,saved:completed};
-   }finally{preparing=false;progress.remove()}
+   }catch(e){e.savedThisAttempt=completed;throw e}finally{preparing=false;progress.remove()}
  }
  window.Inspection={prepare};
  const preview=node('dialog',undefined,document.body,'inspection-preview'),previewTitle=node('p','点検用の縮小画像',preview),previewImage=node('img',undefined,preview),previewClose=node('button','閉じる',preview);previewClose.type='button';previewClose.onclick=()=>preview.close();preview.addEventListener('close',()=>{previewImage.removeAttribute('src')});
@@ -85,7 +85,7 @@ export const inspectionClient=String.raw`
        else node('p',r?.deletedAt?'点検用画像は削除済みです（'+(r.deleteReason==='capacity'?'容量上限による整理':'保存期限の終了')+'：'+date(r.deletedAt)+'）。':data.finished?'点検用画像はまだ保存されていません。すでに削除された元画像は復元できません。':'審査を確定する際に、点検用の縮小画像を自動保存します。',body,'inspection-muted');
        node('p','全体や表裏を見直すための縮小画像です。細かな文字・傷の再判定には元画像が必要です。期限前でも容量上限に達すると、古い確定済み画像から整理します。',body,'inspection-muted');
        if(data.stats.warning)node('p','点検画像の容量が上限に近づいています。⑥設定で使用量をご確認ください。',body,'inspection-warning');
-       if(data.finished&&data.sources.some(s=>!images.some(i=>i.id===s.id))){const save=node('button','残っている画像を縮小保存',body);save.type='button';save.onclick=async()=>{save.disabled=true;window.AdminUI.setBusy('inspection:'+ap+':'+item.item,true);try{await prepare(ap,item.item,panel);await show()}catch(e){node('p',e.message,body,'inspection-warning')}finally{save.disabled=false;window.AdminUI.setBusy('inspection:'+ap+':'+item.item,false)}};}
+       if(data.finished&&data.sources.some(s=>!images.some(i=>i.id===s.id))){const save=node('button','残っている画像を縮小保存',body);save.type='button';save.onclick=async()=>{save.disabled=true;window.AdminUI.setBusy('inspection:'+ap+':'+item.item,true);try{await prepare(ap,item.item,panel);await show()}catch(e){await show();if(body.isConnected&&!body.hidden)node('p',e.message+' 保存済みの画像は残っています。「残っている画像を縮小保存」で続きから再開できます。',body,'inspection-warning')}finally{save.disabled=false;window.AdminUI.setBusy('inspection:'+ap+':'+item.item,false)}};}
        if(r?.finalizedAt&&images.length){const actions=node('div',undefined,body,'inspection-actions'),label=node('label','延長後の保存期限（日本時間）',actions),input=node('input',undefined,label);input.type='date';input.min=new Date(r.expiresAt+9*3600000).toISOString().slice(0,10);input.max=new Date(Date.now()+365*86400000+9*3600000).toISOString().slice(0,10);const extend=node('button','保存期限を延長',actions);extend.type='button';extend.onclick=async()=>{if(!input.value){input.focus();return}const choice=await window.AdminUI.choose('点検画像の保存期限を延長',ap+' ／ 資料 '+item.item+'\n'+input.value+' 23:59（日本時間）まで保存します。容量上限による整理の対象には含まれます。',[['この期限に延長','extend'],['戻る','stay','secondary']]);if(choice!=='extend')return;extend.disabled=true;window.AdminUI.setBusy('inspection-extend',true);try{await request('extend',query(ap,item.item),{revision:r.revision,date:input.value});await show()}catch(e){node('p',e.message,body,'inspection-warning')}finally{extend.disabled=false;window.AdminUI.setBusy('inspection-extend',false)}};}
        if(!images.length)return;page=Math.min(page,Math.max(0,Math.ceil(images.length/20)-1));const pager=node('div',undefined,body,'inspection-actions');node('span',(page*20+1)+'〜'+Math.min((page+1)*20,images.length)+'枚目 / '+images.length+'枚',pager);for(const [label,delta]of [['前の20枚',-1],['次の20枚',1]]){const b=node('button',label,pager);b.type='button';b.disabled=delta<0?page===0:(page+1)*20>=images.length;b.onclick=()=>{page+=delta;void show()};}
        const gallery=node('div',undefined,body,'inspection-gallery'),visible=images.slice(page*20,(page+1)*20);
@@ -127,7 +127,7 @@ export const inspectionClient=String.raw`
      const data=await api('/admin/dashboard-data',{headers:H(false)});const materials=data.applications.flatMap(a=>(a.items||[]).filter(i=>i.registrationNumber||['type1','type2','type3','special','rejected'].includes(i.reviewResult)||i.registrationStatus==='cancelled').map(i=>({ap:a.ap,item:i.item})));
      for(const [index,m]of materials.entries()){if(key()!==migrationKey)throw Error('管理キーが変更されました。もう一度「管理情報を表示」を押してください。');message.textContent='既存画像を確認中：'+(index+1)+' / '+materials.length+'資料（保存 '+saved+'枚）';const r=await prepare(m.ap,m.item,settings,{migration:true});saved+=r.saved}
      message.textContent='既存画像の確認が終わりました。縮小保存：'+saved+'枚。';await loadSettings('');
-   }catch(e){if(e.status===401)window.dispatchEvent(new Event('admin-auth-required'));message.className='inspection-warning';message.setAttribute('role','alert');message.textContent='縮小保存を中断しました（保存済み：'+saved+'枚）。'+e.message}finally{migrate.disabled=false;window.AdminUI.setBusy('inspection-migration',false)}
+   }catch(e){saved+=e.savedThisAttempt||0;if(e.status===401)window.dispatchEvent(new Event('admin-auth-required'));message.className='inspection-warning';message.setAttribute('role','alert');message.textContent='縮小保存を中断しました（今回の保存確認：'+saved+'枚）。'+e.message+' 同じ保存操作で、保存済みの画像を除いて再開できます。'}finally{migrate.disabled=false;window.AdminUI.setBusy('inspection-migration',false)}
  };
  const showSettings=()=>{if(!document.getElementById('view-system').classList.contains('hidden')&&key()&&!shown){shown=true;void loadSettings('')}};
  const visibility=new MutationObserver(showSettings);visibility.observe(document.getElementById('view-system'),{attributes:true,attributeFilter:['class']});
