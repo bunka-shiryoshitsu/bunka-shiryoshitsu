@@ -11,7 +11,7 @@ export function adminSessionClient(initialSession){
  function mount(){
    const auth=document.querySelector('.admin-auth');if(!auth)return;
    let state=document.getElementById('admin-session-state');
-   if(!state){state=document.createElement('span');state.id='admin-session-state';state.setAttribute('role','status');auth.append(state);const logout=document.createElement('button');logout.id='admin-logout';logout.type='button';logout.textContent='ログアウト';auth.append(logout);logout.onclick=async()=>{if(window.AdminUI?.beforeLeave&&!await window.AdminUI.beforeLeave())return;logout.disabled=true;try{await sessionRequest('DELETE');expiresAt=0;location.reload()}catch(e){say(e.message);logout.disabled=false}};}
+   if(!state){state=document.createElement('span');state.id='admin-session-state';state.setAttribute('role','status');auth.append(state);const logout=document.createElement('button');logout.id='admin-logout';logout.type='button';logout.textContent='ログアウト';auth.append(logout);logout.onclick=async()=>{if(window.AdminUI?.beforeLeave&&!await window.AdminUI.beforeLeave({logout:true}))return;logout.disabled=true;try{await window.AdminDocumentDrafts?.clear();sessionStorage.removeItem('bunkaAdminDrafts');await sessionRequest('DELETE');expiresAt=0;location.reload()}catch(e){say(e.message);logout.disabled=false}};}
    const signedIn=active();input().hidden=signedIn;auth.querySelector('label[for="adminKey"]').hidden=signedIn;document.getElementById('admin-logout').hidden=!signedIn;
    state.textContent=signedIn?'ログイン中 · '+new Date(expiresAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})+' まで':'ログイン後24時間、このブラウザー・同じ回線で保持します。';
    clearTimeout(timer);if(signedIn)timer=setTimeout(()=>expire(),Math.max(1,expiresAt-Date.now()));

@@ -2734,6 +2734,7 @@ async function issuedDataUpload(
 
     registration.issuedDataUploadedAt =
       now;
+    registration.issuedDataFileName = file.name || number + '.jpg';
 
     await env.REGISTRATION_KV.put(
       actualKey,
@@ -2775,6 +2776,7 @@ async function issuedDataUpload(
 
         target.issuedDataUploadedAt =
           now;
+        target.issuedDataFileName = file.name || number + '.jpg';
       }
 
       application.status =
@@ -2801,6 +2803,8 @@ async function issuedDataUpload(
       registrationNumber:
         number,
       ready: true,
+      fileName: file.name || number + '.jpg',
+      uploadedAt: now,
       message:
         "登録書の発行データJPGを登録しました。発行データを受け取れる状態になりました。"
     });

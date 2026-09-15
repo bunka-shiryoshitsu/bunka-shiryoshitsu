@@ -61,7 +61,7 @@ export const workActionClient=String.raw`
   for(const w of document.querySelectorAll('#detail>.item')){
     const task=tasks.find(t=>t.ap===w.dataset.ap&&t.item===w.dataset.item&&!t.local);let note=w.querySelector('.work-item-next');
     if(task){if(!note){note=node('div',undefined,undefined,'work-item-next');w.querySelector('h3').after(note)}note.replaceChildren();node('strong','要作業：'+task.label,note);node('small','確認・保存が完了するまで要作業として残ります。',note);}else note?.remove();
-    mark(w.querySelector('.uploadIssued'),Boolean(task?.kind==='document'||w.querySelector('.issuedFile')?.files?.length));
+    mark(w.querySelector('.uploadIssued'),Boolean(window.AdminDocuments?.file(w.querySelector('.issuedFile'))));
     for(const b of w.querySelectorAll('[data-review]')){b.classList.remove('work-action');b.classList.add('work-neutral')}
     for(const area of [w.querySelector('.actions'),w.querySelector('.uploadArea'),w.querySelector('.detail[data-revision]')])area?.classList.add('work-focus');
     const cancel=w.querySelector('button.cancel');if(cancel&&!cancel.textContent.startsWith('注意：'))cancel.textContent='注意：登録取消';

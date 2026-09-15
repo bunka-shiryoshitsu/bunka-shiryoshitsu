@@ -1,3 +1,4 @@
+import {documentDraftClient,documentUploadClient,documentUploadStyles} from './admin-document-upload.js';
 import {adminWorkspaceClient} from './admin-workspace.js';
 import {inspectionClient,inspectionStyles} from './inspection-ui.js';
 import {adminSessionClient} from './admin-session-ui.js';
@@ -54,7 +55,7 @@ export function enhanceAdminPage(html, path, session=null) {
   const numberNav='<nav class="admin-number-index" aria-label="番号・プール一覧"><strong>番号・プール一覧</strong><div class="admin-number-links">'+adminNumberDestinations.map(([scope,label])=>'<a href="/admin/registration-numbers?scope='+scope+'" data-number-scope="'+scope+'">'+label+'</a>').join('')+'</div></nav>';
   const shell='<a class="skip-link" href="#admin-content">本文へ移動</a><div class="admin-shell"><div class="admin-shell-inner"><div class="admin-brandline"><div class="admin-brand">文化資料登録室<small>管理ワークスペース</small></div><div id="admin-auth-slot"></div></div><nav class="admin-nav" aria-label="管理画面の移動">'+nav+'</nav><div id="admin-current" class="admin-current"></div></div></div>'+numberNav+'<div id="admin-feedback" class="admin-feedback" role="status" aria-live="polite"></div>';
   if(isMain) html=html.replace('if(key())loadAll();','/* Admin workspace initializes after all extensions. */');
-  return html.replace('<script>','<script>'+adminSessionClient(session)+'</script><script>').replace('</head>','<style id="admin-workspace-style">'+styles+'.admin-auth [hidden]{display:none!important}#admin-session-state{font-size:14px;max-width:360px}.admin-auth{flex-wrap:wrap}'+(isMain?inspectionStyles:'')+workActionStyles+'</style></head>')
+  return html.replace('<script>','<script>'+adminSessionClient(session)+'</script><script>').replace('</head>','<style id="admin-workspace-style">'+styles+'.admin-auth [hidden]{display:none!important}#admin-session-state{font-size:14px;max-width:360px}.admin-auth{flex-wrap:wrap}'+(isMain?inspectionStyles:'')+workActionStyles+documentUploadStyles+'</style></head>')
     .replace(/<body([^>]*)>/,'<body$1>'+shell)
-    .replace('</body>','<script>'+commonClient+';window.AdminSession.mount();</script>'+(isMain?'<script>'+inspectionClient+'</script><script>'+adminReceiptClient+'</script><script>'+adminWorkspaceClient+'</script>':'')+'<script>'+workActionClient+'</script></body>');
+    .replace('</body>','<script>'+commonClient+documentDraftClient+';window.AdminSession.mount();</script>'+(isMain?'<script>'+inspectionClient+'</script><script>'+adminReceiptClient+'</script><script>'+documentUploadClient+'</script><script>'+adminWorkspaceClient+'</script>':'')+'<script>'+workActionClient+'</script></body>');
 }

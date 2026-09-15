@@ -41,6 +41,8 @@ test('lottery, winner, upload, submission, review, private receipt and cancellat
  assert.equal(await (await call('/check',{number})).text(),'登録あり');
  form=new FormData();form.append('registrationNumber',number);form.append('file',new File([jpg],'document.jpg',{type:'image/jpeg'}));
  r=await call('/admin/issued-data-upload',form,true);assert.equal(r.status,200,await r.clone().text());
+ const uploaded=await r.json();assert.equal(uploaded.fileName,'document.jpg');assert.ok(uploaded.uploadedAt);
+ const savedApplication=await (await call('/admin/application?ap='+ap,undefined,true)).json();assert.equal(savedApplication.application.items[0].issuedDataFileName,'document.jpg');assert.equal(savedApplication.application.items[0].issuedDataReady,true);
  assert.equal((await call('/receive-status',{ap:'AP-ZZZZZZZZ'})).status,401);
  r=await call('/receive-status',{ap});assert.equal(r.status,200);assert.equal((await r.json()).items[0].ready,true);
  r=await call('/receive-file',{ap,registrationNumber:number});assert.equal(r.status,200);assert.deepEqual(new Uint8Array(await r.arrayBuffer()),jpg);
