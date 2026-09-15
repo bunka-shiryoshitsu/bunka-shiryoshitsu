@@ -577,6 +577,7 @@ footer{
 }
 
 input::placeholder,textarea::placeholder{color:#111;opacity:1}
+.ap-privacy{font-size:clamp(22px,3.5vw,28px);font-weight:800;line-height:1.6;color:#812b20;border:2px solid #a34d38;background:#fff4df;padding:18px;margin:20px 0;overflow-wrap:anywhere}
 </style>
 </head>
 
@@ -846,7 +847,7 @@ We look closely at the traces they carry and preserve a record for the future.
 
 <div class="application-lookup">
 <div class="application-lookup-title">抽選結果確認</div>
-<p>抽選申込時に発行された確認番号（AP番号）を入力してください。</p>
+<p>抽選申込時に発行された確認番号（AP番号）を入力してください。</p><p class="ap-privacy">AP番号は他人に教えないでください。</p>
 <input type="text" id="application-number" placeholder="例：AP-E5F6G7H5" maxlength="11" autocomplete="off">
 <br>
 <button type="button" id="application-check-button">抽選結果を確認 / CHECK LOTTERY RESULT</button>
@@ -860,7 +861,7 @@ We look closely at the traces they carry and preserve a record for the future.
 <div id="registration-submit-message" class="application-next-message"></div>
 </div>
 <p style="margin-top:28px"><a id="receive-page-link" class="application-next" href="#" style="text-decoration:none;display:inline-block">申請状況の確認・追加提出・登録書の受取り</a></p>
-<p class="small">初回の登録申請後は、週に一度、上の確認画面をご確認ください。AP番号と受取キーを入力すると、資料ごとの確認状況、追加提出の依頼内容・期限、登録結果が表示されます。追加画像や文章も同じ画面から提出できます。メールでの通知は行いません。</p>
+<p class="small">初回の登録申請後は、週に一度、上の確認画面をご確認ください。AP番号を入力すると、資料ごとの確認状況、追加提出の依頼内容・期限、登録結果が表示されます。追加画像や文章も同じ画面から提出できます。メールでの通知は行いません。</p>
 
 </div>
 </div>
@@ -1123,7 +1124,7 @@ We look closely at the traces they carry and preserve a record for the future.
 <h4>申込み前に</h4>
 <ul>
 <li>抽選は月単位で受け付け、結果は申込み月の翌々月1日から公開します。例：9月申込み → 11月1日から確認可能。</li>
-<li>申込み完了後に発行される確認番号（AP番号）と受取キーは、必ず保存してください。受取キーは発行画面を離れると再表示できず、紛失しても再発行は行いません。必要な場合は、新規の抽選申込みから改めてお申し込みください。</li>
+<li>申込み完了後に発行される確認番号（AP番号）を、紙などに控え、大切に保管してください。AP番号は他人に教えないでください。</li>
 <li>申込みは同一人物につき1日1件までです。同日の複数申込は、重複申込として抽選対象から除外する場合があります。</li>
 <li>複数の方法による申込制限の回避が認められる場合、申込又は登録を無効とし、登録後に判明した場合は登録を取り消すことがあります。</li>
 <li>大量の申込などによってシステム又はサーバーに過度の負担を生じさせた場合、申込、当選又は登録を取り消す場合があります。</li>
@@ -1136,7 +1137,7 @@ We look closely at the traces they carry and preserve a record for the future.
 <p>申請時に入力した資料名称・関連名称は、そのまま申告内容として保存します。登録書の表記は、提出資料を確認した上で当資料室が整理する場合がありますが、元の入力内容は削除しません。</p>
 <p><strong>画像は、申請者自身が申請時に現物を撮影したものに限ります。</strong>インターネット、SNS、オークションサイト、フリマサイト、書籍、雑誌などの掲載画像は使用できません。ご自身が過去に掲載した画像も使い回さず、改めて撮影してください。</p>
 <p>資料の状態や特徴が分かるよう、正面に加えて裏面、側面、斜め方向など、可能な範囲で異なる角度から撮影してください。大きさ・形状・付属品などを十分に確認できない場合は、必要な追加画像や情報を具体的にご案内します。</p>
-<p><strong>初回申請後は週に一度、このHPの「申請状況の確認・追加提出・登録書の受取り」をご確認ください。</strong>AP番号と受取キーを入力すると、資料ごとの状況や依頼内容が表示され、そのまま追加文章・画像を提出できます。追加依頼や登録結果のメール通知は行いません。</p>
+<p><strong>初回申請後は週に一度、このHPの「申請状況の確認・追加提出・登録書の受取り」をご確認ください。</strong>AP番号を入力すると、資料ごとの状況や依頼内容が表示され、そのまま追加文章・画像を提出できます。追加依頼や登録結果のメール通知は行いません。</p>
 <p>追加提出の期間は<strong>依頼掲載日の翌日から30日間</strong>です。画面に表示された締切日の23:59（日本時間）までに提出してください。期限内に初回申請を済ませた資料は、初回申請の期限を過ぎても追加提出できます。</p>
 <p>追加提出の期限を過ぎた場合は「追加提出期限切れ」と表示し、管理者が期限延長又は未提出による手続終了を判断します。自動で不承認になることはありません。</p>
 
@@ -1148,7 +1149,7 @@ We look closely at the traces they carry and preserve a record for the future.
 <p><strong>登録料、審査料その他、登録に関する費用は徴収しません。</strong></p>
 
 <h4>登録書の受取り・保管</h4>
-<p>登録書は、当資料室がその資料を登録したことを示す記録です。「申請状況の確認・追加提出・登録書の受取り」でAP番号と受取キーによる本人確認後、JPG形式で受け取れます。登録番号だけでは取得できません。</p>
+<p>登録書は、当資料室がその資料を登録したことを示す記録です。「申請状況の確認・追加提出・登録書の受取り」でAP番号による確認後、JPG形式で受け取れます。登録番号だけでは取得できません。</p>
 <p>登録書は写真用L判サイズで作成しています。セブン‐イレブン等のマルチコピー機を利用する場合も、写真プリントのL判を選び、サイズや縦横比を変更せず印刷してください。拡大・縮小や縦横比の変更は、画像の粗れ、文字や枠の見え方、QRコードの読み取り等に影響するため推奨しません。</p>
 <p><strong>登録書には資料の画像を掲載していません。必ず登録された資料と一緒に保管してください。</strong>長期保存のため、ラミネート加工などにより汚損、破損、折れ、退色等を防ぐことを推奨します。</p>
 <p>紛失や著しい毀損により資料との対応関係を確認できなくなった場合、原則として登録書のみの再発行は行いません。必要な場合は、改めて登録申請を行ってください。</p>
@@ -1167,7 +1168,7 @@ We look closely at the traces they carry and preserve a record for the future.
 ※申請前に、抽選方法、登録申請、提出画像、登録の判断、登録後の取扱い等について、必ず「申請時の注意事項」を確認してください。
 </p>
 <p class="small" id="application-status-note">※受付状態はシステムから自動取得します。</p>
-<p class="small"><strong>重要 / IMPORTANT：抽選申込み完了後に表示される確認番号（AP番号）と受取キーは、必ず保存してください。紛失した場合、再発行は行いません。</strong></p>
+<p class="ap-privacy">AP番号は他人に教えないでください。</p><p>申込み完了後に表示されるAP番号を、紙などに控え、大切に保管してください。</p>
 
 <button type="button" id="application-next" class="application-next" disabled>
 抽選申込ページへ進む / APPLY FOR LOTTERY

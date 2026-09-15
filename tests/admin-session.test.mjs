@@ -34,9 +34,9 @@ test('a changed IP, missing trusted IP, changed secret or forged token cannot us
   assert.equal((await f.call(path,{cookie:SESSION_COOKIE+'='+'0'.repeat(64)})).status,401);
   f.env.ADMIN_KEY='changed-test-secret';assert.equal((await f.call(path,{cookie})).status,401);
 });
-test('receipt-key support and preview require the same administrator session',async()=>{
+test('receipt preview requires the same administrator session',async()=>{
  const f=fixture(),{cookie}=await f.login(),ap='AP-ABCDEFGH';await f.env.REGISTRATION_KV.put('APPLICATION_'+ap,JSON.stringify({ap}));
- for(const path of ['/admin/receive-key?ap='+ap,'/admin/receive-preview?ap='+ap]){assert.equal((await f.call(path)).status,401);assert.equal((await f.call(path,{cookie})).status,200)}
+ for(const path of ['/admin/receive-preview?ap='+ap]){assert.equal((await f.call(path)).status,401);assert.equal((await f.call(path,{cookie})).status,200)}
  const options={method:'POST',body:JSON.stringify({ap}),cookie};assert.equal((await f.call('/admin/receive-preview/status',options)).status,200);assert.equal((await f.call('/admin/receive-preview/status',{...options,headers:{Origin:'https://evil.test'}})).status,403);
 });
 test('expiry is fixed at login, enforced at the exact 24-hour boundary, and never extended by reads',async()=>{

@@ -26,6 +26,7 @@ function receivePage() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>登録書受取｜文化資料登録室</title>
 <style>
 *{box-sizing:border-box}
@@ -43,21 +44,18 @@ button:disabled{background:#aaa;cursor:not-allowed}
 .item{border-top:1px solid #ddd;padding:18px 0}
 .item button{margin-top:8px}
 strong{color:#332d20}
+.ap-privacy{font-size:clamp(22px,3.5vw,28px);font-weight:800;line-height:1.6;color:#812b20;border:2px solid #a34d38;background:#fff4df;padding:18px;margin:20px 0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 <main>
 <div class="box">
 <h1>登録書受取</h1>
-<p>登録書は、申請者本人だけが受け取れるよう、<strong>確認番号（AP番号）と受取キー</strong>の両方で確認します。</p>
-<div class="notice">
-<strong>登録番号だけでは登録書を取得できません。</strong><br>
-抽選申込時に発行されたAP番号と受取キーを入力してください。
-</div>
+<p>申請状況の確認・追加提出・登録書の受取りには、抽選申込時に発行されたAP番号を入力してください。</p>
+<p class="ap-privacy">AP番号は他人に教えないでください。</p>
+<p>AP番号を知っている人は、申請内容の確認・追加提出・登録書の受取りができます。紙などに控え、大切に保管してください。</p>
 <label for="ap">確認番号（AP番号）</label>
 <input id="ap" autocomplete="off" placeholder="AP-XXXXXXXX">
-<label for="key">受取キー</label>
-<input id="key" autocomplete="off" placeholder="受取キー">
 <button id="check" type="button">登録書を確認</button>
 <div id="result" role="status" aria-live="polite"></div><p><a href="https://bunka-shiryoshitsu.github.io/bunka-shiryoshitsu/">文化資料登録室へ戻る</a></p>
 <div class="notice small">
@@ -71,20 +69,18 @@ strong{color:#332d20}
 <script>
 const WORKER_URL = location.origin;
 const apInput = document.getElementById('ap');
-const keyInput = document.getElementById('key');
 const button = document.getElementById('check');
 const result = document.getElementById('result');
 
 button.addEventListener('click', async () => {
   const ap = apInput.value.trim().toUpperCase();
-  const receiveKey = keyInput.value.trim().toUpperCase();
   result.textContent = '確認しています……';
   button.disabled = true;
   try {
     const response = await fetch(WORKER_URL + '/receive-status', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ap, receiveKey})
+      body: JSON.stringify({ap})
     });
     const data = await response.json().catch(() => null);
     if (!response.ok || !data?.success) {
@@ -110,7 +106,7 @@ button.addEventListener('click', async () => {
         const dl = document.createElement('button');
         dl.type = 'button';
         dl.textContent = '登録書JPGを受け取る';
-        dl.addEventListener('click', () => downloadFile(ap, receiveKey, item.registrationNumber));
+        dl.addEventListener('click', () => downloadFile(ap, item.registrationNumber));
         wrap.appendChild(dl);
       } else {
         const wait = document.createElement('div');
@@ -127,12 +123,12 @@ button.addEventListener('click', async () => {
   }
 });
 
-async function downloadFile(ap, receiveKey, registrationNumber) {
+async function downloadFile(ap, registrationNumber) {
   try {
   const response = await fetch(WORKER_URL + '/receive-file', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ap, receiveKey, registrationNumber})
+    body: JSON.stringify({ap, registrationNumber})
   });
   if (!response.ok) {
     const text = await response.text();

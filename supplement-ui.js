@@ -11,27 +11,27 @@ let portalGeneration=0;
 function node(tag,text,parent){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(parent)parent.appendChild(el);return el;}
 function showDate(value){return new Date(value).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})+'（日本時間）';}
 function roundLabel(status){return {pending:'追加資料の提出待ち',expired:'追加提出期限切れ（管理者確認待ち）',submitted:'追加提出済み・確認中',closed:'未提出による手続終了',resolved:'確認終了'}[status]||status;}
-async function supplementCall(ap,receiveKey,path,item,body){
+async function supplementCall(ap,path,item,body){
  const q=new URLSearchParams({ap});if(item)q.set('item',item);
- const r=await portalFetch(path+'?'+q,{method:body?'POST':'GET',headers:{'X-Receive-Key':receiveKey,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+ const r=await portalFetch(path+'?'+q,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
  const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'確認できませんでした。');return d;
 }
-async function showSupplementImage(ap,receiveKey,item,image,container,admin=false){
+async function showSupplementImage(ap,item,image,container,admin=false){
  const query=new URLSearchParams({ap,item,id:image.id});
- const response=await portalFetch((admin?'/admin':'')+'/supplement/image?'+query,{headers:admin?H(false):{'X-Receive-Key':receiveKey},cache:'no-store'});
+ const response=await portalFetch((admin?'/admin':'')+'/supplement/image?'+query,{headers:admin?H(false):{},cache:'no-store'});
  if(!response.ok)throw Error('画像を読み込めませんでした。');
  const blob=await response.blob();if(!container.isConnected)return;
  const url=URL.createObjectURL(blob),img=node('img',undefined,container);img.src=url;img.alt='追加提出画像';img.style.cssText='max-width:100%;max-height:480px;object-fit:contain;display:block';
  const observer=new MutationObserver(()=>{if(!img.isConnected){URL.revokeObjectURL(url);observer.disconnect();}});observer.observe(document.body,{childList:true,subtree:true});
 }
 async function loadPortal(){
- const generation=++portalGeneration,ap=apInput.value.trim().toUpperCase(),receiveKey=keyInput.value.trim().toUpperCase();
+ const generation=++portalGeneration,ap=apInput.value.trim().toUpperCase();
  result.textContent='確認しています……';button.disabled=true;
  try{
-  const received=await portalFetch('/receive-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ap,receiveKey})});
+  const received=await portalFetch('/receive-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ap})});
   const receipt=await received.json();if(!received.ok||!receipt.success)throw Error(receipt.message||'認証できませんでした。');
   if(receipt.status==='not_submitted'){result.textContent='初回の登録申請はまだ受け付けられていません。HPの抽選結果確認口から当選状況を確認し、初回申請を行ってください。';return;}
-  const data=await supplementCall(ap,receiveKey,'/supplement/status');if(generation!==portalGeneration)return;
+  const data=await supplementCall(ap,'/supplement/status');if(generation!==portalGeneration)return;
   result.innerHTML='';node('p','最新確認：'+showDate(data.serverTime),result);
   for(const item of data.items){
    const wrap=node('section',undefined,result);wrap.className='item';node('h2','資料 '+item.item+'：'+item.name,wrap);
@@ -39,7 +39,7 @@ async function loadPortal(){
    const final=item.registrationStatus==='cancelled'?'登録取消':item.reviewResult==='rejected'?'登録見送り':['type1','type2','type3','special'].includes(item.reviewResult)?(ready?.ready?'登録書受取可能':'登録決定・登録書作成中'):null;
    node('p','状況：'+(final||(round?roundLabel(round.status):'確認中')),wrap);
    if(item.reviewResult==='additional_check'&&!round)node('p','追加確認中です。提出内容と期限の案内が掲載されるまでお待ちください。',wrap);
-   if(ready?.ready&&item.registrationStatus!=='cancelled'){const dl=node('button','登録書JPGを受け取る',wrap);dl.onclick=()=>downloadFile(ap,receiveKey,ready.registrationNumber);}
+   if(ready?.ready&&item.registrationStatus!=='cancelled'){const dl=node('button','登録書JPGを受け取る',wrap);dl.onclick=()=>downloadFile(ap,ready.registrationNumber);}
    for(const r of item.rounds){
     const section=node('div',undefined,wrap);section.className='notice';node('h3','追加依頼 '+(item.rounds.indexOf(r)+1)+'：'+roundLabel(r.status),section);
     node('p','掲載：'+showDate(r.requestedAt),section);const instruction=node('p',r.instruction,section);instruction.style.whiteSpace='pre-wrap';
@@ -49,8 +49,8 @@ async function loadPortal(){
     if(r.closedAt)node('p','終了：'+showDate(r.closedAt),section);
     const imageArea=node('div',undefined,section);
     if(r.imagesUnavailable&&r.uploads.length)node('p',r.imagesDeletedAt?'追加提出画像は、確認・手続終了に伴い削除しました。':'確認・手続終了のため、追加提出画像は閲覧できません。',imageArea);
-    for(const image of (r.imagesUnavailable?[]:r.uploads)){const box=node('div',undefined,imageArea);const view=node('button','追加画像 '+(r.uploads.indexOf(image)+1)+' を確認',box);view.type='button';view.onclick=async()=>{view.disabled=true;try{await showSupplementImage(ap,receiveKey,item.item,image,box);}catch(e){node('p',e.message,box);view.disabled=false;}};
-     if(!receiptPreview&&r===round&&r.status==='pending'&&!final){const remove=node('button','この添付を取り消す',box);remove.type='button';remove.onclick=async()=>{if(!confirm('この添付を取り消して画面を読み直します。未送信の入力は消えます。よろしいですか？'))return;remove.disabled=true;try{await supplementCall(ap,receiveKey,'/supplement/remove',item.item,{round:r.id,id:image.id});await loadPortal();}catch(e){node('p',e.message,box);remove.disabled=false;}};}
+    for(const image of (r.imagesUnavailable?[]:r.uploads)){const box=node('div',undefined,imageArea);const view=node('button','追加画像 '+(r.uploads.indexOf(image)+1)+' を確認',box);view.type='button';view.onclick=async()=>{view.disabled=true;try{await showSupplementImage(ap,item.item,image,box);}catch(e){node('p',e.message,box);view.disabled=false;}};
+     if(!receiptPreview&&r===round&&r.status==='pending'&&!final){const remove=node('button','この添付を取り消す',box);remove.type='button';remove.onclick=async()=>{if(!confirm('この添付を取り消して画面を読み直します。未送信の入力は消えます。よろしいですか？'))return;remove.disabled=true;try{await supplementCall(ap,'/supplement/remove',item.item,{round:r.id,id:image.id});await loadPortal();}catch(e){node('p',e.message,box);remove.disabled=false;}};}
     }
     if(r!==round||r.status!=='pending'||final)continue;
     node('p','追加提出は登録の内定や承認を意味するものではありません。提出後も登録を見送る場合があります。個別の判断理由や審査過程の説明・お問い合わせへの回答は行いません。',section);
@@ -70,10 +70,10 @@ async function loadPortal(){
       for(let n=0;n<files.length;n++){
        const file=files[n];if(!ids.has(file))ids.set(file,crypto.randomUUID());message.textContent='画像を送信中：'+(n+1)+' / '+files.length;
        const q=new URLSearchParams({ap,item:item.item,round:r.id,id:ids.get(file)});
-       const response=await fetch('/supplement/upload?'+q,{method:'POST',headers:{'X-Receive-Key':receiveKey,'Content-Type':file.type},body:file});const d=await response.json();if(!response.ok)throw Error(d.message||'画像を送信できませんでした。');
+       const response=await fetch('/supplement/upload?'+q,{method:'POST',headers:{'Content-Type':file.type},body:file});const d=await response.json();if(!response.ok)throw Error(d.message||'画像を送信できませんでした。');
       }
       message.textContent='提出内容を保存しています……';
-      const data=await supplementCall(ap,receiveKey,'/supplement/submit',item.item,{round:r.id,token,text:answer?.value||''});
+      const data=await supplementCall(ap,'/supplement/submit',item.item,{round:r.id,token,text:answer?.value||''});
       message.textContent=data.message;await loadPortal();
      }catch(e){message.textContent=e.message;submit.disabled=false;if(answer)answer.readOnly=false;if(fileInput)fileInput.disabled=false;}
     };
@@ -83,9 +83,8 @@ async function loadPortal(){
  finally{if(generation===portalGeneration)button.disabled=false;}
 }
 apInput.addEventListener('input',()=>{portalGeneration++;result.innerHTML='';button.disabled=false;});
-keyInput.addEventListener('input',()=>{portalGeneration++;result.innerHTML='';button.disabled=false;});
 if(receiptPreview){
- apInput.value=RECEIPT_PREVIEW_AP;apInput.readOnly=true;keyInput.hidden=true;keyInput.style.display='none';const keyLabel=document.querySelector('label[for="key"]');if(keyLabel){keyLabel.hidden=true;keyLabel.style.display='none'}
+ apInput.value=RECEIPT_PREVIEW_AP;apInput.readOnly=true;
  button.textContent='表示を更新';const notice=node('div');notice.className='notice';notice.innerHTML='<strong>管理者専用：申請者の受取画面の確認</strong><br>申請者と同じ状況表示・登録書を確認できます。追加資料の提出・取消はできません。';document.querySelector('h1').after(notice);
  const back=node('a','③ 申請・審査へ戻る',notice);back.href='/admin?'+new URLSearchParams({view:'applications',ap:RECEIPT_PREVIEW_AP});back.style.display='block';void loadPortal();
 }

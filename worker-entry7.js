@@ -91,14 +91,13 @@ async function runIntegrationTest(request) {
   };
 
   try {
-    const lottery = await step("抽選申込・AP/受取キー発行", () => app.fetch(new Request(origin + "/lottery-apply", {
+    const lottery = await step("抽選申込・AP発行", () => app.fetch(new Request(origin + "/lottery-apply", {
       method: "POST",
       headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.10" },
       body: JSON.stringify({})
-    }), env, ctx), (r, b) => r.ok && b?.success === true && /^AP-[A-Z0-9]{8}$/.test(b?.ap || "") && typeof b?.receiveKey === "string");
+    }), env, ctx), (r, b) => r.ok && b?.success === true && /^AP-[A-Z0-9]{8}$/.test(b?.ap || "") && !("receiveKey" in b));
 
     const ap = lottery.body.ap;
-    const receiveKey = lottery.body.receiveKey;
     const month = lottery.body.applicationMonth;
 
     await step("同一IP二重申込は外形上受付", () => app.fetch(new Request(origin + "/lottery-apply", {
@@ -172,13 +171,13 @@ async function runIntegrationTest(request) {
     await step("受取・準備中", () => app.fetch(new Request(origin + "/receive-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ap, receiveKey })
+      body: JSON.stringify({ ap })
     }), env, ctx), (r, b) => r.ok && b?.success === true && Array.isArray(b?.items) && b.items.some(x => x.registrationNumber === number && x.ready === false));
 
-    await step("誤受取キー拒否", () => app.fetch(new Request(origin + "/receive-status", {
+    await step("不正AP拒否", () => app.fetch(new Request(origin + "/receive-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ap, receiveKey: "AAAA-BBBB-CCCC-DDDD" })
+      body: JSON.stringify({ ap: "AP-ZZZZZZZZ" })
     }), env, ctx), r => r.status === 401);
 
     const issuedForm = new FormData();
@@ -193,13 +192,13 @@ async function runIntegrationTest(request) {
     await step("受取・準備完了", () => app.fetch(new Request(origin + "/receive-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ap, receiveKey })
+      body: JSON.stringify({ ap })
     }), env, ctx), (r, b) => r.ok && b?.items?.some(x => x.registrationNumber === number && x.ready === true));
 
-    await step("本人だけ登録書JPG受取", () => app.fetch(new Request(origin + "/receive-file", {
+    await step("AP番号で登録書JPG受取", () => app.fetch(new Request(origin + "/receive-file", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ap, receiveKey, registrationNumber: number })
+      body: JSON.stringify({ ap, registrationNumber: number })
     }), env, ctx), r => r.ok && (r.headers.get("Content-Type") || "").includes("image/jpeg"));
 
     await step("登録取消", () => app.fetch(new Request(origin + "/admin/cancel", {
@@ -217,8 +216,8 @@ async function runIntegrationTest(request) {
     await step("取消後登録書受取拒否", () => app.fetch(new Request(origin + "/receive-file", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ap, receiveKey, registrationNumber: number })
-    }), env, ctx), r => r.status === 404 || r.status === 409);
+      body: JSON.stringify({ ap, registrationNumber: number })
+    }), env, ctx), r => r.status === 403 || r.status === 404 || r.status === 409);
 
     return json({
       success: checks.every(x => x.ok),

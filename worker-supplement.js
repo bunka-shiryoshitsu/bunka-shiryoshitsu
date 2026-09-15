@@ -2,6 +2,7 @@ import app from './worker-dashboard15.js';
 import {supplementPaths,json} from './supplement-service.js';
 import {portalScript,adminSupplementScript} from './supplement-ui.js';
 import {improveTextContrast} from './text-contrast.js';
+import {authorizeReceiptAP} from './receipt-access.js';
 export {RegistrationIssuer} from './worker-dashboard15.js';
 
 export default {
@@ -12,9 +13,7 @@ export default {
       if(path.startsWith('/admin/')){
         if(!env.ADMIN_KEY||request.headers.get('X-Admin-Key')!==env.ADMIN_KEY)return json({success:false,message:'Unauthorized.'},401);
       }else{
-        const auth=await app.fetch(new Request(new URL('/receive-status',url),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ap:url.searchParams.get('ap'),receiveKey:request.headers.get('X-Receive-Key')})}),env,ctx);
-        if(!auth.ok)return auth;
-        const data=await auth.json();if(!data.success)return json({success:false,message:'認証できませんでした。'},401);
+        const auth=await authorizeReceiptAP(request,env,url.searchParams.get('ap'));if(auth.response)return auth.response;
       }
       if(!env.REGISTRATION_ISSUER)return json({success:false,message:'ただいま利用できません。'},503);
       return env.REGISTRATION_ISSUER.get(env.REGISTRATION_ISSUER.idFromName('registration-number-issuer')).fetch(request);

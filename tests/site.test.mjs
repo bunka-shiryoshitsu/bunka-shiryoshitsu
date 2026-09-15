@@ -7,7 +7,7 @@ import {memoryStorage,jpeg} from './inspection-fixture.js';
 function setup(){
  const entries=new Map([['SYSTEM:APPLICATIONS_OPEN','true'],['REGISTRATION_LIST',JSON.stringify(['ABCDEFGH'])]]);
  const kv={get:async(k,opt)=>{const v=entries.get(k);if(v===undefined)return null;if(v instanceof ArrayBuffer)return opt?.type==='arrayBuffer'?v:new TextDecoder().decode(v);return opt?.type==='json'?JSON.parse(v):v},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix=''})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})};
- const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only',RECEIVE_KEY_ENCRYPTION_KEY:'01'.repeat(32)};const issuer=new RegistrationIssuer({storage:memoryStorage()},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
+ const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only'};const issuer=new RegistrationIssuer({storage:memoryStorage()},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
  const call=(path,body,admin=false)=>app.fetch(new Request('https://local.test'+path,{method:body===undefined?'GET':'POST',headers:{...(body instanceof FormData?{}:{'Content-Type':'application/json'}),...(admin?{'X-Admin-Key':'test-only'}:{}),'CF-Connecting-IP':'192.0.2.1'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}),env,{waitUntil(p){return p}});
  return {entries,call,env};
 }
@@ -23,7 +23,7 @@ test('private endpoints reject missing administrator credentials',async()=>{
 });
 test('lottery, winner, upload, submission, review, private receipt and cancellation',async()=>{
  const {call,entries,env}=setup();
- let r=await call('/lottery-apply',{overview:'テスト用資料・本番には送信しません'});assert.equal(r.status,200);const lottery=await r.json();assert.match(lottery.ap,/^AP-[A-Z0-9]{8}$/);assert.match(lottery.receiveKey,/^[A-Z0-9]{4}$/);const {ap,receiveKey}=lottery;
+ let r=await call('/lottery-apply',{overview:'テスト用資料・本番には送信しません'});assert.equal(r.status,200);const lottery=await r.json();assert.match(lottery.ap,/^AP-[A-Z0-9]{8}$/);assert.ok(!('receiveKey' in lottery));assert.ok(!entries.has('RECEIVE_AUTH:'+lottery.ap));const {ap}=lottery;
  assert.equal(JSON.parse(entries.get('APPLICATION_'+ap)).overview,'テスト用資料・本番には送信しません');
  const applied=JSON.parse(entries.get('APPLICATION_'+ap));const fixtureMonth=new Date();fixtureMonth.setUTCDate(1);fixtureMonth.setUTCMonth(fixtureMonth.getUTCMonth()-2);applied.applicationMonth=fixtureMonth.toISOString().slice(0,7);entries.set('APPLICATION_'+ap,JSON.stringify(applied));
  r=await call('/admin/lottery-winner',{ap,slots:1},true);assert.equal(r.status,200,await r.clone().text());
@@ -41,12 +41,12 @@ test('lottery, winner, upload, submission, review, private receipt and cancellat
  assert.equal(await (await call('/check',{number})).text(),'登録あり');
  form=new FormData();form.append('registrationNumber',number);form.append('file',new File([jpg],'document.jpg',{type:'image/jpeg'}));
  r=await call('/admin/issued-data-upload',form,true);assert.equal(r.status,200,await r.clone().text());
- assert.equal((await call('/receive-status',{ap,receiveKey:'ZZZZ'})).status,401);
- r=await call('/receive-status',{ap,receiveKey});assert.equal(r.status,200);assert.equal((await r.json()).items[0].ready,true);
- r=await call('/receive-file',{ap,receiveKey,registrationNumber:number});assert.equal(r.status,200);assert.deepEqual(new Uint8Array(await r.arrayBuffer()),jpg);
+ assert.equal((await call('/receive-status',{ap:'AP-ZZZZZZZZ'})).status,401);
+ r=await call('/receive-status',{ap});assert.equal(r.status,200);assert.equal((await r.json()).items[0].ready,true);
+ r=await call('/receive-file',{ap,registrationNumber:number});assert.equal(r.status,200);assert.deepEqual(new Uint8Array(await r.arrayBuffer()),jpg);
  r=await call('/admin/cancel',{registrationNumber:number},true);assert.equal(r.status,200);
  assert.equal(await (await call('/check',{number})).text(),'登録なし');
- assert.equal((await call('/receive-file',{ap,receiveKey,registrationNumber:number})).status,403);
+ assert.equal((await call('/receive-file',{ap,registrationNumber:number})).status,403);
  assert.ok(entries.has('PUBLIC_REGISTRATION_ISSUED:'+number));
 });
 test('closed intake and missing overview are rejected',async()=>{const {call,entries}=setup();assert.equal((await call('/lottery-apply',{})).status,400);entries.set('SYSTEM:APPLICATIONS_OPEN','false');assert.equal((await call('/lottery-apply',{overview:'test'})).status,503);});

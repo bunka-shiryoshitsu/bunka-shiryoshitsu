@@ -9,14 +9,13 @@ import {inspectionService} from '../inspection-images.js';
 const AP='AP-ABCDEFGH';
 async function fixture(){
  const original={ap:AP,status:'received',submittedAt:'2026-01-01T00:00:00Z',items:[{item:'01',name:'資料A',acquisition:'元の説明'},{item:'02',name:'資料B'}]};
- const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ABCD')))].map(x=>x.toString(16).padStart(2,'0')).join('');
- const kv=new Map([['REGISTRATION_APPLICATION:'+AP,JSON.stringify(original)],['RECEIVE_AUTH:'+AP,JSON.stringify({hash})]]),records=new Map();
+ const kv=new Map([['REGISTRATION_APPLICATION:'+AP,JSON.stringify(original)]]),records=new Map();
  const storage=memoryStorage(records);
  const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{const v=kv.get(k);return opt?.type==='json'&&v?JSON.parse(v):v??null;},put:async(k,v)=>kv.set(k,v),delete:async k=>kv.delete(k),list:async({prefix=''})=>({keys:[...kv.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})}};
  const issuer=new RegistrationIssuer({storage},env);env.REGISTRATION_ISSUER={idFromName:()=>'',get:()=>issuer};
- function request(path,body,admin=false,query={},receiveKey='ABCD'){
+ function request(path,body,admin=false,query={}){
   const params=new URLSearchParams({ap:AP,item:'01',...query});const binary=body instanceof Uint8Array;
-  return new Request('https://local.test'+path+'?'+params,{method:body===undefined?'GET':'POST',headers:admin?{'X-Admin-Key':'test-only','Content-Type':'application/json'}:{'X-Receive-Key':receiveKey,'Content-Type':binary?'image/jpeg':'application/json'},body:body===undefined?undefined:binary?body:JSON.stringify(body)});
+  return new Request('https://local.test'+path+'?'+params,{method:body===undefined?'GET':'POST',headers:admin?{'X-Admin-Key':'test-only','Content-Type':'application/json'}:{'Content-Type':binary?'image/jpeg':'application/json'},body:body===undefined?undefined:binary?body:JSON.stringify(body)});
  }
  const call=(...args)=>app.fetch(request(...args),env,{waitUntil(){}});
  const direct=(now,...args)=>supplementService(request(...args),env,storage,now);
@@ -69,7 +68,7 @@ test('expiration boundary, extension, closing and no dependence on initial 60-da
 });
 test('authentication, read-only methods, upload limits and removable staging',async()=>{
  const f=await fixture();assert.equal((await f.call('/admin/supplement/status')).status,401);
- assert.equal((await f.call('/supplement/status',undefined,false,{},'WRNG')).status,401);
+ assert.equal((await f.call('/supplement/status',undefined,false,{ap:'AP-ZZZZZZZZ'})).status,401);
  assert.equal((await f.call('/supplement/status',{})).status,405);
  let r=await f.call('/admin/supplement/request',{revision:0,instruction:'画像のみ',needImages:true},true);const round=(await r.json()).round,id=crypto.randomUUID();
  assert.equal((await f.call('/supplement/upload',new Uint8Array([1,2,3]),false,{round:round.id,id})).status,400);

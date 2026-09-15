@@ -26,6 +26,7 @@ function lotteryPage() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>抽選申込｜文化資料登録室</title>
 <style>
 *{box-sizing:border-box}
@@ -36,6 +37,8 @@ h1{font-size:25px;margin:0 0 18px}.notice{background:#f6f4ef;border-left:4px sol
 button{margin-top:18px;padding:13px 22px;background:#292824;color:#fff;border:0;cursor:pointer;font-size:14px}button:disabled{background:#aaa;cursor:not-allowed}
 #result{margin-top:22px}.important{font-weight:700}.code{font-family:ui-monospace,Consolas,monospace;font-size:20px;letter-spacing:1px;padding:12px;background:#f6f4ef;border:1px solid #ddd;margin:8px 0;word-break:break-all}
 a{color:#65562f}
+.ap-privacy{font-size:clamp(22px,3.5vw,28px);font-weight:800;line-height:1.6;color:#812b20;border:2px solid #a34d38;background:#fff4df;padding:18px;margin:20px 0;overflow-wrap:anywhere}
+.code{font-size:28px}
 </style>
 </head>
 <body>
@@ -93,13 +96,12 @@ applyButton.addEventListener('click',async()=>{
   result.innerHTML='';
   const p=document.createElement('p');
   p.className='important';
-  p.textContent='抽選申込みを受け付けました。次の2つを必ず保存してください。';
+  p.textContent='抽選申込みを受け付けました。次のAP番号を紙などに控えてください。';
   result.appendChild(p);
   const apLabel=document.createElement('div');apLabel.textContent='確認番号（AP番号）';result.appendChild(apLabel);
   const ap=document.createElement('div');ap.className='code';ap.textContent=d.ap||'';result.appendChild(ap);
-  const keyLabel=document.createElement('div');keyLabel.textContent='受取キー';result.appendChild(keyLabel);
-  const key=document.createElement('div');key.className='code';key.textContent=d.receiveKey||'';result.appendChild(key);
-  const warning=document.createElement('div');warning.className='notice';warning.innerHTML='<strong>AP番号と受取キーは、今ここで保存してください。</strong><br>受取キーは登録書の受取時に必要です。安全上、この画面を離れた後に同じ受取キーを再表示することはできません。';result.appendChild(warning);
+  const warning=document.createElement('div');warning.className='ap-privacy';warning.textContent='AP番号は他人に教えないでください。';result.appendChild(warning);
+  const save=document.createElement('p');save.textContent='AP番号は、抽選結果の確認・登録申請・追加提出・登録書の受取りに使います。紙などに控え、大切に保管してください。';result.appendChild(save);
   const note=document.createElement('p');note.textContent='抽選結果は、文化資料登録室の「抽選結果確認」でAP番号を入力して確認してください。';result.appendChild(note);
  }catch(e){
   result.textContent='抽選申込みに失敗しました。しばらく時間をおいて再度お試しください。';
