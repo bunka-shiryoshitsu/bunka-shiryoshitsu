@@ -86,7 +86,7 @@ async function loadSupplementAdmin(ap,item,wrap){
   const q=new URLSearchParams({ap});const d=await api('/admin/supplement/status?'+q,{headers:H(false)});if(!root.isConnected)return;
   const entry=d.items.find(x=>x.item===item);if(!entry)return;root.dataset.revision=String(entry.revision);
   const final=entry.registrationStatus==='cancelled'||['type1','type2','type3','special','rejected'].includes(entry.reviewResult);
-  const current=entry.rounds.at(-1);root.dataset.finished=String(final||current?.status==='closed');
+  const current=entry.rounds.at(-1);root.dataset.finished=String(final||current?.status==='closed');root.dataset.roundStatus=current?.status||'';
   const labels={pending:'提出待ち',expired:'提出期限切れ',submitted:'追加提出済み・再確認待ち',closed:'未提出による手続終了',resolved:'確認終了'};
   const msg=supplementNode('p','',root);msg.setAttribute('role','status');
   async function confirmAction(title,text,button,danger=false){if(!window.AdminUI)return confirm(ap+' ／ 資料 '+item+'\n'+text);return await window.AdminUI.choose(title,ap+' ／ 資料 '+item+'\n'+text,[[button,'confirm',danger?'danger':''],['戻って確認する','stay','secondary']])==='confirm';}
@@ -105,7 +105,7 @@ async function loadSupplementAdmin(ap,item,wrap){
   if(final||current?.status==='closed'){supplementNode('p','確認・手続は終了しています。',root);return;}
   if(current&&['pending','expired'].includes(current.status)){
    const label=supplementNode('label','延長後の提出期限（日本時間23:59まで）',root),date=supplementNode('input',undefined,label);date.type='date';date.min=current.deadlineLabel.slice(0,10);
-   const extend=supplementNode('button','期限を延長',root);extend.onclick=async()=>{if(!date.value){msg.textContent='延長後の期限を選択してください。';return;}if(await confirmAction('提出期限を延長します','延長後の期限：'+date.value+' 23:59（日本時間）','この期限に延長'))await save('extend',{round:current.id,revision:entry.revision,date:date.value},extend);};
+   const extend=supplementNode('button','期限を延長',root);date.addEventListener('input',()=>extend.classList.toggle('work-action',Boolean(date.value)));extend.onclick=async()=>{if(!date.value){msg.textContent='延長後の期限を選択してください。';return;}if(await confirmAction('提出期限を延長します','延長後の期限：'+date.value+' 23:59（日本時間）','この期限に延長'))await save('extend',{round:current.id,revision:entry.revision,date:date.value},extend);};
    if(current.status==='expired'){const close=supplementNode('button','未提出による手続終了',root);close.className='danger';close.onclick=async()=>{if(await confirmAction('未提出による手続終了','この資料の追加提出を締め切り、手続を終了します。','この資料の手続を終了',true))await save('close',{round:current.id,revision:entry.revision},close);};}
    return;
   }
@@ -113,7 +113,7 @@ async function loadSupplementAdmin(ap,item,wrap){
   function check(text){const label=supplementNode('label',text,root),input=supplementNode('input',undefined,label);input.type='checkbox';return input;}
   const needText=check('追加文章が必要'),needImages=check('追加画像・撮り直しが必要');
   supplementNode('p','掲載日の翌日を1日目とする30日目の23:59（日本時間）が提出期限になります。必要な内容をまとめて記入してください。登録承認を示唆する表現や判断理由は記載しないでください。',root);
-  const publish=supplementNode('button','追加依頼を掲載',root);publish.onclick=async()=>{if(!instruction.value.trim()||(!needText.checked&&!needImages.checked)){msg.textContent='依頼内容と必要な提出物を指定してください。';return;}if(await confirmAction('追加依頼を掲載します','必要な提出物：'+[needText.checked?'追加文章':'',needImages.checked?'追加画像':''].filter(Boolean).join('・')+'\n\n'+instruction.value,'この内容を掲載'))await save('request',{revision:entry.revision,instruction:instruction.value,needText:needText.checked,needImages:needImages.checked},publish);};
+  const publish=supplementNode('button','追加依頼を掲載',root);const markPublish=()=>publish.classList.toggle('work-action',Boolean(instruction.value.trim()&&(needText.checked||needImages.checked)));root.addEventListener('input',markPublish);root.addEventListener('change',markPublish);publish.onclick=async()=>{if(!instruction.value.trim()||(!needText.checked&&!needImages.checked)){msg.textContent='依頼内容と必要な提出物を指定してください。';return;}if(await confirmAction('追加依頼を掲載します','必要な提出物：'+[needText.checked?'追加文章':'',needImages.checked?'追加画像':''].filter(Boolean).join('・')+'\n\n'+instruction.value,'この内容を掲載'))await save('request',{revision:entry.revision,instruction:instruction.value,needText:needText.checked,needImages:needImages.checked},publish);};
  }catch(e){supplementNode('p',e.message,root);}
 }
 const supplementQueue=document.createElement('section');supplementQueue.className='section';document.querySelector('.nav').after(supplementQueue);

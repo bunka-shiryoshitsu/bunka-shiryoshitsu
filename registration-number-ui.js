@@ -83,6 +83,7 @@ export const registrationNumbersClient = String.raw`
       view.input.disabled = loading || !authorized();
       view.save.disabled = loading || !authorized() || note.saving || !changed || Boolean(note.conflict);
       view.save.textContent = note.saving ? '保存中…' : '保存';
+      view.save.classList.toggle('work-action',changed);
       view.message.textContent = note.error || (note.saving ? '保存中…' : changed ? '未保存' : note.updatedAt ? '保存済み · ' + formatDate(note.updatedAt) : 'メモなし');
       view.message.className = 'memo-status ' + (note.error ? 'err' : changed ? 'unsaved' : 'ok');
       view.conflict.hidden = !note.conflict;
@@ -90,6 +91,7 @@ export const registrationNumbersClient = String.raw`
       view.restore.disabled = loading || !authorized() || note.saving;
     }
     loadButton.disabled = loading || saving();
+    const number=note.number;if(number)window.AdminActions?.setDraft('memo:'+number,changed?{id:'memo:'+number,number,ap:'',item:'',view:'numbers',kind:'memo',label:'メモの変更を保存',name:number,local:true}:null);
   }
 
   function refreshAll() { for (const {record} of cards) {const note=notes.get(record.number);if(note)refresh(note)}loadButton.disabled=loading||saving(); }
@@ -114,6 +116,7 @@ export const registrationNumbersClient = String.raw`
   function editor(cell, number) {
     const note = notes.get(number);
     if (!note) { node('span', 'この番号のメモは利用できません。', cell); return; }
+    note.number=number;
     cell.className = 'memo-cell';
     const input = node('textarea', undefined, cell, 'memo-input');
     input.rows = 3; input.maxLength = 5000;

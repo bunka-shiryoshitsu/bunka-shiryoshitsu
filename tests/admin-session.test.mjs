@@ -22,7 +22,7 @@ test('login issues a private 24-hour cookie without putting the key or token in 
 });
 test('the cookie authorizes all admin surfaces but the same IP without the cookie does not',async()=>{
   const f=fixture(),{cookie}=await f.login();
-  for(const path of ['/admin/dashboard-data','/admin/registration-numbers/data','/admin/inspection-images/status']){
+  for(const path of ['/admin/dashboard-data','/admin/registration-numbers/data','/admin/inspection-images/status','/admin/work-actions']){
     assert.equal((await f.call(path)).status,401,path);
     assert.equal((await f.call(path,{cookie,headers:{'X-Admin-Key':'browser-session'}})).status,200,path);
   }
