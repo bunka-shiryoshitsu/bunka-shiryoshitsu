@@ -1,3 +1,4 @@
+import {publicLimit} from './public-rate-limit.js';
 // AP numbers are the applicant's only credential under the owner's AP-only policy.
 export const normalizeReceiptAP=value=>{const ap=String(value??'').trim().toUpperCase();return /^AP-[A-Z0-9]{8}$/.test(ap)?ap:null};
 const normalizeAP=normalizeReceiptAP;
@@ -6,6 +7,14 @@ const cors=()=>({'Access-Control-Allow-Origin':'https://bunka-shiryoshitsu.githu
 const json=(value,status=200)=>Response.json(value,{status,headers:{...cors(),'Cache-Control':'no-store, private'}});
 const FAILURE_TTL=900,MAX_FAILURES=10;
 export async function authorizeReceiptAP(request,env,value){
+ const protection=await publicLimit(request,env,'RECEIPT_AP','check');
+ if(protection){
+  if(protection.limited)return {response:json({success:false,message:'確認の回数が上限に達しました。15分後にもう一度お試しください。'},429)};
+  const ap=normalizeReceiptAP(value);
+  if(ap&&(await env.REGISTRATION_KV.get('REGISTRATION_APPLICATION:'+ap)||await env.REGISTRATION_KV.get('APPLICATION_'+ap)))return {ap};
+  await publicLimit(request,env,'RECEIPT_AP','failure');
+  return {response:json({success:false,message:'AP番号を確認できません。控えた番号を確認してください。'},401)};
+ }
  const ap=normalizeReceiptAP(value),ip=request.headers.get('CF-Connecting-IP')||'local';
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ip));
  const limiter='RECEIPT_AP_FAILURE:'+Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');

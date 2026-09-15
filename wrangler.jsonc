@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bunka-shiryoshitsu-checksoft-mountain-b5a9",
   "main": "worker.js",
-  "vars": {"ADMIN_KEY_CACHE": "true"},
+  "vars": {"ADMIN_KEY_CACHE": "true", "ADMIN_READ_CACHE": "true", "PUBLIC_RATE_LIMIT_DO": "true"},
   "compatibility_date": "2026-09-12",
   "kv_namespaces": [
     {

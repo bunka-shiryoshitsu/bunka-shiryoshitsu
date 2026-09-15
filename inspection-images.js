@@ -1,3 +1,4 @@
+import {adminKeys,deleteOriginalImageKeys} from './admin-key-cache.js';
 // Private inspection copies. The existing Durable Object serializes every write.
 // Image bytes, metadata, expiry index and accounting are committed atomically.
 const DAY = 86400000;
@@ -45,7 +46,8 @@ export async function inspectionContext(env,storage,ap,item){
   const supplement=await storage.get('supplement:'+ap+':'+item),final=await storage.get('supplement-final:'+ap+':'+item);
   const finished=Boolean(final||material.registrationNumber||material.registrationStatus==='cancelled'||['type1','type2','type3','special','rejected'].includes(material.reviewResult)||supplement?.rounds?.at(-1)?.status==='closed');
   // Discover stored bytes, including an upload whose metadata write was interrupted.
-  const keys=await env.REGISTRATION_KV.list({prefix:'IMAGE:'+ap+':'+item+':',limit:30});
+  const keys=await adminKeys(env,'IMAGE:'+ap+':'+item+':');
+  if(keys.stale)fail('画像一覧の最新状態を確認できません。時間をおいて再確認してください。',503);
   const sources=keys.keys.map(k=>k.name.split(':').at(-1)).filter(n=>/^(0[1-9]|1[0-9]|20)$/.test(n)).sort().map(n=>({id:'original-'+n,label:'申請画像 '+Number(n),source:'original',image:n}));
   for(const [roundIndex,round] of (supplement?.imageCleanup?.status==='deleted'?[]:supplement?.rounds||[]).entries())for(const image of round.uploads||[]){
     // Unsubmitted/withdrawn attachments are never retained for inspection.
@@ -99,7 +101,7 @@ export async function requireInspectionReady(env,storage,ap,item,revision,now=Da
 export async function sweepInspectionImages(storage,env,now=Date.now()){
   const cleanups=await storage.list({prefix:'inspection:original-cleanup:',limit:10});
   for(const [key,r]of cleanups){const ctx=await inspectionContext(env,storage,r.ap,r.item);if(!ctx.finished)continue;
-    for(let n=1;n<=20;n++){const id=String(n).padStart(2,'0');await env.REGISTRATION_KV.delete('IMAGE:'+r.ap+':'+r.item+':'+id);await env.REGISTRATION_KV.delete('IMAGE_META:'+r.ap+':'+r.item+':'+id)}await storage.delete(key);
+    await deleteOriginalImageKeys(env,r.ap,r.item);await storage.delete(key);
   }
   const entries=await storage.list({prefix:EXPIRY,limit:30});let deleted=0;
   for(const [key,pointer]of entries){const expiry=Number(key.slice(EXPIRY.length,EXPIRY.length+13));if(expiry>now)break;const r=await storage.get(pointer);

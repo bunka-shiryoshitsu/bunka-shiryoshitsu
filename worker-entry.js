@@ -1,3 +1,5 @@
+import {deleteOriginalImageKeys} from './admin-key-cache.js';
+import {publicLimit} from './public-rate-limit.js';
 import { randomCode } from "./secure-random.js";
 import core from "./worker-core.js";
 
@@ -132,6 +134,8 @@ async function sha256(value) {
 }
 
 async function rateLimited(request, env, prefix) {
+  const protectedAccess=await publicLimit(request,env,prefix);
+  if(protectedAccess)return protectedAccess.limited;
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
   const hash = await sha256(ip);
   const keys = [
@@ -345,11 +349,7 @@ async function guardedReview(request, env, ctx) {
 }
 
 async function deleteApplicationItemImages(env, ap, item) {
-  for (let i = 1; i <= 20; i++) {
-    const image = String(i).padStart(2, "0");
-    await env.REGISTRATION_KV.delete(`IMAGE:${ap}:${item}:${image}`);
-    await env.REGISTRATION_KV.delete(`IMAGE_META:${ap}:${item}:${image}`);
-  }
+  await deleteOriginalImageKeys(env,ap,item);
 }
 
 async function cleanupOrphanImages(env) {

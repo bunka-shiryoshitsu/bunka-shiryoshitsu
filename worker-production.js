@@ -1,3 +1,4 @@
+import {PUBLIC_LIMIT_PATH,publicLimitStore,publicLimitAlarm} from './public-rate-limit.js';
 import {withAdminKeyCache,adminKeyCacheStore} from './admin-key-cache.js';
 import app from "./worker-entry5.js";
 import { supplementPaths, supplementService, json } from "./supplement-service.js";
@@ -60,6 +61,7 @@ export class RegistrationIssuer {
   }
 
   async runRetention() {
+    if(await publicLimitAlarm(this.state.storage))return {publicCounters:true};
     // Set the next attempt first, so failures and interrupted passes remain retryable.
     await this.state.storage.setAlarm(Date.now() + 60_000);
     const result = await sweepSupplementImages(this.state.storage, this.env);
@@ -73,6 +75,7 @@ export class RegistrationIssuer {
   async handle(request) {
     const url = new URL(request.url);
     if(url.pathname==='/_internal/admin-key-cache')return adminKeyCacheStore(request,this.rawEnv,this.state.storage);
+    if(url.pathname===PUBLIC_LIMIT_PATH)return publicLimitStore(request,this.rawEnv,this.state.storage);
     if(url.pathname==='/_internal/admin-session')return adminSessionStore(request,this.env,this.state.storage);
 
     if(inspectionPaths.has(url.pathname))return inspectionService(request,this.env,this.state.storage);

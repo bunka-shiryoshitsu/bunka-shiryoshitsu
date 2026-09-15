@@ -1,3 +1,5 @@
+import {deleteOriginalImageKeys} from './admin-key-cache.js';
+import {publicLimit} from './public-rate-limit.js';
 import { getNextPublicRegistrationNumber, markPublicRegistrationNumberIssued } from "./registration-number-service.js";
 
 const ORIGIN = "https://bunka-shiryoshitsu.github.io";
@@ -475,6 +477,8 @@ async function rateLimited(
   env,
   prefix
 ) {
+  const protectedAccess=await publicLimit(request,env,prefix);
+  if(protectedAccess)return protectedAccess.limited;
   const ip =
     request.headers.get(
       "CF-Connecting-IP"
@@ -2537,34 +2541,8 @@ async function reviewApplication(
   }
 }
 
-async function deleteApplicationImages(
-  env,
-  ap,
-  items
-) {
-  for (
-    const item of items
-  ) {
-    for (
-      let i = 1;
-      i <= 20;
-      i++
-    ) {
-      const image =
-        String(i).padStart(
-          2,
-          "0"
-        );
-
-      await env.REGISTRATION_KV.delete(
-        `IMAGE:${ap}:${item.item}:${image}`
-      );
-
-      await env.REGISTRATION_KV.delete(
-        `IMAGE_META:${ap}:${item.item}:${image}`
-      );
-    }
-  }
+async function deleteApplicationImages(env,ap,items) {
+  for(const item of items)await deleteOriginalImageKeys(env,ap,item.item);
 }
 
 

@@ -38,6 +38,7 @@ test('lottery work navigation keeps the requested row visible instead of restori
  await f.navigate(f.location.href,{scrollY:0});assert.equal(f.scrolls.at(-1),'lottery-'+ap);
  await f.navigate('/admin?view=lottery&work=lottery&target='+other,{scrollY:0});assert.equal(f.scrolls.at(-1),'lottery-'+other);
  assert.equal(f.document.querySelectorAll('.work-selected-label').length,1);
+ assert.equal(f.requests.filter(r=>r.url==='/admin/lottery-data').length,1,'navigation within one minute reuses the loaded lottery data');
  assert.equal(f.document.getElementById('lottery-'+ap).classList.contains('work-selected'),false);
 });
 

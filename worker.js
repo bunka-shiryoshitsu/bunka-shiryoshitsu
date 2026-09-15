@@ -1,4 +1,4 @@
-import {withAdminKeyCache,restoreAdminKeys} from './admin-key-cache.js';
+import {withAdminKeyCache,withAdminLists,withAdminReads,restoreAdminKeys,adminImageList} from './admin-key-cache.js';
 import app from "./worker-supplement.js";
 import {enhanceAdminPage} from './admin-navigation.js';
 import {inspectionPaths} from './inspection-images.js';
@@ -13,7 +13,9 @@ export default {
     if(url.pathname==='/admin/session')return adminSessionEndpoint(request,env);
     let session=null;
     if(url.pathname.startsWith('/admin')){const auth=await authorizeAdminSession(request,env);if(auth.response)return auth.response;request=auth.request;session=auth.session;}
+    if(url.pathname.startsWith('/admin')&&env.ADMIN_KEY&&request.headers.get('X-Admin-Key')===env.ADMIN_KEY){if(request.method==='GET')env=withAdminLists(withAdminReads(env));}
     if(url.pathname==='/admin/key-cache/restore')return restoreAdminKeys(request,env);
+    if(url.pathname==='/admin/image-list')return adminImageList(request,env);
     if(url.pathname==='/admin/work-actions')return readWorkActions(request,env);
     if(adminReceiptPaths.has(url.pathname))return adminReceipt(request,env,ctx,app);
     if(inspectionPaths.has(url.pathname)){
@@ -30,5 +32,5 @@ export default {
     }
     return response;
   },
-  async scheduled(controller,env,ctx){if(app.scheduled)await app.scheduled(controller,env,ctx);}
+  async scheduled(controller,env,ctx){if(app.scheduled)await app.scheduled(controller,withAdminKeyCache(env),ctx);}
 };

@@ -24,7 +24,7 @@ export async function adminSessionEndpoint(request,env){
     const fingerprint=await identity(request,env);if(!fingerprint)return json({success:false,message:'接続回線を確認できませんでした。管理画面を開き直してください。'},503);
     const token=hex(crypto.getRandomValues(new Uint8Array(32))),previous=tokenOf(request);
     const result=await store(env,{action:'create',id:await hash(token),fingerprint,previous:previous?await hash(previous):''});
-    if(!result.session)return json({success:false,message:'ログインの保持数が上限に達しました。別のブラウザーからログアウトしてください。'},429);
+    if(!result.session)throw Error('Session could not be saved');
     return json({success:true,session:result.session},200,{'Set-Cookie':cookie(token,SESSION_DURATION/1000)});
   }catch{return json({success:false,message:'ログイン状態を確認できませんでした。しばらくして再試行してください。'},503)}
 }
@@ -46,9 +46,13 @@ export async function adminSessionStore(request,env,storage,now=Date.now()){
   if(!/^[a-f0-9]{64}$/.test(body.fingerprint||''))return json({success:false},400);
   if(body.action==='read'){const session=await storage.get(key);if(!session||session.expiresAt<=now){if(session)await storage.delete(key);return json({success:true,session:null})}return json({success:true,session:session.fingerprint===body.fingerprint?{expiresAt:session.expiresAt}:null})}
   if(body.action==='create'){
-    const records=await storage.list({prefix:'admin-session:',limit:101});let count=0;
-    for(const [id,r]of records)if(r.expiresAt<=now||id==='admin-session:'+body.previous)await storage.delete(id);else count++;
-    if(count>=100)return json({success:true,session:null});
+    // Authentication already succeeded. Other valid sessions must never block login.
+    if(/^[a-f0-9]{64}$/.test(body.previous||''))await storage.delete('admin-session:'+body.previous);
+    let cursor='';
+    do{const records=await storage.list({prefix:'admin-session:',limit:200,...(cursor?{startAfter:cursor}:{})});
+      for(const [id,r]of records)if(r.expiresAt<=now)await storage.delete(id);
+      cursor=records.size===200?[...records.keys()].at(-1):'';
+    }while(cursor);
     const expiresAt=now+SESSION_DURATION;await storage.put(key,{fingerprint:body.fingerprint,expiresAt});return json({success:true,session:{expiresAt}});
   }
   return json({success:false},400);

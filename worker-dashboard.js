@@ -126,9 +126,9 @@ async function loadItemImages(ap,item,container){
  try{
   if(!container.isConnected)return;
   let count=0,failed=false;
-  for(let i=1;i<=20;i++){
+  const manifest=await api('/admin/image-list?'+new URLSearchParams({ap,item}),{headers:H(false)});
+  for(const no of manifest.images||[]){
    if(!container.isConnected)return;
-   const no=String(i).padStart(2,'0');
    const r=await fetch('/admin/image?ap='+encodeURIComponent(ap)+'&item='+encodeURIComponent(item)+'&image='+no,{headers:H(false),cache:'no-store'});
    if(r.status===404)continue;
    if(!r.ok){failed=true;break;}
