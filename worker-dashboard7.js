@@ -1,4 +1,5 @@
 import { randomCode } from "./secure-random.js";
+import {saveRecoverableReceiveKey,receiptCryptoReady} from './receive-key-vault.js';
 import app from "./worker-dashboard6.js";
 export { RegistrationIssuer } from "./worker-dashboard6.js";
 
@@ -41,6 +42,7 @@ export default {
     // New applications receive a short 4-character key. The lower layer may have
     // generated an old-format key first; replace its stored hash immediately.
     if (request.method === "POST" && path === "/lottery-apply") {
+      if(!receiptCryptoReady(env))return json({success:false,message:'ただいま申込みの受付を準備しています。時間をおいて再度お試しください。'},503);
       const response = await app.fetch(request, env, ctx);
       if (!response.ok) return response;
       let data;
@@ -51,13 +53,14 @@ export default {
       const receiveKey = generateShortKey();
       await saveReceiveKey(env, ap, receiveKey);
       data.receiveKey = receiveKey;
-      data.receiveKeyNotice = "受取キーは登録書の受取時に必要です。AP番号と一緒に保存してください。この画面を離れた後に同じ受取キーを再表示することはできません。";
+      data.receiveKeyNotice = "受取キーは登録書の受取時に必要です。AP番号と一緒に保存してください。紛失時はAP番号を用意して管理者へご相談ください。";
       return json(data, response.status);
     }
 
     // Admin reset also uses the new short format.
     if (request.method === "POST" && path === "/admin/receive-key/reset") {
       if (!isAdmin(request, env)) return json({success:false,message:"Unauthorized."},401);
+      if(!receiptCryptoReady(env))return json({success:false,message:'受取キーの保存設定を確認してください。既存のキーは変更していません。'},503);
       let body;
       try { body = await request.json(); }
       catch { return json({success:false,message:"入力内容を確認してください。"},400); }
@@ -131,15 +134,15 @@ function normalizeAP(v){const ap=String(v??"").trim().toUpperCase();return /^AP-
 function normalizeNumber(v){const n=String(v??"").trim().toUpperCase();return /^[A-Z0-9]{8}$/.test(n)?n:null}
 function generateShortKey(){return randomCode(KEY_CHARS,4)}
 async function sha256(v){const b=new TextEncoder().encode(String(v));const d=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function saveReceiveKey(env,ap,key){await env.REGISTRATION_KV.put("RECEIVE_AUTH:"+ap,JSON.stringify({hash:await sha256(key),format:"short4",createdAt:new Date().toISOString()}))}
+async function saveReceiveKey(env,ap,key){return saveRecoverableReceiveKey(env,ap,key)}
 async function verifyShortKey(env,ap,key){const raw=await env.REGISTRATION_KV.get("RECEIVE_AUTH:"+ap);if(!raw)return false;try{return JSON.parse(raw)?.hash===await sha256(key)}catch{return false}}
 function failureKey(ap){return "RECEIVE_FAIL:"+ap}
 async function receiveLocked(env,ap){const raw=await env.REGISTRATION_KV.get(failureKey(ap));if(!raw)return false;try{const d=JSON.parse(raw);return Number(d.count)>=MAX_RECEIVE_FAILURES && Date.now()-Number(d.firstAt)<RECEIVE_LOCK_SECONDS*1000}catch{return false}}
 async function recordReceiveFailure(env,ap){const k=failureKey(ap),now=Date.now();let d={count:0,firstAt:now};const raw=await env.REGISTRATION_KV.get(k);if(raw)try{const x=JSON.parse(raw);if(now-Number(x.firstAt)<RECEIVE_LOCK_SECONDS*1000)d=x}catch{}d.count=Number(d.count||0)+1;await env.REGISTRATION_KV.put(k,JSON.stringify(d),{expirationTtl:RECEIVE_LOCK_SECONDS})}
 async function clearReceiveFailures(env,ap){await env.REGISTRATION_KV.delete(failureKey(ap))}
-async function shortReceiveStatus(env,ap){const raw=await env.REGISTRATION_KV.get("REGISTRATION_APPLICATION:"+ap);if(!raw)return json({success:true,ap,status:"not_submitted",items:[],message:"このAP番号では、登録申請データをまだ確認できません。"});let a;try{a=JSON.parse(raw)}catch{return json({success:false,message:"申請データを確認できません。"},500)}const items=[];for(const item of a.items||[]){const number=normalizeNumber(item.registrationNumber);if(!number||item.registrationStatus==="cancelled")continue;const ready=Boolean(await env.REGISTRATION_KV.get("ISSUED_DATA_META:"+number));items.push({item:item.item,registrationNumber:number,registrationType:item.registrationTypeLabel||"",name:item.finalName||item.name||"",relatedName:item.finalRelatedName||item.relatedName||"",ready})}return json({success:true,ap,status:a.status||"under_review",items,message:items.some(x=>x.ready)?"登録書が完成した資料があります。":"登録書はまだ受取可能な状態ではありません。"})}
+export async function shortReceiveStatus(env,ap){const raw=await env.REGISTRATION_KV.get("REGISTRATION_APPLICATION:"+ap);if(!raw)return json({success:true,ap,status:"not_submitted",items:[],message:"このAP番号では、登録申請データをまだ確認できません。"});let a;try{a=JSON.parse(raw)}catch{return json({success:false,message:"申請データを確認できません。"},500)}const items=[];for(const item of a.items||[]){const number=normalizeNumber(item.registrationNumber);if(!number||item.registrationStatus==="cancelled")continue;const ready=Boolean(await env.REGISTRATION_KV.get("ISSUED_DATA_META:"+number));items.push({item:item.item,registrationNumber:number,registrationType:item.registrationTypeLabel||"",name:item.finalName||item.name||"",relatedName:item.finalRelatedName||item.relatedName||"",ready})}return json({success:true,ap,status:a.status||"under_review",items,message:items.some(x=>x.ready)?"登録書が完成した資料があります。":"登録書はまだ受取可能な状態ではありません。"})}
 async function getRegistration(env,n){for(const k of ["REGISTRATION:"+n,"REGISTRATION_"+n,"REGISTRATION-"+n]){const raw=await env.REGISTRATION_KV.get(k);if(raw)try{return JSON.parse(raw)}catch{return null}}return null}
-async function shortReceiveFile(env,ap,value){const n=normalizeNumber(value);if(!n)return new Response("登録番号を確認してください。",{status:400});const reg=await getRegistration(env,n);if(!reg||reg.status==="cancelled"||normalizeAP(reg.ap)!==ap)return new Response("この登録書を受け取る権限を確認できません。",{status:403});const data=await env.REGISTRATION_KV.get("ISSUED_DATA:"+n,{type:"arrayBuffer"});if(!data)return new Response("登録書は準備中です。",{status:404});return new Response(data,{status:200,headers:{...cors(),"Content-Type":"image/jpeg","Content-Disposition":`attachment; filename="${n}.jpg"`,"Cache-Control":"no-store, private"}})}
+export async function shortReceiveFile(env,ap,value){const n=normalizeNumber(value);if(!n)return new Response("登録番号を確認してください。",{status:400});const reg=await getRegistration(env,n);if(!reg||reg.status==="cancelled"||normalizeAP(reg.ap)!==ap)return new Response("この登録書を受け取る権限を確認できません。",{status:403});const data=await env.REGISTRATION_KV.get("ISSUED_DATA:"+n,{type:"arrayBuffer"});if(!data)return new Response("登録書は準備中です。",{status:404});return new Response(data,{status:200,headers:{...cors(),"Content-Type":"image/jpeg","Content-Disposition":`attachment; filename="${n}.jpg"`,"Cache-Control":"no-store, private"}})}
 function cors(){return {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"Content-Type,X-Admin-Key"}}
 function json(v,s=200){return new Response(JSON.stringify(v),{status:s,headers:{...cors(),"Content-Type":"application/json; charset=UTF-8","Cache-Control":"no-store"}})}
 function html(v,s=200){return new Response(v,{status:s,headers:{...cors(),"Content-Type":"text/html; charset=UTF-8","Cache-Control":"no-store"}})}

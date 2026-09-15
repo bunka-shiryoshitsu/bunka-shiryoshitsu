@@ -33,6 +33,7 @@ export default {
           .replace(/<button id="check"[^>]*>.*?<\/button>/,'<button id="check" type="button">申請状況・追加依頼を確認</button>')
           .replace('<div id="result"','<p>初回申請後は週に一度、この画面をご確認ください。追加提出の依頼や結果はメールでは通知されません。</p><div id="result"')
           .replace(/button\.addEventListener\('click', async \(\) => \{[\s\S]*?\n\}\);/,"button.addEventListener('click', loadPortal);")
+          .replace("fetch(WORKER_URL + '/receive-file'","portalFetch(WORKER_URL + '/receive-file'")
           .replace('</script>',portalScript+'\n</script>');
       }else{
         page=page.replace('void loadItemImages(ap,n,images);','void loadItemImages(ap,n,images);void loadSupplementAdmin(ap,n,wrap);')

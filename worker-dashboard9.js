@@ -25,7 +25,7 @@ export default {
 
       page = page.replace(
         '<button id="apply" type="button" disabled>抽選に申し込む</button>',
-        '<div class="notice small"><strong>重要 / IMPORTANT</strong><br>申込完了後に表示される確認番号（AP番号）と受取キーは、必ず保存してください。受取キーを紛失した場合、再発行は行いません。必要な場合は、新規の抽選申込みから改めてお申し込みください。</div><button id="apply" type="button" disabled>抽選に申し込む / APPLY FOR LOTTERY</button>'
+        '<div class="notice small"><strong>重要 / IMPORTANT</strong><br>申込完了後に表示される確認番号（AP番号）と受取キーは、必ず保存してください。受取キーを紛失した場合は、AP番号を用意して管理者へご相談ください。確認のうえ、キーの案内または再発行を行います。</div><button id="apply" type="button" disabled>抽選に申し込む / APPLY FOR LOTTERY</button>'
       );
 
       page = page.replace(
@@ -35,7 +35,7 @@ export default {
 
       page = page.replace(
         '受取キーは登録書の受取時に必要です。安全上、この画面を離れた後に同じ受取キーを再表示することはできません。',
-        '受取キーは登録書の受取時に必要です。この画面を離れた後に同じ受取キーを再表示・再発行することはできません。紛失した場合は、新規の抽選申込みから改めてお申し込みください。'
+        '受取キーは登録書の受取時に必要です。AP番号と一緒に保管してください。紛失時は、AP番号を用意して管理者へご相談ください。'
       );
 
       return htmlFrom(response, page);
@@ -61,7 +61,7 @@ export default {
       );
       page = page.replace(
         '<button id="check" type="button">登録書を確認</button>',
-        '<div class="notice small"><strong>重要 / IMPORTANT</strong><br>受取キーを紛失した場合、再発行は行いません。必要な場合は、新規の抽選申込みから改めてお申し込みください。</div><button id="check" type="button">登録書を確認 / CHECK</button>'
+        '<div class="notice small"><strong>重要 / IMPORTANT</strong><br>受取キーを紛失した場合は、AP番号を用意して管理者へご相談ください。確認のうえ、キーの案内または再発行を行います。</div><button id="check" type="button">登録書を確認 / CHECK</button>'
       );
       page = page.replace(
         "dl.textContent = '登録書JPGを受け取る';",

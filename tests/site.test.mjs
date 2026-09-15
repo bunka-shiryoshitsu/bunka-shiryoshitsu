@@ -7,7 +7,7 @@ import {memoryStorage,jpeg} from './inspection-fixture.js';
 function setup(){
  const entries=new Map([['SYSTEM:APPLICATIONS_OPEN','true'],['REGISTRATION_LIST',JSON.stringify(['ABCDEFGH'])]]);
  const kv={get:async(k,opt)=>{const v=entries.get(k);if(v===undefined)return null;if(v instanceof ArrayBuffer)return opt?.type==='arrayBuffer'?v:new TextDecoder().decode(v);return opt?.type==='json'?JSON.parse(v):v},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix=''})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})};
- const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only'};const issuer=new RegistrationIssuer({storage:memoryStorage()},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
+ const env={REGISTRATION_KV:kv,ADMIN_KEY:'test-only',RECEIVE_KEY_ENCRYPTION_KEY:'01'.repeat(32)};const issuer=new RegistrationIssuer({storage:memoryStorage()},env);env.REGISTRATION_ISSUER={idFromName:()=> 'local',get:()=>issuer};
  const call=(path,body,admin=false)=>app.fetch(new Request('https://local.test'+path,{method:body===undefined?'GET':'POST',headers:{...(body instanceof FormData?{}:{'Content-Type':'application/json'}),...(admin?{'X-Admin-Key':'test-only'}:{}),'CF-Connecting-IP':'192.0.2.1'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}),env,{waitUntil(p){return p}});
  return {entries,call,env};
 }

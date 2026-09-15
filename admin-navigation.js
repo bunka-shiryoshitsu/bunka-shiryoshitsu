@@ -2,6 +2,7 @@ import {adminWorkspaceClient} from './admin-workspace.js';
 import {inspectionClient,inspectionStyles} from './inspection-ui.js';
 import {adminSessionClient} from './admin-session-ui.js';
 import {workActionClient,workActionStyles} from './admin-work-actions-ui.js';
+import {adminReceiptClient} from './admin-receipt-ui.js';
 
 export const adminDestinations = [
   ['dashboard', '要対応', '/admin?view=dashboard'],
@@ -55,5 +56,5 @@ export function enhanceAdminPage(html, path, session=null) {
   if(isMain) html=html.replace('if(key())loadAll();','/* Admin workspace initializes after all extensions. */');
   return html.replace('<script>','<script>'+adminSessionClient(session)+'</script><script>').replace('</head>','<style id="admin-workspace-style">'+styles+'.admin-auth [hidden]{display:none!important}#admin-session-state{font-size:14px;max-width:360px}.admin-auth{flex-wrap:wrap}'+(isMain?inspectionStyles:'')+workActionStyles+'</style></head>')
     .replace(/<body([^>]*)>/,'<body$1>'+shell)
-    .replace('</body>','<script>'+commonClient+';window.AdminSession.mount();</script>'+(isMain?'<script>'+inspectionClient+'</script><script>'+adminWorkspaceClient+'</script>':'')+'<script>'+workActionClient+'</script></body>');
+    .replace('</body>','<script>'+commonClient+';window.AdminSession.mount();</script>'+(isMain?'<script>'+inspectionClient+'</script><script>'+adminReceiptClient+'</script><script>'+adminWorkspaceClient+'</script>':'')+'<script>'+workActionClient+'</script></body>');
 }
