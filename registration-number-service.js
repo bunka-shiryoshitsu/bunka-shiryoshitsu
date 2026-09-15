@@ -1,3 +1,4 @@
+import {adminKeys,isListQuota,listLimitMessage,nextListReset} from './admin-key-cache.js';
 const REGISTRATION_CHARS = "ABCDEFGHJKLMNPQRSTUVWXY3456789";
 const PUBLIC_POOL_PREFIX = "PUBLIC_REGISTRATION_POOL:";
 const PUBLIC_ISSUED_PREFIX = "PUBLIC_REGISTRATION_ISSUED:";
@@ -142,8 +143,10 @@ export async function readRegistrationNumberLedgers(env) {
   const owner = [];
   const publicPool = [];
   const publicIssued = [];
+  const warnings=[],unavailable=[],stale=[],retryTimes=[];
+  async function keys(prefix,section){try{const result=await adminKeys(env,prefix);if(result.stale){stale.push(section);warnings.push("保存済みの一覧を使用しています。最新の番号一覧は利用上限の解除後に確認します。");if(result.retryAt)retryTimes.push(result.retryAt)}return result.keys.map(k=>k.name)}catch(e){if(e.code!=="KV_LIST_LIMIT"&&!isListQuota(e))throw e;unavailable.push(section);warnings.push(listLimitMessage);retryTimes.push(e.retryAt||nextListReset());return []}}
 
-  const ownerKeys = await listKeys(env, "REGISTRATION_LIST");
+  const ownerKeys = await keys("REGISTRATION_LIST","owner");
   for (const key of ownerKeys) {
     if (!/^REGISTRATION_LIST(?:\d+)?$/.test(key)) continue;
     const value = await env.REGISTRATION_KV.get(key);
@@ -157,7 +160,7 @@ export async function readRegistrationNumberLedgers(env) {
     }
   }
 
-  for (const key of await listKeys(env, PUBLIC_POOL_PREFIX)) {
+  for (const key of await keys(PUBLIC_POOL_PREFIX,"publicPool")) {
     const value = await env.REGISTRATION_KV.get(key);
     let data = null;
     try { data = value ? JSON.parse(value) : null; } catch {}
@@ -168,7 +171,7 @@ export async function readRegistrationNumberLedgers(env) {
     });
   }
 
-  for (const key of await listKeys(env, PUBLIC_ISSUED_PREFIX)) {
+  for (const key of await keys(PUBLIC_ISSUED_PREFIX,"publicIssued")) {
     const value = await env.REGISTRATION_KV.get(key);
     let data = null;
     try { data = value ? JSON.parse(value) : null; } catch {}
@@ -181,6 +184,7 @@ export async function readRegistrationNumberLedgers(env) {
 
   const byNumber = list => list.sort((a, b) => String(a.number).localeCompare(String(b.number)));
   return {
+    warnings:[...new Set(warnings)],unavailable,stale,retryAt:retryTimes.length?Math.max(...retryTimes):null,
     owner: byNumber(owner),
     publicPool: byNumber(publicPool),
     publicIssued: byNumber(publicIssued)
@@ -193,7 +197,8 @@ export async function hasRegistrationNumberInLedgers(env, number) {
   for (const prefix of [PUBLIC_POOL_PREFIX, PUBLIC_ISSUED_PREFIX]) {
     if (await env.REGISTRATION_KV.get(prefix + normalized)) return true;
   }
-  return (await findInOwnerPool(env, normalized)).length > 0;
+  const {keys}=await adminKeys(env,"REGISTRATION_LIST");
+  for(const key of keys){if(!/^REGISTRATION_LIST(?:\d+)?$/.test(key.name))continue;const raw=await env.REGISTRATION_KV.get(key.name);if(!raw)continue;try{const values=JSON.parse(raw);if(Array.isArray(values)&&values.some(v=>normalizeRegistrationNumber(v)===normalized))return true}catch{}}return false;
 }
 
 function generateRegistrationNumber() {

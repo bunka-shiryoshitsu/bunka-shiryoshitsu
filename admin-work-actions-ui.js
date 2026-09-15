@@ -13,7 +13,7 @@ export const workActionClient=String.raw`
  const ui=window.AdminUI,main=document.getElementById('admin-content');if(!ui||!main)return;
  const node=(tag,text,parent,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;if(parent)parent.append(e);return e};
  const credential=()=>window.AdminSession?.credential()||document.getElementById('adminKey')?.value.trim()||'';
- let data=null,error='',loading=false,controller=null,generation=0,timer=null,debounce=null,page=0,lastRead=0;
+ let data=null,error='',loading=false,controller=null,generation=0,timer=null,debounce=null,page=0,lastRead=0,pauseUntil=0;
  const drafts=new Map();
  const panel=node('section',undefined,undefined,'work-tasks');panel.id='admin-work-actions';panel.hidden=true;
  const title=main.querySelector('h1');if(title)title.after(panel);else main.prepend(panel);
@@ -41,11 +41,11 @@ export const workActionClient=String.raw`
  }
  async function load(){
   const key=credential();if(!key){clear();return}controller?.abort();const own=++generation;controller=new AbortController();const active=controller;loading=true;render();const deadline=setTimeout(()=>active.abort(),20000);
-  try{const response=await fetch('/admin/work-actions',{headers:{'X-Admin-Key':key},cache:'no-store',signal:active.signal});const result=await response.json();if(own!==generation||credential()!==key)return;if(!response.ok||!result.success){if(response.status===401)window.dispatchEvent(new Event('admin-auth-required'));throw Error(result.message||'作業状況を確認できませんでした。')}data=result;error='';lastRead=Date.now();}
+  try{const response=await fetch('/admin/work-actions',{headers:{'X-Admin-Key':key},cache:'no-store',signal:active.signal});let result;try{result=await response.json()}catch{throw Error('作業状況を読み込めませんでした。時間をおいて再確認してください。')}if(own!==generation||credential()!==key)return;if(!response.ok||!result.success){if(result.retryAt)pauseUntil=Number(result.retryAt)||0;if(response.status===401)window.dispatchEvent(new Event('admin-auth-required'));throw Error(result.message||'作業状況を確認できませんでした。')}data=result;error='';pauseUntil=0;lastRead=Date.now();}
   catch(e){if(own===generation&&credential()===key)error=active.signal.aborted?'作業状況の通信が時間切れになりました。「作業状況を更新」で再確認してください。':e.message;}
   finally{clearTimeout(deadline);if(own===generation){loading=false;render()}}
  }
- function schedule(){clearTimeout(debounce);debounce=setTimeout(()=>void load(),150)}
+ function schedule(){if(Date.now()<pauseUntil)return;clearTimeout(debounce);debounce=setTimeout(()=>void load(),150)}
  function clear(){generation++;controller?.abort();clearTimeout(debounce);data=null;error='';loading=false;drafts.clear();render();}
  function mark(el,on){if(el)el.classList.toggle('work-action',Boolean(on));}
  function decorate(){
@@ -73,8 +73,8 @@ export const workActionClient=String.raw`
  const tables=ui.decorateTables;ui.decorateTables=()=>{tables();decorate()};
  refresh.onclick=()=>void load();window.addEventListener('admin-authenticated',schedule);window.addEventListener('admin-auth-required',clear);document.getElementById('adminKey')?.addEventListener('input',clear);
  document.addEventListener('change',e=>{if(e.target.matches('.issuedFile'))decorate()});
- window.addEventListener('focus',()=>{if(credential()&&Date.now()-lastRead>60000)schedule()});
- const tick=()=>{if(!document.hidden&&credential())schedule();timer=setTimeout(tick,60000)};timer=setTimeout(tick,60000);
+ window.addEventListener('focus',()=>{if(credential()&&Date.now()-lastRead>300000)schedule()});
+ const tick=()=>{if(!document.hidden&&credential())schedule();timer=setTimeout(tick,300000)};timer=setTimeout(tick,300000);
  window.addEventListener('pagehide',()=>{clearTimeout(timer);clearTimeout(debounce);controller?.abort()});
  if(credential())schedule();render();
 })();

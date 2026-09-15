@@ -28,18 +28,20 @@ export default {
 
     if (request.method === "GET" && path === "/admin/registration-numbers/data") {
       if (!isAdmin(request, env)) return json({ success: false, message: "Unauthorized." }, 401);
+      try {
       const ledgers = await readRegistrationNumberLedgers(env);
       const testConsumed = ledgers.publicIssued.filter(isTestRecord).length;
       return json({
         success: true,
         counts: {
-          owner: ledgers.owner.length,
-          publicPool: ledgers.publicPool.length,
-          publicIssued: ledgers.publicIssued.length,
-          testConsumed
+          owner: ledgers.unavailable.includes('owner')?null:ledgers.owner.length,
+          publicPool: ledgers.unavailable.includes('publicPool')?null:ledgers.publicPool.length,
+          publicIssued: ledgers.unavailable.includes('publicIssued')?null:ledgers.publicIssued.length,
+          testConsumed:ledgers.unavailable.includes('publicIssued')?null:testConsumed
         },
         ...ledgers
       });
+      }catch{return json({success:false,message:'番号一覧を取得できませんでした。時間をおいて「管理情報を表示」で再確認してください。'},503)}
     }
 
     if (request.method === "GET" && path === "/admin") {

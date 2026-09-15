@@ -1,3 +1,4 @@
+import {withAdminKeyCache,restoreAdminKeys} from './admin-key-cache.js';
 import app from "./worker-supplement.js";
 import {enhanceAdminPage} from './admin-navigation.js';
 import {inspectionPaths} from './inspection-images.js';
@@ -7,11 +8,12 @@ import {adminReceiptPaths,adminReceipt} from './admin-receipt.js';
 export { RegistrationIssuer } from "./worker-supplement.js";
 export default {
   async fetch(request,env,ctx){
-    const url=new URL(request.url);
+    const url=new URL(request.url);env=withAdminKeyCache(env);
     if(url.pathname.startsWith('/_internal/'))return new Response('Not Found',{status:404});
     if(url.pathname==='/admin/session')return adminSessionEndpoint(request,env);
     let session=null;
     if(url.pathname.startsWith('/admin')){const auth=await authorizeAdminSession(request,env);if(auth.response)return auth.response;request=auth.request;session=auth.session;}
+    if(url.pathname==='/admin/key-cache/restore')return restoreAdminKeys(request,env);
     if(url.pathname==='/admin/work-actions')return readWorkActions(request,env);
     if(adminReceiptPaths.has(url.pathname))return adminReceipt(request,env,ctx,app);
     if(inspectionPaths.has(url.pathname)){

@@ -9,7 +9,7 @@ export const registrationNumbersClient = String.raw`
   const keyInput = byId('adminKey'), loadButton = byId('load'), status = byId('status');
   const sections = ['owner', 'publicPool', 'publicIssued'];
   let notes = new Map(), loadedKey = '', loading = false, records = [], cards = [];
-  let page = 0, loadController = null, activeSaves = 0, searchTimer;
+  let unavailable=[],page = 0, loadController = null, activeSaves = 0, searchTimer;
   const dateFormatter = new Intl.DateTimeFormat('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'});
   const viewKey='bunkaNumberView';
   let previous={};try{previous=JSON.parse(sessionStorage.getItem(viewKey))||{}}catch{}
@@ -62,7 +62,7 @@ export const registrationNumbersClient = String.raw`
       headers: {'X-Admin-Key': key, ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
       ...(body === undefined ? {} : {body: JSON.stringify(body)})
     });
-    const data = await response.json();
+    let data;try{data=await response.json()}catch{throw new Error('サーバーから番号情報を取得できませんでした。時間をおいて「管理情報を表示」で再確認してください。')}
     if (!response.ok || !data.success) {
       if(response.status===401)window.AdminSession?.expire();
       const error = new Error(data.message || '読み込み・保存に失敗しました。');
@@ -156,7 +156,7 @@ export const registrationNumbersClient = String.raw`
     const result=selectPage(records,notes,search.value,filter.value,page);page=result.page;
     for(const {record}of cards){const note=notes.get(record.number);if(note)note.views=[];}
     ledger.replaceChildren();cards=[];
-    countLabel.textContent=result.start+'〜'+result.end+'件を表示 ／ 検索結果 '+result.total+'件（全 '+records.length+'番号）';
+    countLabel.textContent=result.start+'〜'+result.end+'件を表示 ／ 検索結果 '+result.total+'件（全 '+records.length+'番号）'+(unavailable.length?' ／ 一部の一覧は確認待ち':'');
     pageStatus.textContent=(page+1)+' / '+result.pageCount+'ページ';pagePrev.disabled=page===0;pageNext.disabled=page+1>=result.pageCount;
     const fragment=document.createDocumentFragment();
     for(const record of result.rows){
@@ -174,7 +174,7 @@ export const registrationNumbersClient = String.raw`
       cards.push({el:card,record});
     }
     ledger.append(fragment);
-    if(!result.total)node('p','該当する登録番号はありません。',ledger,'empty-state');
+    if(!result.total)node('p',unavailable.length?'この条件の番号一覧は現在確認待ちです。取得できない件数を0件とは扱いません。':'該当する登録番号はありません。',ledger,'empty-state');
     rememberView();
   }
   function renderLedger(data){records=makeRecords(data);filterCards();}
@@ -200,14 +200,14 @@ export const registrationNumbersClient = String.raw`
       const failed=readers.find(r=>r.status==='rejected');if(failed)throw failed.reason;
       if(controller.signal.aborted)throw Error('読み込みを中止しました。必要ならもう一度表示してください。');
       if (currentKey() !== key) throw new Error('管理キーが変更されました。もう一度一覧を読み込んでください。');
-      notes = saved; loadedKey = key;
+      notes = saved; loadedKey = key;unavailable=data.unavailable||[];
       byId('summary').replaceChildren();
-      for (const [label, count, scope, test] of [['自己所有品プール', data.counts.owner,'owner'], ['一般番号プール', data.counts.publicPool,'pool'], ['発行済み番号', data.counts.publicIssued,'issued'], ['テスト消費', data.counts.testConsumed || 0,'test',true]]) {
+      for (const [label, count, scope, test] of [['自己所有品プール', data.counts.owner,'owner'], ['一般番号プール', data.counts.publicPool,'pool'], ['発行済み番号', data.counts.publicIssued,'issued'], ['テスト消費', data.counts.testConsumed,'test',true]]) {
         const card = node('a', undefined, byId('summary'), 'card' + (test ? ' test-card' : ''));card.href='/admin/registration-numbers?scope='+scope;
-        node('div', label, card); node('strong', count + '件', card);
+        node('div', label, card); node('strong', count===null?'確認待ち':(count||0)+'件', card);
       }
       renderLedger(data);
-      status.textContent = '読み込みました。メモを編集したら、番号ごとの「保存」を押してください。'; status.className = 'note ok';
+      status.textContent = (data.warnings?.length?data.warnings.join(' ')+' ':'読み込みました。')+'表示中の番号のメモは確認・編集できます。編集後は番号ごとの「保存」を押してください。'; status.className = data.warnings?.length?'note err':'note ok';
       const target=new URLSearchParams(location.search).get('number');if(target&&/^[A-Z0-9]{8}$/.test(target)){const el=byId('number-'+target);if(el){el.classList.add('is-target');requestAnimationFrame(()=>el.scrollIntoView({block:'start'}))}else status.textContent='指定された番号は見つかりませんでした。検索条件を確認してください。'}else if(previous.scrollY){requestAnimationFrame(()=>scrollTo(0,previous.scrollY));previous.scrollY=0;}
     } catch (error) {
       status.textContent = '確認できませんでした: ' + error.message; status.className = 'note err';

@@ -1,3 +1,4 @@
+import {adminKeys,isListQuota,listLimitMessage,nextListReset} from './admin-key-cache.js';
 // Derive outstanding human work from saved state. Viewing a page never completes work.
 export function deriveWorkActions({applications=[],registrations=[],lottery=[],queue=[]},now=Date.now()) {
   const tasks=[],waiting=[],seen=new Set();
@@ -41,7 +42,7 @@ export async function readWorkActions(request,env) {
   try {
     async function readRecords(prefix,accept,project){
       const keys=[];let cursor;const cursors=new Set();
-      do{const page=await env.REGISTRATION_KV.list({prefix,limit:1000,...(cursor?{cursor}:{})});keys.push(...page.keys.filter(k=>accept(k.name)));cursor=page.list_complete?null:page.cursor;if(cursor&&cursors.has(cursor))throw Error('cursor');cursors.add(cursor);if(keys.length>10000)throw Error('limit')}while(cursor);
+      const page=await adminKeys(env,prefix);if(page.stale){const e=Error('KV_LIST_LIMIT');e.retryAt=page.retryAt;throw e}keys.push(...page.keys.filter(k=>accept(k.name)));
       let position=0;const values=[];
       await Promise.all(Array.from({length:Math.min(8,keys.length)},async()=>{while(position<keys.length){const k=keys[position++],raw=await env.REGISTRATION_KV.get(k.name);if(raw)values.push(project(JSON.parse(raw),k.name))}}));return values;
     }
@@ -54,5 +55,5 @@ export async function readWorkActions(request,env) {
     const stub=env.REGISTRATION_ISSUER.get(env.REGISTRATION_ISSUER.idFromName('registration-number-issuer'));
     do{const response=await stub.fetch(new Request('https://internal.invalid/admin/supplement/queue'+(cursor?'?'+new URLSearchParams({cursor}):''),{headers:{'X-Admin-Key':env.ADMIN_KEY}}));if(!response.ok)throw Error('queue');const page=await response.json();queue.push(...page.rows);cursor=page.nextCursor;if(cursor&&cursors.has(cursor))throw Error('cursor');cursors.add(cursor);if(queue.length>10000)throw Error('limit')}while(cursor);
     return json({success:true,...deriveWorkActions({applications,lottery,queue})});
-  }catch{return json({success:false,message:'作業件数を確認できませんでした。「作業状況を更新」で再確認してください。'},503)}
+  }catch(e){return json({success:false,...(e.code==='KV_LIST_LIMIT'||isListQuota(e)?{code:'KV_LIST_LIMIT',retryAt:e.retryAt||nextListReset(),message:listLimitMessage+' 作業件数は確認待ちです。'}:{message:'作業件数を確認できませんでした。「作業状況を更新」で再確認してください。'})},503)}
 }

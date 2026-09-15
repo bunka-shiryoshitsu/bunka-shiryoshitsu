@@ -1,3 +1,4 @@
+import {withAdminKeyCache,adminKeyCacheStore} from './admin-key-cache.js';
 import app from "./worker-entry5.js";
 import { supplementPaths, supplementService, json } from "./supplement-service.js";
 import {ensureRetentionAlarm, tryPurgeSupplementImages, sweepSupplementImages} from './supplement-retention.js';
@@ -41,7 +42,8 @@ export default {
 export class RegistrationIssuer {
   constructor(state, env) {
     this.state = state;
-    this.env = env;
+    this.rawEnv = env;
+    this.env = withAdminKeyCache(env);
     this.tail = Promise.resolve();
   }
 
@@ -70,6 +72,7 @@ export class RegistrationIssuer {
 
   async handle(request) {
     const url = new URL(request.url);
+    if(url.pathname==='/_internal/admin-key-cache')return adminKeyCacheStore(request,this.rawEnv,this.state.storage);
     if(url.pathname==='/_internal/admin-session')return adminSessionStore(request,this.env,this.state.storage);
 
     if(inspectionPaths.has(url.pathname))return inspectionService(request,this.env,this.state.storage);

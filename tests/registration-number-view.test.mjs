@@ -21,7 +21,7 @@ test('large ledgers page without duplicates and search all numbers and notes',()
 });
 
 async function waitFor(predicate){for(let i=0;i<200;i++){if(predicate())return;await new Promise(r=>setTimeout(r,5));}throw Error('UI did not settle');}
-async function fixture(count=10000,{stall=false}={}){
+async function fixture(count=10000,{stall=false,responseFactory}={}){
  const html=await (await app.fetch(new Request('https://local.test/admin/registration-numbers'),{},{})).text();
  const {document,HTMLElement,HTMLSelectElement,Event}=parseHTML(html);
  // linkedom omits the browser select-value setter and layout-only scrolling.
@@ -36,7 +36,7 @@ async function fixture(count=10000,{stall=false}={}){
  const fetch=async(path,options)=>{
    requests++;
    if(stalled)return new Promise((resolve,reject)=>{const abort=()=>{abortCount++;reject(new Error('aborted'))};if(options.signal.aborted)abort();else options.signal.addEventListener('abort',abort,{once:true})});
-   if(path.endsWith('/data'))return Response.json(dataFor(count));
+   if(path.endsWith('/data'))return responseFactory?responseFactory():Response.json(dataFor(count));
    const body=JSON.parse(options.body);
    if(path.endsWith('/read')){concurrent++;maxConcurrent=Math.max(maxConcurrent,concurrent);await new Promise(setImmediate);concurrent--;return Response.json({success:true,notes:Object.fromEntries(body.numbers.map(n=>[n,saved.get(n)||{text:n===number(count-1)?'最後の番号のメモ':'',revision:0,updatedAt:null}]))});}
    const note={text:body.text,revision:body.revision+1,updatedAt:new Date().toISOString()};saved.set(body.number,note);return Response.json({success:true,note});
@@ -115,5 +115,22 @@ test('request deadline recovers the load button instead of waiting indefinitely'
   f.timeout();await waitFor(()=>!f.document.querySelector('#load').disabled);
   assert.match(f.document.querySelector('#status').textContent,/時間内に完了しませんでした/);
   assert.equal(f.stats().abortCount,1);
+ }finally{f.close()}
+});
+
+test('HTML server errors show a Japanese retry message and keep the load button usable',async()=>{
+ const f=await fixture(2,{responseFactory:()=>new Response('<!DOCTYPE html><p>upstream failure</p>',{status:500})});try{
+  await waitFor(()=>!f.document.querySelector('#load').disabled);
+  const status=f.document.querySelector('#status').textContent;assert.match(status,/サーバーから番号情報を取得できませんでした/);assert.doesNotMatch(status,/Unexpected token|DOCTYPE/);
+ }finally{f.close()}
+});
+
+test('a recovered owner pool remains usable and unavailable ledgers never appear as zero',async()=>{
+ const f=await fixture(2,{responseFactory:()=>Response.json({...dataFor(2),publicPool:[],publicIssued:[],counts:{owner:2,publicPool:null,publicIssued:null,testConsumed:null},unavailable:['publicPool','publicIssued'],warnings:['最新の一覧は確認待ちです。']})});try{
+  await waitFor(()=>f.document.querySelectorAll('.ledger-card').length===2);
+  assert.equal(f.document.querySelectorAll('#summary strong').length,4);assert.match(f.document.querySelector('#summary').textContent,/確認待ち/);
+  assert.equal(f.document.querySelector('.memo-input').disabled,false);
+  f.ui.navigateNumbers(new URL('https://local.test/admin/registration-numbers?scope=pool'),true);
+  assert.match(f.document.querySelector('.empty-state').textContent,/確認待ち/);assert.doesNotMatch(f.document.querySelector('.empty-state').textContent,/該当する登録番号はありません/);
  }finally{f.close()}
 });
