@@ -9,14 +9,15 @@ import {adminReceiptPaths,adminReceipt} from './admin-receipt.js';
 export { RegistrationIssuer } from "./worker-supplement.js";
 
 async function prepareOwnerPoolEnv(env){
-  env=withAdminKeyCache(env);
+  let canonicalReady=false;
   try{
     await canonicalizeOwnerPoolKeys(env);
-    return withCanonicalOwnerPoolKeys(env);
+    canonicalReady=true;
   }catch(error){
     console.warn('Owner registration pool canonicalization was not completed.',error);
-    return env;
   }
+  env=withAdminKeyCache(env);
+  return canonicalReady?withCanonicalOwnerPoolKeys(env):env;
 }
 
 export default {
