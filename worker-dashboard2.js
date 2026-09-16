@@ -16,15 +16,24 @@ export default {
       const ap = String(body?.ap || "").trim().toUpperCase();
       const items = Array.isArray(body?.items) ? body.items : [];
       if (items.length) {
-        for (let index = 0; index < items.length; index++) {
-          const raw = items[index] || {};
-          const item = String(raw.item || index + 1).padStart(2, "0");
-          let found = false;
-          for (let i = 1; i <= 20; i++) {
-            const image = String(i).padStart(2, "0");
-            if (await env.REGISTRATION_KV.get(`IMAGE:${ap}:${item}:${image}`)) { found = true; break; }
+        const itemKeys = items.map((raw, index) => {
+          const item = String((raw || {}).item || index + 1).padStart(2, "0");
+          return Array.from({length:20}, (_, i) => `IMAGE:${ap}:${item}:${String(i + 1).padStart(2, "0")}`);
+        });
+        const allKeys = itemKeys.flat();
+        const foundKeys = new Set();
+        // Cloudflare KV bulk reads accept up to 100 keys, so ten items need at most two reads.
+        for (let start = 0; start < allKeys.length; start += 100) {
+          const chunk = allKeys.slice(start, start + 100);
+          const values = await env.REGISTRATION_KV.get(chunk);
+          if (values instanceof Map) {
+            for (const [key, value] of values) if (value != null) foundKeys.add(key);
+          } else if (values && typeof values === "object") {
+            for (const key of chunk) if (values[key] != null) foundKeys.add(key);
           }
-          if (!found) {
+        }
+        for (let index = 0; index < itemKeys.length; index++) {
+          if (!itemKeys[index].some(key => foundKeys.has(key))) {
             return json({
               success: false,
               message: `資料${index + 1}には審査用画像がありません。各資料につき最低1枚の画像を登録してください。`
