@@ -28,7 +28,7 @@ test('failed or stale preparation cannot finalize a review or remove originals',
   const f=fixture();const review=rev=>app.fetch(new Request('https://local.test/admin/review',{method:'POST',headers:{'X-Admin-Key':'test-only','Content-Type':'application/json'},body:JSON.stringify({ap:AP,item:'01',result:'rejected',inspectionRevision:rev})}),f.env,{});
   assert.equal((await review()).status,409);assert.ok(f.entries.has('IMAGE:'+AP+':01:01'));
   await f.call('upload',jpeg(),{id:'original-01'});const ready=await (await f.call('ready',{})).json();
-  f.entries.set('IMAGE_META:'+AP+':01:02','{}');f.entries.set('IMAGE:'+AP+':01:02',jpeg().buffer);
+  await f.issuer.env.REGISTRATION_KV.put('IMAGE_META:'+AP+':01:02','{}');await f.issuer.env.REGISTRATION_KV.put('IMAGE:'+AP+':01:02',jpeg().buffer);
   assert.equal((await review(ready.revision)).status,409);assert.ok(f.entries.has('IMAGE:'+AP+':01:01'));
   await f.call('upload',jpeg(),{id:'original-02'});const fresh=await (await f.call('ready',{})).json();
   const response=await review(fresh.revision);assert.equal(response.status,200,await response.clone().text());
