@@ -46,6 +46,14 @@ export async function markPublicRegistrationNumberIssued(env, number, metadata =
   await env.REGISTRATION_KV.put(issuedKey, JSON.stringify(record));
 }
 
+async function getMany(env, keys) {
+  const values = await env.REGISTRATION_KV.get(keys);
+  if (values && typeof values.get === "function") return values;
+  const fallback = new Map();
+  for (const key of keys) fallback.set(key, await env.REGISTRATION_KV.get(key));
+  return fallback;
+}
+
 export async function checkRegistrationNumberCollision(env, number, options = {}) {
   const normalized = normalizeRegistrationNumber(number);
   if (!normalized) return {duplicate:true,locations:["invalid-format"]};
@@ -54,7 +62,7 @@ export async function checkRegistrationNumberCollision(env, number, options = {}
   const publicPoolKey=PUBLIC_POOL_PREFIX+normalized, publicIssuedKey=PUBLIC_ISSUED_PREFIX+normalized;
   const registrationKeys=[normalized,"REGISTRATION:"+normalized,"REGISTRATION_"+normalized,"REGISTRATION-"+normalized];
   const lookupKeys=[publicPoolKey,publicIssuedKey,...registrationKeys];
-  const values=await env.REGISTRATION_KV.get(lookupKeys);
+  const values=await getMany(env,lookupKeys);
   if(values.get(publicPoolKey)&&!options.allowOwnPublicReservation)locations.push(publicPoolKey);
   if(values.get(publicIssuedKey))locations.push(publicIssuedKey);
   for(const key of registrationKeys)if(values.get(key))locations.push(key);
@@ -66,7 +74,7 @@ async function readMany(env,names){
   for(let i=0;i<names.length;i+=100){
     const batch=names.slice(i,i+100);
     if(!batch.length)continue;
-    const values=await env.REGISTRATION_KV.get(batch);
+    const values=await getMany(env,batch);
     for(const name of batch)result.set(name,values.get(name)??null);
   }
   return result;
@@ -90,7 +98,7 @@ export async function readRegistrationNumberLedgers(env) {
 export async function hasRegistrationNumberInLedgers(env, number) {
   const normalized=normalizeRegistrationNumber(number);
   if(!normalized)return false;
-  const direct=await env.REGISTRATION_KV.get([PUBLIC_POOL_PREFIX+normalized,PUBLIC_ISSUED_PREFIX+normalized]);
+  const direct=await getMany(env,[PUBLIC_POOL_PREFIX+normalized,PUBLIC_ISSUED_PREFIX+normalized]);
   if(direct.get(PUBLIC_POOL_PREFIX+normalized)||direct.get(PUBLIC_ISSUED_PREFIX+normalized))return true;
   const {keys}=await adminKeys(env,"REGISTRATION_LIST");
   const ownerKeys=keys.map(k=>k.name).filter(name=>/^REGISTRATION_LIST(?:\d+)?$/.test(name));
