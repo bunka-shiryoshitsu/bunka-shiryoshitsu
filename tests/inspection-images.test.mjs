@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import app,{RegistrationIssuer} from '../worker.js';
 import {inspectionService,sweepInspectionImages,INSPECTION,jpegDimensions,requireInspectionReady,finalizeInspection} from '../inspection-images.js';
 import {memoryStorage,jpeg} from './inspection-fixture.js';
-const AP='AP-ABCDEFGH',DAY=86400000,NOW=Date.parse('2026-09-15T03:00:00Z');
+const AP='AP-ABCDEFGH',DAY=86400000,NOW=Date.now();
 function fixture(){
   const records=new Map(),storage=memoryStorage(records),entries=new Map();
   const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{if(Array.isArray(k))return new Map(k.filter(key=>entries.has(key)).map(key=>[key,entries.get(key)]));const v=entries.get(k);return opt?.type==='json'&&typeof v==='string'?JSON.parse(v):v??null},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix='',limit=1000})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).slice(0,limit).map(name=>({name})),list_complete:true})}};
