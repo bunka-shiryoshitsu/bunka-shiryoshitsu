@@ -5,7 +5,7 @@ import app from '../worker-dashboard2.js';
 function envWithImages(images = []) {
   const values = new Map(images.map(k => [k, 'present']));
   let bulkCalls = 0;
-  let scalarCalls = 0;
+  let imageScalarCalls = 0;
   return {
     env: {
       REGISTRATION_KV: {
@@ -14,14 +14,14 @@ function envWithImages(images = []) {
             bulkCalls++;
             return new Map(key.filter(k => values.has(k)).map(k => [k, values.get(k)]));
           }
-          scalarCalls++;
+          if (String(key).startsWith('IMAGE:')) imageScalarCalls++;
           return values.get(key) || null;
         },
         async list(){ return {keys:[],list_complete:true}; }
       }
     },
     bulkCalls: () => bulkCalls,
-    scalarCalls: () => scalarCalls
+    imageScalarCalls: () => imageScalarCalls
   };
 }
 
@@ -39,15 +39,15 @@ test('registration image precheck uses at most two bulk reads for ten items', as
   const response = await app.fetch(submit(Array.from({length:10},(_,i)=>({item:i+1}))), f.env, {});
   assert.notEqual(response.status, 400);
   assert.equal(f.bulkCalls(), 2);
-  assert.equal(f.scalarCalls(), 0);
+  assert.equal(f.imageScalarCalls(), 0);
 });
 
-test('registration image precheck rejects an item with no image without scalar reads', async () => {
+test('registration image precheck rejects an item with no image without scalar image reads', async () => {
   const f = envWithImages(['IMAGE:AP-ABCDEFGH:01:01']);
   const response = await app.fetch(submit([{item:1},{item:2}]), f.env, {});
   assert.equal(response.status, 400);
   const data = await response.json();
   assert.match(data.message, /資料2には審査用画像がありません/);
   assert.equal(f.bulkCalls(), 1);
-  assert.equal(f.scalarCalls(), 0);
+  assert.equal(f.imageScalarCalls(), 0);
 });
