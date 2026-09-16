@@ -47,6 +47,11 @@ export async function markPublicRegistrationNumberIssued(env, number, metadata =
 }
 
 async function getMany(env, keys) {
+  if (env.__adminReads) {
+    const cached = new Map();
+    for (const key of keys) cached.set(key, await env.REGISTRATION_KV.get(key));
+    return cached;
+  }
   const values = await env.REGISTRATION_KV.get(keys);
   if (values && typeof values.get === "function") return values;
   const fallback = new Map();
