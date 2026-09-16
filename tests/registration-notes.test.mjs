@@ -20,7 +20,7 @@ function setup() {
     put: async (key, value) => { if (failWrite) throw new Error('Simulated failure'); data.set(key, structuredClone(value)); }
   };
   const env = {ADMIN_KEY: 'notes-test-only', REGISTRATION_KV: {
-    get: async k => kv.get(k) ?? null,
+    get: async k => Array.isArray(k) ? new Map(k.filter(key => kv.has(key)).map(key => [key, kv.get(key)])) : (kv.get(k) ?? null),
     put: async (k, value) => { kv.set(k, value); },
     list: async ({prefix = ''}) => ({keys: [...kv.keys()].filter(k => k.startsWith(prefix)).map(name => ({name})), list_complete: true})
   }};
