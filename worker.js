@@ -1,4 +1,5 @@
 import {withAdminKeyCache,withAdminLists,withAdminReads,restoreAdminKeys,adminImageList} from './admin-key-cache.js';
+import {canonicalizeOwnerPoolKeys,withCanonicalOwnerPoolKeys} from './owner-pool-canonical.js';
 import app from "./worker-supplement.js";
 import {enhanceAdminPage} from './admin-navigation.js';
 import {inspectionPaths} from './inspection-images.js';
@@ -6,9 +7,21 @@ import {adminSessionEndpoint,authorizeAdminSession} from './admin-session.js';
 import {readWorkActions} from './admin-work-actions.js';
 import {adminReceiptPaths,adminReceipt} from './admin-receipt.js';
 export { RegistrationIssuer } from "./worker-supplement.js";
+
+async function prepareOwnerPoolEnv(env){
+  env=withAdminKeyCache(env);
+  try{
+    await canonicalizeOwnerPoolKeys(env);
+    return withCanonicalOwnerPoolKeys(env);
+  }catch(error){
+    console.warn('Owner registration pool canonicalization was not completed.',error);
+    return env;
+  }
+}
+
 export default {
   async fetch(request,env,ctx){
-    const url=new URL(request.url);env=withAdminKeyCache(env);
+    const url=new URL(request.url);env=await prepareOwnerPoolEnv(env);
     if(url.pathname.startsWith('/_internal/'))return new Response('Not Found',{status:404});
     if(url.pathname==='/admin/session')return adminSessionEndpoint(request,env);
     let session=null;
@@ -32,5 +45,5 @@ export default {
     }
     return response;
   },
-  async scheduled(controller,env,ctx){if(app.scheduled)await app.scheduled(controller,withAdminKeyCache(env),ctx);}
+  async scheduled(controller,env,ctx){env=await prepareOwnerPoolEnv(env);if(app.scheduled)await app.scheduled(controller,env,ctx);}
 };
