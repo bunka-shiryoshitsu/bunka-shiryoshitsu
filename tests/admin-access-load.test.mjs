@@ -22,7 +22,7 @@ function fixture(){
   ['IMAGE_META:'+ap+':01:01','{}']
  ]),calls={get:0,list:0,put:0,delete:0},objects=new Map();let failReads=false,failLists=false;
  const env={ADMIN_KEY:secret,ADMIN_KEY_CACHE:'true',ADMIN_READ_CACHE:'true',PUBLIC_RATE_LIMIT_DO:'true',REGISTRATION_KV:{
-  async get(key,options){calls.get++;if(failReads)throw Error('KV get() limit exceeded for the day.');const value=records.get(key)??null;const type=typeof options==='string'?options:options?.type;return type==='json'&&value!==null?JSON.parse(value):value},
+  async get(key,options){calls.get++;if(failReads)throw Error('KV get() limit exceeded for the day.');if(Array.isArray(key))return new Map(key.filter(k=>records.has(k)).map(k=>[k,records.get(k)]));const value=records.get(key)??null;const type=typeof options==='string'?options:options?.type;return type==='json'&&value!==null?JSON.parse(value):value},
   async put(key,value){calls.put++;records.set(key,value)},async delete(key){calls.delete++;records.delete(key)},
   async list({prefix='',limit=1000,cursor}={}){calls.list++;if(failLists)throw Error('KV list() limit exceeded for the day.');const keys=[...records.keys()].sort().filter(key=>key.startsWith(prefix)),start=Number(cursor)||0;return {keys:keys.slice(start,start+limit).map(name=>({name})),list_complete:start+limit>=keys.length,cursor:String(start+limit)}}
  }};

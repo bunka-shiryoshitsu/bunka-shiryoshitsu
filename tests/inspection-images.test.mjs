@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import app,{RegistrationIssuer} from '../worker.js';
 import {inspectionService,sweepInspectionImages,INSPECTION,jpegDimensions,requireInspectionReady,finalizeInspection} from '../inspection-images.js';
 import {memoryStorage,jpeg} from './inspection-fixture.js';
-const AP='AP-ABCDEFGH',DAY=86400000,NOW=Date.parse('2026-09-15T03:00:00Z');
+const AP='AP-ABCDEFGH',DAY=86400000,NOW=Date.now();
 function fixture(){
   const records=new Map(),storage=memoryStorage(records),entries=new Map();
-  const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{const v=entries.get(k);return opt?.type==='json'&&typeof v==='string'?JSON.parse(v):v??null},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix='',limit=1000})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).slice(0,limit).map(name=>({name})),list_complete:true})}};
+  const env={ADMIN_KEY:'test-only',REGISTRATION_KV:{get:async(k,opt)=>{if(Array.isArray(k))return new Map(k.filter(key=>entries.has(key)).map(key=>[key,entries.get(key)]));const v=entries.get(k);return opt?.type==='json'&&typeof v==='string'?JSON.parse(v):v??null},put:async(k,v)=>entries.set(k,v),delete:async k=>entries.delete(k),list:async({prefix='',limit=1000})=>({keys:[...entries.keys()].filter(k=>k.startsWith(prefix)).slice(0,limit).map(name=>({name})),list_complete:true})}};
   const material=(item='01',finished=false)=>{let application=JSON.parse(entries.get('REGISTRATION_APPLICATION:'+AP)||'{"items":[]}');application.ap=AP;application.items.push({item,name:'点検資料 '+item,...(finished?{reviewResult:'type1',registrationNumber:'REGTEST1'}:{})});entries.set('REGISTRATION_APPLICATION:'+AP,JSON.stringify(application));entries.set('IMAGE_META:'+AP+':'+item+':01',JSON.stringify({uploadedAt:new Date(NOW).toISOString()}));entries.set('IMAGE:'+AP+':'+item+':01',jpeg().buffer)};
   material();const issuer=new RegistrationIssuer({storage},env);env.REGISTRATION_ISSUER={idFromName:()=>'',get:()=>issuer};
   const request=(action,body,query={},auth=true)=>new Request('https://local.test/admin/inspection-images/'+action+'?'+new URLSearchParams({ap:AP,item:'01',...query}),{method:body===undefined?'GET':'POST',headers:{...(auth?{'X-Admin-Key':'test-only'}:{}),'Content-Type':body instanceof Uint8Array?'image/jpeg':'application/json'},body:body===undefined?undefined:body instanceof Uint8Array?body:JSON.stringify(body)});
@@ -28,7 +28,7 @@ test('failed or stale preparation cannot finalize a review or remove originals',
   const f=fixture();const review=rev=>app.fetch(new Request('https://local.test/admin/review',{method:'POST',headers:{'X-Admin-Key':'test-only','Content-Type':'application/json'},body:JSON.stringify({ap:AP,item:'01',result:'rejected',inspectionRevision:rev})}),f.env,{});
   assert.equal((await review()).status,409);assert.ok(f.entries.has('IMAGE:'+AP+':01:01'));
   await f.call('upload',jpeg(),{id:'original-01'});const ready=await (await f.call('ready',{})).json();
-  f.entries.set('IMAGE_META:'+AP+':01:02','{}');f.entries.set('IMAGE:'+AP+':01:02',jpeg().buffer);
+  await f.issuer.env.REGISTRATION_KV.put('IMAGE_META:'+AP+':01:02','{}');await f.issuer.env.REGISTRATION_KV.put('IMAGE:'+AP+':01:02',jpeg().buffer);
   assert.equal((await review(ready.revision)).status,409);assert.ok(f.entries.has('IMAGE:'+AP+':01:01'));
   await f.call('upload',jpeg(),{id:'original-02'});const fresh=await (await f.call('ready',{})).json();
   const response=await review(fresh.revision);assert.equal(response.status,200,await response.clone().text());

@@ -66,16 +66,12 @@ export async function adminKeyCacheStore(request,env,storage,now=Date.now()){
  try{
   if(body.action==='records'){
    if(String(env.ADMIN_READ_CACHE)!=='true'||!Array.isArray(body.names)||body.names.length>100||body.names.some(name=>!recordName(name)))return json({success:false},400);
-   const values={};
-   for(const name of body.names){const key=recordPrefix+name,saved=await storage.get(key);let value;
-    if(saved&&saved.until>now)value=saved.value;
-    else{value=await env.REGISTRATION_KV.get(name);if(value===null||typeof value==='string'&&new TextEncoder().encode(value).length<90000)await storage.put(key,{value,until:now+(value===null?60000:RECORD_TTL)});}
-    values[name]=value;
-   }
+   const values={},misses=[];
+   for(const name of body.names){const saved=await storage.get(recordPrefix+name);if(saved&&saved.until>now)values[name]=saved.value;else misses.push(name)}
+   if(misses.length){let fresh;try{fresh=await env.REGISTRATION_KV.get(misses)}catch{fresh=null}if(!(fresh instanceof Map)){fresh=new Map();for(const name of misses)fresh.set(name,await env.REGISTRATION_KV.get(name))}for(const name of misses){const value=fresh.get(name)??null;values[name]=value;if(value===null||typeof value==='string'&&new TextEncoder().encode(value).length<90000)await storage.put(recordPrefix+name,{value,until:now+(value===null?60000:RECORD_TTL)})}}
    return json({success:true,values});
   }
   if(['touch','remove'].includes(body.action)){
-
    if(typeof body.name!=='string'||body.name.length>512)return json({success:false},400);
    if(recordName(body.name)){
     const key=recordPrefix+body.name,saved=await storage.get(key);
