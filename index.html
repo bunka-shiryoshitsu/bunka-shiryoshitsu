@@ -1226,7 +1226,7 @@ async function checkRegistration(){
 
  if(!input||!result)return;
 
- const number=input.value.trim().toUpperCase();
+const number=input.value.trim().normalize("NFKC").toUpperCase();
 
  if(!number){
   result.textContent="登録番号を入力してください。";
