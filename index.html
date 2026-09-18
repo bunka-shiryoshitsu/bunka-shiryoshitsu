@@ -1318,11 +1318,24 @@ async function checkApplication(){
 
    activeApplication={ap,slots};
 
-   result.innerHTML=`
-    <div>今回の抽選に当選しています。</div>
-    <div class="application-slots">登録申請：${slots}枠</div>
-    ${data.expiryDate?`<div class="small">申請期限：${data.expiryDate}</div>`:""}
-   `;
+  result.textContent="";
+
+const winnerMessage=document.createElement("div");
+winnerMessage.textContent="今回の抽選に当選しています。";
+
+const slotsMessage=document.createElement("div");
+slotsMessage.className="application-slots";
+slotsMessage.textContent=`登録申請：${slots}枠`;
+
+result.appendChild(winnerMessage);
+result.appendChild(slotsMessage);
+
+if(data.expiryDate){
+ const expiryMessage=document.createElement("div");
+ expiryMessage.className="small";
+ expiryMessage.textContent=`申請期限：${data.expiryDate}`;
+ result.appendChild(expiryMessage);
+}
 
    renderRegistrationSlots(slots);
 
